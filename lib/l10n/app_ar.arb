@@ -1,0 +1,25 @@
+{
+  "home": "الصفحة الرئيسية",
+  "profile": "المعلومات الشخصية",
+  "allposts": "جميع المحلات",
+  "newstory": "اضافة محل",
+  "settings": "الاعدادات",
+  "changelanguage": "تغير اللغة",
+  "feedback": "تعليق",
+  "logout": "تسجيل الخروج",
+  "welcome": "Welcome",
+  "about": "معلومات عني",
+  "name": "الاسم",
+  "profession": "المهنة",
+  "dob": "تاريخ الولادة",
+
+  "myblogs": "محلاتي",
+  "searchBlogs": "Search Blogs",
+  "searchBlogsDescription": "Text displayed in the search bar for blogs",
+
+  "requests": "طلبات",
+  "customer":"صاحب محل",
+
+  "barberShopPosts": "محلات الحلاقة",
+  "hospitalPosts": "المستشفيات"
+}

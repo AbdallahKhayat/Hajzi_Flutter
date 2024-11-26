@@ -1,0 +1,25 @@
+{
+  "home": "Home",
+  "profile": "Profile",
+  "allposts": "All Posts",
+  "newstory": "New Post",
+  "settings": "Settings",
+  "changelanguage": "Change Language",
+  "feedback": "Feedback",
+  "logout": "Logout",
+
+  "welcome": "Welcome",
+  "about": "About me",
+  "name": "Name",
+  "profession": "Profession",
+  "dob": "DOB",
+
+  "myblogs": "My Blogs",
+  "searchBlogs": "Search Blogs",
+  "searchBlogsDescription": "Text displayed in the search bar for blogs",
+  "requests": "Requests",
+  "customer":"Customer",
+  "barberShopPosts": "BarberShop Posts",
+  "hospitalPosts": "Hospital Posts"
+
+}
