@@ -351,7 +351,7 @@ class _AddBlogState extends State<AddBlog> {
           final emailResponse = await http.post(
             url,
             headers: {
-              'origin': "http://192.168.88.7:5000",
+              'origin': "http://192.168.88.4:5000",
               'Content-Type': 'application/json',
             },
             body: json.encode({
@@ -444,7 +444,7 @@ class _AddBlogState extends State<AddBlog> {
           } else {
             if(mounted)
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Failed to submit blog for approval'), backgroundColor: Colors.red),
+              SnackBar(content: Text('Blog Already Submitted'), backgroundColor: Colors.red),
             );
           }
         } else {
