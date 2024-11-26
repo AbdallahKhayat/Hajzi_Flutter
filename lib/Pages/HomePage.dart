@@ -1,8 +1,10 @@
 
+import 'dart:convert';
+
 import 'package:blogapp/Models/profileModel.dart';
 import 'package:blogapp/services/stripe_service.dart';
 import 'package:flutter/material.dart';
-
+import 'package:http/http.dart' as http;
 import '../Blog/addBlog.dart';
 import '../NetworkHandler.dart';
 import '../Requests/RequestsScreen.dart';
@@ -286,6 +288,29 @@ class _HomePageState extends State<HomePage> {
                         data,
                       );
                       if (response.statusCode == 200) {
+                        // Send an email notification
+                        final serviceId = 'service_lap99wb';
+                        final templateId = 'template_d58o7p1';
+                        final userId = 'tPJQRVN9PQ2jjZ_6C';
+                        final url = Uri.parse('https://api.emailjs.com/api/v1.0/email/send');
+
+                        final emailResponse = await http.post(
+                          url,
+                          headers: {
+                            'origin': "http://192.168.88.2:5000",
+                            'Content-Type': 'application/json',
+                          },
+                          body: json.encode({
+                            'service_id': serviceId,
+                            'template_id': templateId,
+                            'user_id': userId,
+                            'template_params': {
+                              'user_name': username,
+                            },
+                          }),
+                        );
+
+                        print("Email Response: ${emailResponse.body}");
                         print("User role updated successfully on server.");
                       } else {
                         print("Failed to update user role on server: Status code ${response.statusCode}");
