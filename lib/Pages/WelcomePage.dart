@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:blogapp/Pages/HomePage.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'EmailSignInPage.dart';
@@ -110,10 +111,11 @@ class _WelcomePageState extends State<WelcomePage>
               const SizedBox(height: 30),
               boxContainer("assets/google.png", "Sign up with Google", null),
               const SizedBox(height: 20),
-              boxContainer(
-                  "assets/Facebook_logo.png", "Sign up with Facebook", onFBLogin),
+              boxContainer("assets/Facebook_logo.png", "Sign up with Facebook",
+                  onFBLogin),
               const SizedBox(height: 20),
-              boxContainer("assets/email.png", "Sign up with Email", onEmailClick),
+              boxContainer(
+                  "assets/email.png", "Sign up with Email", onEmailClick),
               const SizedBox(height: 30),
               SlideTransition(
                 position: animation2,
@@ -178,7 +180,7 @@ class _WelcomePageState extends State<WelcomePage>
 
           setState(() {
             _isLogin = true;
-          //  fbPaypass();
+            //  fbPaypass();
             data = data1;
           });
         }
@@ -193,41 +195,57 @@ class _WelcomePageState extends State<WelcomePage>
         break;
     }
   }
-  Future fbPaypass(){
+
+  Future fbPaypass() {
     return Navigator.of(context).push(MaterialPageRoute(
-        builder: (context) => HomePage(setLocale: widget.setLocale,filterState: 0,)));
+        builder: (context) => HomePage(
+              setLocale: widget.setLocale,
+              filterState: 0,
+            )));
   }
 
   onEmailClick() {
     Navigator.of(context).push(MaterialPageRoute(
-        builder: (context) => EmailSignUpPage(setLocale: widget.setLocale,)));
+        builder: (context) => EmailSignUpPage(
+              setLocale: widget.setLocale,
+            )));
   }
 
   Widget boxContainer(String path, String text, VoidCallback? onClick) {
-    return SlideTransition(
+    return kIsWeb //check if web or not///////////////////////////////////////////
+        ? SlideTransition(
       position: animation2,
       child: InkWell(
         onTap: onClick,
         child: Container(
-          height: 60,
-          width: MediaQuery.of(context).size.width - 120,
+          height: 50, // Reduced height for a sleeker appearance
+          width: 400, // Fixed width for consistency
           child: Card(
+            elevation: 2, // Add subtle elevation for a cleaner design
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8), // Rounded corners
+            ),
             child: Padding(
-              padding:
-              const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10),
+              padding: const EdgeInsets.symmetric(
+                  horizontal: 15.0, vertical: 8), // Adjusted padding
               child: Row(
                 children: [
                   Image.asset(
                     path,
-                    height: 35,
-                    width: 35,
+                    height: 30, // Slightly smaller icon size
+                    width: 30,
                   ),
-                  const SizedBox(width: 20),
-                  Text(
-                    text,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      color: Colors.black87,
+                  const SizedBox(width: 15), // Reduced spacing
+                  Expanded( // Ensure the text doesn't overflow
+                    child: Text(
+                      text,
+                      style: const TextStyle(
+                        fontSize: 14, // Slightly smaller font size
+                        color: Colors.black87,
+                        fontWeight: FontWeight.w500, // Add subtle weight
+                      ),
+                      maxLines: 1, // Limit to a single line
+                      overflow: TextOverflow.ellipsis, // Ellipsis for overflow
                     ),
                   ),
                 ],
@@ -236,6 +254,39 @@ class _WelcomePageState extends State<WelcomePage>
           ),
         ),
       ),
-    );
+    )
+        : SlideTransition(
+            position: animation2,
+            child: InkWell(
+              onTap: onClick,
+              child: Container(
+                height: 60,
+                width: MediaQuery.of(context).size.width - 120,
+                child: Card(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20.0, vertical: 10),
+                    child: Row(
+                      children: [
+                        Image.asset(
+                          path,
+                          height: 35,
+                          width: 35,
+                        ),
+                        const SizedBox(width: 20),
+                        Text(
+                          text,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            color: Colors.black87,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
   }
 }

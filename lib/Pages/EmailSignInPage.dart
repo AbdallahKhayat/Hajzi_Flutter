@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:blogapp/Pages/HomePage.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 
@@ -62,7 +63,10 @@ class _EmailSignInPageState extends State<EmailSignInPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   // App Logo or Icon
-                  Icon(Icons.lock_outline, size: 80, ),
+                  Icon(
+                    Icons.lock_outline,
+                    size: 80,
+                  ),
                   const SizedBox(height: 20),
 
                   // Title
@@ -71,12 +75,13 @@ class _EmailSignInPageState extends State<EmailSignInPage> {
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
-
                     ),
                   ),
                   const Text(
                     "Sign in to continue",
-                    style: TextStyle(fontSize: 16, ),
+                    style: TextStyle(
+                      fontSize: 16,
+                    ),
                   ),
                   const SizedBox(height: 30),
 
@@ -115,7 +120,9 @@ class _EmailSignInPageState extends State<EmailSignInPage> {
                             key: "token", value: output['token']);
 
                         // Store user role
-                        await storage.write(key: "role", value: output['role']); // Store the role
+                        await storage.write(
+                            key: "role",
+                            value: output['role']); // Store the role
 
                         // Load the stored language preference
                         String? storedLanguage =
@@ -141,12 +148,16 @@ class _EmailSignInPageState extends State<EmailSignInPage> {
                               onDone: () {
                                 Navigator.pushReplacement(
                                   context,
-                                  MaterialPageRoute(builder: (context) => HomePage(setLocale: widget.setLocale,filterState: 0,)),
+                                  MaterialPageRoute(
+                                      builder: (context) => HomePage(
+                                            setLocale: widget.setLocale,
+                                            filterState: 0,
+                                          )),
                                 );
                               },
                             ),
                           ),
-                              (route) => false,
+                          (route) => false,
                         );
                       } else {
                         // Handle errors
@@ -182,7 +193,6 @@ class _EmailSignInPageState extends State<EmailSignInPage> {
                             : const Text(
                                 "Sign In",
                                 style: TextStyle(
-
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -194,26 +204,50 @@ class _EmailSignInPageState extends State<EmailSignInPage> {
                   const SizedBox(height: 15),
 
                   // Forgot Password
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: TextButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                ForgotPasswordPage(setLocale: widget.setLocale),
+                  kIsWeb
+                      ? Padding(
+                        padding: const EdgeInsets.only(left:300),
+                        child: Align(
+                            alignment: Alignment.center,
+                            child: TextButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => ForgotPasswordPage(
+                                        setLocale: widget.setLocale),
+                                  ),
+                                );
+                              },
+                              child: const Text(
+                                "Forgot Password?",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
                           ),
-                        );
-                      },
-                      child: const Text(
-                        "Forgot Password?",
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
+                      )
+                      : Align(
+                          alignment: Alignment.centerRight,
+                          child: TextButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => ForgotPasswordPage(
+                                      setLocale: widget.setLocale),
+                                ),
+                              );
+                            },
+                            child: const Text(
+                              "Forgot Password?",
+                              style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                  ),
 
                   const Spacer(),
 
@@ -229,16 +263,16 @@ class _EmailSignInPageState extends State<EmailSignInPage> {
                           Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => EmailSignUpPage(setLocale: widget.setLocale,),
+                              builder: (context) => EmailSignUpPage(
+                                setLocale: widget.setLocale,
+                              ),
                             ),
                           );
                         },
                         child: const Text(
                           "Sign Up",
                           style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.blue
-                          ),
+                              fontWeight: FontWeight.bold, color: Colors.blue),
                         ),
                       ),
                     ],
@@ -254,47 +288,103 @@ class _EmailSignInPageState extends State<EmailSignInPage> {
   }
 
   Widget usernameTextField() {
-    return TextFormField(
-      controller: _usernameController,
-      decoration: InputDecoration(
-        hintText: "Enter your username",
-        filled: true,
-        fillColor: Colors.white.withOpacity(0.9),
-        prefixIcon: const Icon(Icons.person, color: Colors.black),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: Colors.blue, width: 2),
-        ),
-        errorText: validate ? null : errorText,
-      ),
-    );
+    return kIsWeb //web part///////////////
+        ? Center(
+            child: SizedBox(
+              width: 400,
+              child: TextFormField(
+                controller: _usernameController,
+                decoration: InputDecoration(
+                  hintText: "Enter your username",
+                  filled: true,
+                  fillColor: Colors.white.withOpacity(0.9),
+                  prefixIcon: const Icon(Icons.person, color: Colors.black),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8)),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: Colors.blue, width: 2),
+                  ),
+                  errorText: validate ? null : errorText,
+                ),
+              ),
+            ),
+          )
+        : TextFormField(
+            controller: _usernameController,
+            decoration: InputDecoration(
+              hintText: "Enter your username",
+              filled: true,
+              fillColor: Colors.white.withOpacity(0.9),
+              prefixIcon: const Icon(Icons.person, color: Colors.black),
+              border:
+                  OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: const BorderSide(color: Colors.blue, width: 2),
+              ),
+              errorText: validate ? null : errorText,
+            ),
+          );
   }
 
   Widget passwordTextField() {
-    return TextFormField(
-      controller: _passwordController,
-      obscureText: visible,
-      decoration: InputDecoration(
-        hintText: "Enter your password",
-        filled: true,
-        fillColor: Colors.white.withOpacity(0.9),
-        prefixIcon: const Icon(Icons.lock, color: Colors.black),
-        suffixIcon: IconButton(
-          icon: Icon(visible ? Icons.visibility_off : Icons.visibility),
-          onPressed: () {
-            setState(() {
-              visible = !visible;
-            });
-          },
-        ),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: Colors.blue, width: 2),
-        ),
-        errorText: validate ? null : errorText,
-      ),
-    );
+    return kIsWeb //web part///////////////
+        ? Center(
+            child: SizedBox(
+              width: 400,
+              child: TextFormField(
+                controller: _passwordController,
+                obscureText: visible,
+                decoration: InputDecoration(
+                  hintText: "Enter your password",
+                  filled: true,
+                  fillColor: Colors.white.withOpacity(0.9),
+                  prefixIcon: const Icon(Icons.lock, color: Colors.black),
+                  suffixIcon: IconButton(
+                    icon:
+                        Icon(visible ? Icons.visibility_off : Icons.visibility),
+                    onPressed: () {
+                      setState(() {
+                        visible = !visible;
+                      });
+                    },
+                  ),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8)),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: Colors.blue, width: 2),
+                  ),
+                  errorText: validate ? null : errorText,
+                ),
+              ),
+            ),
+          )
+        : TextFormField(
+            controller: _passwordController,
+            obscureText: visible,
+            decoration: InputDecoration(
+              hintText: "Enter your password",
+              filled: true,
+              fillColor: Colors.white.withOpacity(0.9),
+              prefixIcon: const Icon(Icons.lock, color: Colors.black),
+              suffixIcon: IconButton(
+                icon: Icon(visible ? Icons.visibility_off : Icons.visibility),
+                onPressed: () {
+                  setState(() {
+                    visible = !visible;
+                  });
+                },
+              ),
+              border:
+                  OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: const BorderSide(color: Colors.blue, width: 2),
+              ),
+              errorText: validate ? null : errorText,
+            ),
+          );
   }
 }

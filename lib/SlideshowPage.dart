@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class SlideshowPage extends StatefulWidget {
@@ -26,12 +27,14 @@ class _SlideshowPageState extends State<SlideshowPage> {
     },
     {
       "title": "Appoint Now",
-      "description": "After Clicking the Place, Appoint now And enjoy saving time",
+      "description":
+          "After Clicking the Place, Appoint now And enjoy saving time",
       "imagePath": "assets/slide3.png",
     },
     {
       "title": "Achieve More",
-      "description": "Upgrade to Customer to achieve more features like adding your own Place.",
+      "description":
+          "Upgrade to Customer to achieve more features like adding your own Place.",
       "imagePath": "assets/slide4.png",
     },
   ];
@@ -112,7 +115,7 @@ class _SlideshowPageState extends State<SlideshowPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(
                 slides.length,
-                    (index) => buildIndicator(index == _currentPage),
+                (index) => buildIndicator(index == _currentPage),
               ),
             ),
           ),
@@ -132,13 +135,16 @@ class _SlideshowPageState extends State<SlideshowPage> {
                       borderRadius: BorderRadius.circular(30),
                     ),
                     backgroundColor: Colors.teal.shade500, // Button color
-                    padding: const EdgeInsets.symmetric(vertical: 15), // Button padding
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 15), // Button padding
                   ),
                   onPressed: () {
                     widget.onDone(); // Navigate to the next page
                   },
                   child: Text(
-                    _currentPage == slides.length - 1 ? "Finish" : "Get Started",
+                    _currentPage == slides.length - 1
+                        ? "Finish"
+                        : "Get Started",
                     style: const TextStyle(
                       fontSize: 18,
                       color: Colors.white,
@@ -157,23 +163,45 @@ class _SlideshowPageState extends State<SlideshowPage> {
   // Slide page widget
   Widget slidePage(BuildContext context,
       {required String title,
-        required String description,
-        required String imagePath}) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Image.asset(imagePath, width: 170, height: 370, fit: BoxFit.cover),
-        const SizedBox(height: 20),
-        Text(title,
-            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-        const SizedBox(height: 10),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20.0),
-          child: Text(description,
-              textAlign: TextAlign.center, style: const TextStyle(fontSize: 16)),
-        ),
-      ],
-    );
+      required String description,
+      required String imagePath}) {
+    return kIsWeb //web part///////////////////
+        ? Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Image.asset(imagePath,
+                  width: 300, height: 630, fit: BoxFit.cover),
+              const SizedBox(height: 20),
+              Text(title,
+                  style: const TextStyle(
+                      fontSize: 24, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 10),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                child: Text(description,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 16)),
+              ),
+            ],
+          )
+        : Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Image.asset(imagePath,
+                  width: 170, height: 370, fit: BoxFit.cover),
+              const SizedBox(height: 20),
+              Text(title,
+                  style: const TextStyle(
+                      fontSize: 24, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 10),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                child: Text(description,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 16)),
+              ),
+            ],
+          );
   }
 
   // Indicator widget
@@ -190,28 +218,6 @@ class _SlideshowPageState extends State<SlideshowPage> {
     );
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // import 'package:flutter/material.dart';
 //

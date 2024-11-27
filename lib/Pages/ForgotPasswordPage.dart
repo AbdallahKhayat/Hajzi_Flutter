@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:blogapp/Pages/EmailSignInPage.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 
@@ -51,7 +52,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
           key: _globalKey,
           child: Padding(
             padding:
-            const EdgeInsets.symmetric(horizontal: 40.0, vertical: 10.0),
+                const EdgeInsets.symmetric(horizontal: 40.0, vertical: 10.0),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -109,7 +110,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                             setLocale: widget.setLocale, // Pass setLocale
                           ),
                         ),
-                            (route) => route.isFirst,
+                        (route) => route.isFirst,
                       );
                     } else {
                       var output;
@@ -143,11 +144,10 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                       child: circular
                           ? const CircularProgressIndicator()
                           : const Text(
-                        "Update Password",
-                        style: TextStyle(
-                            fontSize: 17,
-                            fontWeight: FontWeight.bold),
-                      ),
+                              "Update Password",
+                              style: TextStyle(
+                                  fontSize: 17, fontWeight: FontWeight.bold),
+                            ),
                     ),
                   ),
                 ),
@@ -160,48 +160,103 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   }
 
   Widget usernameTextField() {
-    return TextFormField(
-      controller: _usernameController,
-      decoration: InputDecoration(
-        hintText: "Enter your username",
-        filled: true,
-        fillColor: Colors.white.withOpacity(0.9),
-        prefixIcon: const Icon(Icons.person, color: Colors.black),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: Colors.blue, width: 2),
-        ),
-        errorText: validate ? null : errorText,
-      ),
-    );
+    return kIsWeb
+        ? Center(
+            child: SizedBox(
+              width: 400,
+              child: TextFormField(
+                controller: _usernameController,
+                decoration: InputDecoration(
+                  hintText: "Enter your username",
+                  filled: true,
+                  fillColor: Colors.white.withOpacity(0.9),
+                  prefixIcon: const Icon(Icons.person, color: Colors.black),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8)),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: Colors.blue, width: 2),
+                  ),
+                  errorText: validate ? null : errorText,
+                ),
+              ),
+            ),
+          )
+        : TextFormField(
+            controller: _usernameController,
+            decoration: InputDecoration(
+              hintText: "Enter your username",
+              filled: true,
+              fillColor: Colors.white.withOpacity(0.9),
+              prefixIcon: const Icon(Icons.person, color: Colors.black),
+              border:
+                  OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: const BorderSide(color: Colors.blue, width: 2),
+              ),
+              errorText: validate ? null : errorText,
+            ),
+          );
   }
 
   Widget passwordTextField() {
-    return TextFormField(
-      controller: _passwordController,
-      obscureText: visible,
-      decoration: InputDecoration(
-        hintText: "Enter your new password",
-        filled: true,
-        fillColor: Colors.white.withOpacity(0.9),
-        prefixIcon: const Icon(Icons.lock, color: Colors.black),
-        suffixIcon: IconButton(
-          icon: Icon(visible ? Icons.visibility_off : Icons.visibility),
-          onPressed: () {
-            setState(() {
-              visible = !visible;
-            });
-          },
-        ),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: Colors.blue, width: 2),
-        ),
-        errorText: validate ? null : errorText,
-      ),
-    );
+    return kIsWeb
+        ? Center(
+            child: SizedBox(
+              width: 400,
+              child: TextFormField(
+                controller: _passwordController,
+                obscureText: visible,
+                decoration: InputDecoration(
+                  hintText: "Enter your new password",
+                  filled: true,
+                  fillColor: Colors.white.withOpacity(0.9),
+                  prefixIcon: const Icon(Icons.lock, color: Colors.black),
+                  suffixIcon: IconButton(
+                    icon:
+                        Icon(visible ? Icons.visibility_off : Icons.visibility),
+                    onPressed: () {
+                      setState(() {
+                        visible = !visible;
+                      });
+                    },
+                  ),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8)),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: Colors.blue, width: 2),
+                  ),
+                  errorText: validate ? null : errorText,
+                ),
+              ),
+            ),
+          )
+        : TextFormField(
+            controller: _passwordController,
+            obscureText: visible,
+            decoration: InputDecoration(
+              hintText: "Enter your new password",
+              filled: true,
+              fillColor: Colors.white.withOpacity(0.9),
+              prefixIcon: const Icon(Icons.lock, color: Colors.black),
+              suffixIcon: IconButton(
+                icon: Icon(visible ? Icons.visibility_off : Icons.visibility),
+                onPressed: () {
+                  setState(() {
+                    visible = !visible;
+                  });
+                },
+              ),
+              border:
+                  OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: const BorderSide(color: Colors.blue, width: 2),
+              ),
+              errorText: validate ? null : errorText,
+            ),
+          );
   }
 }
-

@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:logger/logger.dart';
@@ -9,7 +10,11 @@ import '../SlideshowPage.dart';
 import 'HomePage.dart';
 
 class EmailSignUpPage extends StatefulWidget {
-  const EmailSignUpPage({super.key,required this.setLocale,});
+  const EmailSignUpPage({
+    super.key,
+    required this.setLocale,
+  });
+
   final Function(Locale) setLocale;
 
   @override
@@ -28,7 +33,6 @@ class _EmailSignUpPageState extends State<EmailSignUpPage> {
   bool validate = false;
   bool circular = false;
   String? selectedRole = "user"; // Default role
-
 
   final storage = FlutterSecureStorage();
   var log = Logger();
@@ -53,17 +57,20 @@ class _EmailSignUpPageState extends State<EmailSignUpPage> {
             ),
           ),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 30.0, vertical: 50.0),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 30.0, vertical: 50.0),
             child: Form(
               key: _globalKey,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   // App Logo or Icon
-                  Icon(Icons.person_add_alt_1_outlined, size: 80, ),
+                  Icon(
+                    Icons.person_add_alt_1_outlined,
+                    size: 80,
+                  ),
                   const SizedBox(height: 20),
                   // Role Dropdown
-
 
                   // Title
                   const Text(
@@ -71,12 +78,13 @@ class _EmailSignUpPageState extends State<EmailSignUpPage> {
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
-
                     ),
                   ),
                   const Text(
                     "Sign up to get started",
-                    style: TextStyle(fontSize: 16,),
+                    style: TextStyle(
+                      fontSize: 16,
+                    ),
                   ),
                   const SizedBox(height: 30),
 
@@ -92,8 +100,34 @@ class _EmailSignUpPageState extends State<EmailSignUpPage> {
                   passwordTextField(),
                   const SizedBox(height: 30),
 
+                  kIsWeb? Center( //web part//////////////////////////
+                    child: SizedBox(
+                      width: 400,
+                      child: DropdownButtonFormField<String>(
+                        padding: EdgeInsets.only(bottom: 15),
+                        value: selectedRole,
+                        onChanged: (value) {
+                          setState(() {
+                            selectedRole = value;
+                          });
+                        },
+                        items: [
+                          DropdownMenuItem(value: "user", child: Text("User")),
+                          DropdownMenuItem(
+                              value: "customer", child: Text("Customer")),
+                          DropdownMenuItem(value: "admin", child: Text("Admin")),
+                        ],
+                        decoration: InputDecoration(
+                          labelText: "Select Role",
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ):
                   DropdownButtonFormField<String>(
-                    padding: EdgeInsets.only(bottom:  15),
+                    padding: EdgeInsets.only(bottom: 15),
                     value: selectedRole,
                     onChanged: (value) {
                       setState(() {
@@ -102,28 +136,29 @@ class _EmailSignUpPageState extends State<EmailSignUpPage> {
                     },
                     items: [
                       DropdownMenuItem(value: "user", child: Text("User")),
-                      DropdownMenuItem(value: "customer", child: Text("Customer")),
+                      DropdownMenuItem(
+                          value: "customer", child: Text("Customer")),
                       DropdownMenuItem(value: "admin", child: Text("Admin")),
                     ],
                     decoration: InputDecoration(
                       labelText: "Select Role",
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(8),
                       ),
                     ),
                   ),
 
                   // Sign-Up Button
                   InkWell(
-                    onTap: ()async{
+                    onTap: () async {
                       setState(() {
-                        circular=true;
+                        circular = true;
                       });
                       await checkUser(); //check user first before sending data to Database server
 
-                      if(_globalKey.currentState!.validate() && validate) {
+                      if (_globalKey.currentState!.validate() && validate) {
                         //if validation is successful then send data  to Database server
-                        Map<String, String>data = {
+                        Map<String, String> data = {
                           //username, email,password should be small just like the server
                           "username": _usernameController.text,
                           "email": _emailController.text,
@@ -131,8 +166,8 @@ class _EmailSignUpPageState extends State<EmailSignUpPage> {
                           "role": selectedRole ?? "user",
                         }; // to get the values of textfields as a map
                         print(data);
-                        var response = await networkHandler.post(
-                            "/user/register", data);
+                        var response =
+                            await networkHandler.post("/user/register", data);
 
                         if (response.statusCode == 200 ||
                             response.statusCode == 201) {
@@ -141,74 +176,86 @@ class _EmailSignUpPageState extends State<EmailSignUpPage> {
                             "password": _passwordController.text,
                           };
 
-                          var response = await networkHandler.post(
-                              "/user/login", data);
+                          var response =
+                              await networkHandler.post("/user/login", data);
 
                           if (response.statusCode == 200 ||
                               response.statusCode == 201) {
                             // Successfully logged in
-                            Map<String, dynamic> output = json.decode(
-                                response.body);
+                            Map<String, dynamic> output =
+                                json.decode(response.body);
                             print(output['token']); // Print or store the token
 
-                            await storage.write(key: "token",
-                                value: output['token']); //store token in secure storage after login
+                            await storage.write(
+                                key: "token",
+                                value: output[
+                                    'token']); //store token in secure storage after login
 
-                            await storage.write(key: "role", value: output['role']); // Store the role
+                            await storage.write(
+                                key: "role",
+                                value: output['role']); // Store the role
 
                             setState(() {
                               validate = true;
                               circular = false;
                             });
-                            Navigator
-                                .pushAndRemoveUntil( //remove all the previous pages and you cannot go back to them like login page etc..
+                            Navigator.pushAndRemoveUntil(
+                              //remove all the previous pages and you cannot go back to them like login page etc..
                               context,
                               MaterialPageRoute(
                                 builder: (context) => SlideshowPage(
                                   onDone: () {
                                     Navigator.pushReplacement(
                                       context,
-                                      MaterialPageRoute(builder: (context) => HomePage(setLocale: widget.setLocale,filterState: 0,)),
+                                      MaterialPageRoute(
+                                          builder: (context) => HomePage(
+                                                setLocale: widget.setLocale,
+                                                filterState: 0,
+                                              )),
                                     );
                                   },
                                 ),
                               ),
-                                  (route) => false,);
+                              (route) => false,
+                            );
                           } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text("Something went wrong")));
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                content: Text("Something went wrong")));
                           }
                         }
                         setState(() {
                           circular = false;
                         });
-                      }
-                      else {
+                      } else {
                         setState(() {
                           circular = false;
                         });
                       }
-
                     },
-                    child:circular?CircularProgressIndicator(): Container(
-                      width: 150,
-                      height: 50,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                        gradient: LinearGradient(
-                                 colors: [Colors.teal.shade300, Colors.green.shade300],
-                             ),
-                      ),
-                      child: Center(
-                        child: Text(
-                          "Sign Up",
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                    ),
+                    child: circular
+                        ? CircularProgressIndicator()
+                        : Container(
+                            width: 150,
+                            height: 50,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10),
+                              gradient: LinearGradient(
+                                colors: [
+                                  Colors.teal.shade300,
+                                  Colors.green.shade300
+                                ],
+                              ),
+                            ),
+                            child: Center(
+                              child: Text(
+                                "Sign Up",
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ),
                   ),
                   // InkWell(
                   //   onTap: () async {
@@ -274,7 +321,6 @@ class _EmailSignUpPageState extends State<EmailSignUpPage> {
                     children: [
                       const Text(
                         "Already have an account? ",
-
                       ),
                       GestureDetector(
                         onTap: () {
@@ -308,7 +354,8 @@ class _EmailSignUpPageState extends State<EmailSignUpPage> {
           errorText = "Username can’t be empty";
         });
       } else {
-        var response = await networkHandler.get("/user/checkusername/${_usernameController.text}");
+        var response = await networkHandler
+            .get("/user/checkusername/${_usernameController.text}");
         if (response != null && response['Status'] != null) {
           if (response["Status"]) {
             setState(() {
@@ -341,81 +388,181 @@ class _EmailSignUpPageState extends State<EmailSignUpPage> {
   }
 
   Widget usernameTextField() {
-    return TextFormField(
-      controller: _usernameController,
-      decoration: InputDecoration(
-        hintText: "Enter your username",
-        filled: true,
-        fillColor: Colors.white.withOpacity(0.9),
-        prefixIcon: const Icon(Icons.person, color: Colors.black),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: Colors.blue, width: 2),
-        ),
-        errorText: validate ? null : errorText,
-      ),
-    );
+    return kIsWeb //web part//////////////
+        ? Center(
+            // Center the TextField for a web layout
+            child: SizedBox(
+              width: 400, // Fixed width for a web-friendly size
+              child: TextFormField(
+                controller: _usernameController,
+                decoration: InputDecoration(
+                  hintText: "Enter your username",
+                  hintStyle: TextStyle(
+                    color: Colors.grey.shade600, // Subtle hint text color
+                    fontSize: 14, // Slightly smaller font for a cleaner look
+                  ),
+                  filled: true,
+                  fillColor: Colors.white.withOpacity(0.9),
+                  prefixIcon: const Icon(Icons.person, color: Colors.black),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8), // Softer corners
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: Colors.blue, width: 2),
+                  ),
+                  errorText: validate ? null : errorText,
+                ),
+              ),
+            ),
+          )
+        : TextFormField(
+            controller: _usernameController,
+            decoration: InputDecoration(
+              hintText: "Enter your username",
+              filled: true,
+              fillColor: Colors.white.withOpacity(0.9),
+              prefixIcon: const Icon(Icons.person, color: Colors.black),
+              border:
+                  OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: const BorderSide(color: Colors.blue, width: 2),
+              ),
+              errorText: validate ? null : errorText,
+            ),
+          );
   }
 
   Widget emailTextField() {
-    return TextFormField(
-      controller: _emailController,
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Email can’t be empty!';
-        }
-        if (!value.contains("@")) {
-          return 'Invalid email!';
-        }
-        return null;
-      },
-      decoration: InputDecoration(
-        hintText: "Enter your email",
-        filled: true,
-        fillColor: Colors.white.withOpacity(0.9),
-        prefixIcon: const Icon(Icons.email, color: Colors.black),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: Colors.blue, width: 2),
-        ),
-      ),
-    );
+    return kIsWeb //web part//////////////////
+        ? Center(
+            child: SizedBox(
+              width: 400,
+              child: TextFormField(
+                controller: _emailController,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Email can’t be empty!';
+                  }
+                  if (!value.contains("@")) {
+                    return 'Invalid email!';
+                  }
+                  return null;
+                },
+                decoration: InputDecoration(
+                  hintText: "Enter your email",
+                  filled: true,
+                  fillColor: Colors.white.withOpacity(0.9),
+                  prefixIcon: const Icon(Icons.email, color: Colors.black),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8)),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: Colors.blue, width: 2),
+                  ),
+                ),
+              ),
+            ),
+          )
+        : TextFormField(
+            controller: _emailController,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Email can’t be empty!';
+              }
+              if (!value.contains("@")) {
+                return 'Invalid email!';
+              }
+              return null;
+            },
+            decoration: InputDecoration(
+              hintText: "Enter your email",
+              filled: true,
+              fillColor: Colors.white.withOpacity(0.9),
+              prefixIcon: const Icon(Icons.email, color: Colors.black),
+              border:
+                  OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: const BorderSide(color: Colors.blue, width: 2),
+              ),
+            ),
+          );
   }
 
   Widget passwordTextField() {
-    return TextFormField(
-      controller: _passwordController,
-      obscureText: visible,
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Password can’t be empty!';
-        }
-        if (value.length < 8) {
-          return 'Password must be at least 8 characters!';
-        }
-        return null;
-      },
-      decoration: InputDecoration(
-        hintText: "Enter your password",
-        filled: true,
-        fillColor: Colors.white.withOpacity(0.9),
-        prefixIcon: const Icon(Icons.lock, color: Colors.black),
-        suffixIcon: IconButton(
-          icon: Icon(visible ? Icons.visibility_off : Icons.visibility),
-          onPressed: () {
-            setState(() {
-              visible = !visible;
-            });
-          },
-        ),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: Colors.blue, width: 2),
-        ),
-      ),
-    );
+    return kIsWeb //web part//////////////////
+        ? Center(
+          child: SizedBox(
+             width: 400,
+            child: TextFormField(
+                controller: _passwordController,
+                obscureText: visible,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Password can’t be empty!';
+                  }
+                  if (value.length < 8) {
+                    return 'Password must be at least 8 characters!';
+                  }
+                  return null;
+                },
+                decoration: InputDecoration(
+                  hintText: "Enter your password",
+                  filled: true,
+                  fillColor: Colors.white.withOpacity(0.9),
+                  prefixIcon: const Icon(Icons.lock, color: Colors.black),
+                  suffixIcon: IconButton(
+                    icon: Icon(visible ? Icons.visibility_off : Icons.visibility),
+                    onPressed: () {
+                      setState(() {
+                        visible = !visible;
+                      });
+                    },
+                  ),
+                  border:
+                      OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: Colors.blue, width: 2),
+                  ),
+                ),
+              ),
+          ),
+        )
+        : TextFormField(
+            controller: _passwordController,
+            obscureText: visible,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Password can’t be empty!';
+              }
+              if (value.length < 8) {
+                return 'Password must be at least 8 characters!';
+              }
+              return null;
+            },
+            decoration: InputDecoration(
+              hintText: "Enter your password",
+              filled: true,
+              fillColor: Colors.white.withOpacity(0.9),
+              prefixIcon: const Icon(Icons.lock, color: Colors.black),
+              suffixIcon: IconButton(
+                icon: Icon(visible ? Icons.visibility_off : Icons.visibility),
+                onPressed: () {
+                  setState(() {
+                    visible = !visible;
+                  });
+                },
+              ),
+              border:
+                  OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: const BorderSide(color: Colors.blue, width: 2),
+              ),
+            ),
+          );
   }
 }
