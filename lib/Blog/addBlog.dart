@@ -1,9 +1,9 @@
-
 import 'dart:convert';
 import 'dart:io';
 
 import 'package:blogapp/Models/addBlogModel.dart';
 import 'package:blogapp/Pages/HomePage.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
@@ -83,15 +83,18 @@ class _AddBlogState extends State<AddBlog> {
         actions: [
           TextButton(
             onPressed: () {
-              if (imageFiles.isNotEmpty && _GlobalKey.currentState!.validate()) {
+              if (imageFiles.isNotEmpty &&
+                  _GlobalKey.currentState!.validate()) {
                 // Show preview modal
                 showModalBottomSheet(
                   context: context,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(20)),
                   ),
                   builder: (context) => OverlayCard(
-                    imageFile: imageFiles.first, // Pass the first image for preview
+                    imageFile: imageFiles.first,
+                    // Pass the first image for preview
                     title: _titleController.text,
                   ),
                 );
@@ -113,67 +116,142 @@ class _AddBlogState extends State<AddBlog> {
         child: Form(
           key: _GlobalKey,
           child: SingleChildScrollView(
-            child: Card(
-              elevation: 3,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "Post Title",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                        color: Colors.teal,
-                      ),
-                    ),
-                    SizedBox(height: 10),
-                    DropdownButtonFormField<String>(
-                      value: selectedRole,
-                      onChanged: (value) {
-                        setState(() {
-                          selectedRole = value;
-                        });
-                      },
-                      items: [
-                        DropdownMenuItem(value: "general", child: Text("General")),
-                        DropdownMenuItem(value: "barbershop", child: Text("Barbershop")),
-                        DropdownMenuItem(value: "hospital", child: Text("Hospital")),
-                      ],
-                      decoration: InputDecoration(
-                        labelText: "Select Role",
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
+            child: kIsWeb
+                ? Center(
+                  child: SizedBox(
+                                width: 800,
+                    child: Card(
+                        elevation: 3,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Post Title",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 18,
+                                  color: Colors.teal,
+                                ),
+                              ),
+                              SizedBox(height: 10),
+                              DropdownButtonFormField<String>(
+                                value: selectedRole,
+                                onChanged: (value) {
+                                  setState(() {
+                                    selectedRole = value;
+                                  });
+                                },
+                                items: [
+                                  DropdownMenuItem(
+                                      value: "general", child: Text("General")),
+                                  DropdownMenuItem(
+                                      value: "barbershop",
+                                      child: Text("Barbershop")),
+                                  DropdownMenuItem(
+                                      value: "hospital", child: Text("Hospital")),
+                                ],
+                                decoration: InputDecoration(
+                                  labelText: "Select Role",
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                              ),
+                              SizedBox(height: 10),
+                              titleTextField(),
+                              SizedBox(height: 20),
+                              Text(
+                                "Post Content",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 18,
+                                  color: Colors.teal,
+                                ),
+                              ),
+                              SizedBox(height: 10),
+                              bodyTextField(),
+                              SizedBox(height: 20),
+                              imagePreview(),
+                              SizedBox(height: 30),
+                              Center(
+                                child: addButton(),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
+                  ),
+                )
+                : Card(
+                    elevation: 3,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
                     ),
-                    SizedBox(height: 10),
-                    titleTextField(),
-                    SizedBox(height: 20),
-                    Text(
-                      "Post Content",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                        color: Colors.teal,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Post Title",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                              color: Colors.teal,
+                            ),
+                          ),
+                          SizedBox(height: 10),
+                          DropdownButtonFormField<String>(
+                            value: selectedRole,
+                            onChanged: (value) {
+                              setState(() {
+                                selectedRole = value;
+                              });
+                            },
+                            items: [
+                              DropdownMenuItem(
+                                  value: "general", child: Text("General")),
+                              DropdownMenuItem(
+                                  value: "barbershop",
+                                  child: Text("Barbershop")),
+                              DropdownMenuItem(
+                                  value: "hospital", child: Text("Hospital")),
+                            ],
+                            decoration: InputDecoration(
+                              labelText: "Select Role",
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: 10),
+                          titleTextField(),
+                          SizedBox(height: 20),
+                          Text(
+                            "Post Content",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                              color: Colors.teal,
+                            ),
+                          ),
+                          SizedBox(height: 10),
+                          bodyTextField(),
+                          SizedBox(height: 20),
+                          imagePreview(),
+                          SizedBox(height: 30),
+                          Center(
+                            child: addButton(),
+                          ),
+                        ],
                       ),
                     ),
-                    SizedBox(height: 10),
-                    bodyTextField(),
-                    SizedBox(height: 20),
-                    imagePreview(),
-                    SizedBox(height: 30),
-                    Center(
-                      child: addButton(),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+                  ),
           ),
         ),
       ),
@@ -267,43 +345,44 @@ class _AddBlogState extends State<AddBlog> {
           children: imageFiles
               .map(
                 (image) => Stack(
-              children: [
-                // Display the image
-                Container(
-                  width: 100,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                    image: DecorationImage(
-                      image: FileImage(File(image.path)),
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                ),
-                // Add a delete button on top
-                Positioned(
-                  top: 5,
-                  right: 5,
-                  child: GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        imageFiles.remove(image); // Remove the selected image
-                      });
-                    },
-                    child: CircleAvatar(
-                      radius: 12,
-                      backgroundColor: Colors.red,
-                      child: Icon(
-                        Icons.close,
-                        color: Colors.white,
-                        size: 16,
+                  children: [
+                    // Display the image
+                    Container(
+                      width: 100,
+                      height: 100,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8),
+                        image: DecorationImage(
+                          image: FileImage(File(image.path)),
+                          fit: BoxFit.cover,
+                        ),
                       ),
                     ),
-                  ),
+                    // Add a delete button on top
+                    Positioned(
+                      top: 5,
+                      right: 5,
+                      child: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            imageFiles
+                                .remove(image); // Remove the selected image
+                          });
+                        },
+                        child: CircleAvatar(
+                          radius: 12,
+                          backgroundColor: Colors.red,
+                          child: Icon(
+                            Icons.close,
+                            color: Colors.white,
+                            size: 16,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          )
+              )
               .toList(),
         ),
         if (imageFiles.isEmpty)
@@ -368,7 +447,8 @@ class _AddBlogState extends State<AddBlog> {
 
           print("Email Response: ${emailResponse.body}");
 
-          if (approvalResponse.statusCode == 200 || approvalResponse.statusCode == 201) {
+          if (approvalResponse.statusCode == 200 ||
+              approvalResponse.statusCode == 201) {
             String blogId = json.decode(approvalResponse.body)["data"];
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('Blog submitted for approval!')),
@@ -377,16 +457,21 @@ class _AddBlogState extends State<AddBlog> {
             // Step 4: Periodically check approval status
             String status = "pending";
             while (status == "pending") {
-              await Future.delayed(Duration(seconds: 5)); // Wait before checking
-              var statusResponse = await networkHandler.get("/AddBlogApproval/status/$blogId");
+              await Future.delayed(
+                  Duration(seconds: 5)); // Wait before checking
+              var statusResponse =
+                  await networkHandler.get("/AddBlogApproval/status/$blogId");
 
-              if (statusResponse is Map<String, dynamic> && statusResponse.containsKey("status")) {
+              if (statusResponse is Map<String, dynamic> &&
+                  statusResponse.containsKey("status")) {
                 status = statusResponse["status"];
                 print("Approval Status: $status");
               } else {
                 print("Error checking approval status: $statusResponse");
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Error checking approval status'), backgroundColor: Colors.red),
+                  SnackBar(
+                      content: Text('Error checking approval status'),
+                      backgroundColor: Colors.red),
                 );
                 return;
               }
@@ -403,9 +488,11 @@ class _AddBlogState extends State<AddBlog> {
                 username: addBlogApproval.username,
               );
 
-              var addResponse = await networkHandler.post("/blogpost/Add", addBlogModel.toJson());
+              var addResponse = await networkHandler.post(
+                  "/blogpost/Add", addBlogModel.toJson());
 
-              if (addResponse.statusCode == 200 || addResponse.statusCode == 201) {
+              if (addResponse.statusCode == 200 ||
+                  addResponse.statusCode == 201) {
                 String blogId = json.decode(addResponse.body)["data"];
 
                 // Step 6: Upload multiple images
@@ -415,46 +502,58 @@ class _AddBlogState extends State<AddBlog> {
                     image.path,
                   );
 
-                  if (imageResponse.statusCode != 200 && imageResponse.statusCode != 201) {
-                    if(mounted)
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Failed to upload image: ${image.name}'), backgroundColor: Colors.red),
-                    );
+                  if (imageResponse.statusCode != 200 &&
+                      imageResponse.statusCode != 201) {
+                    if (mounted)
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                            content:
+                                Text('Failed to upload image: ${image.name}'),
+                            backgroundColor: Colors.red),
+                      );
                     return;
                   }
                 }
-                if(mounted)
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Blog approved and published successfully!')),
-                );
-                if(mounted)
-                Navigator.pop(context);
+                if (mounted)
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                        content:
+                            Text('Blog approved and published successfully!')),
+                  );
+                if (mounted) Navigator.pop(context);
               } else {
-                if(mounted)
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Failed to add blog to blogpost schema'), backgroundColor: Colors.red),
-                );
+                if (mounted)
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                        content: Text('Failed to add blog to blogpost schema'),
+                        backgroundColor: Colors.red),
+                  );
               }
             } else {
-              if(mounted)
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Blog was not approved by admin'), backgroundColor: Colors.orange),
-              );
+              if (mounted)
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                      content: Text('Blog was not approved by admin'),
+                      backgroundColor: Colors.orange),
+                );
             }
           } else {
-            if(mounted)
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Blog Already Submitted'), backgroundColor: Colors.red),
-            );
+            if (mounted)
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                    content: Text('Blog Already Submitted'),
+                    backgroundColor: Colors.red),
+              );
           }
         } else {
-          if(mounted)
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Please fill in all fields and select at least one image'),
-              backgroundColor: Colors.orange,
-            ),
-          );
+          if (mounted)
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                    'Please fill in all fields and select at least one image'),
+                backgroundColor: Colors.orange,
+              ),
+            );
         }
       },
       child: Center(
@@ -490,21 +589,6 @@ class _AddBlogState extends State<AddBlog> {
     }
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // import 'dart:convert';
 //

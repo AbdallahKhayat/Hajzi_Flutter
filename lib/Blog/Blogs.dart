@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:blogapp/Blog/BlogAfterClick.dart';
 import 'package:blogapp/Models/ListBlogModel.dart';
@@ -67,23 +68,46 @@ class _BlogsState extends State<Blogs> {
         children: [
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                labelText: 'Search Blogs',
-                border: OutlineInputBorder(),
-                suffixIcon: IconButton(
-                  icon: const Icon(Icons.clear),
-                  onPressed: () {
-                    _searchController.clear();
-                    fetchData(); // Fetch all blogs when cleared
-                  },
-                ),
-              ),
-              onChanged: (value) {
-                fetchData(searchQuery: value); // Update results based on input
-              },
-            ),
+            child: kIsWeb     //Web part//////////////////////
+                ? SizedBox(
+                 width: 1300,
+                  child: TextField(
+                      controller: _searchController,
+                      decoration: InputDecoration(
+                        labelText: 'Search Blogs',
+                        border: OutlineInputBorder(),
+                        suffixIcon: IconButton(
+                          icon: const Icon(Icons.clear),
+                          onPressed: () {
+                            _searchController.clear();
+                            fetchData(); // Fetch all blogs when cleared
+                          },
+                        ),
+                      ),
+                      onChanged: (value) {
+                        fetchData(
+                            searchQuery: value); // Update results based on input
+                      },
+                    ),
+                )
+                : TextField(
+                    controller: _searchController,
+                    decoration: InputDecoration(
+                      labelText: 'Search Blogs',
+                      border: OutlineInputBorder(),
+                      suffixIcon: IconButton(
+                        icon: const Icon(Icons.clear),
+                        onPressed: () {
+                          _searchController.clear();
+                          fetchData(); // Fetch all blogs when cleared
+                        },
+                      ),
+                    ),
+                    onChanged: (value) {
+                      fetchData(
+                          searchQuery: value); // Update results based on input
+                    },
+                  ),
           ),
           if (_isLoading)
             const Center(child: CircularProgressIndicator())
@@ -95,39 +119,41 @@ class _BlogsState extends State<Blogs> {
               ),
             )
           else if (data.isEmpty)
-              const Center(
-                child: Text(
-                  "No Blogs Currently Available",
-                  style: TextStyle(fontSize: 18, color: Colors.red),
-                ),
-              )
-            else
-              ListView.builder(
-                shrinkWrap: true, // Important to avoid unbounded height
-                physics: const NeverScrollableScrollPhysics(), // Disable scrolling for this list
-                itemCount: data.length,
-                itemBuilder: (context, index) {
-                  final blog = data[index];
-                  return InkWell(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => BlogAfterClick(
-                            addBlogModel: blog,
-                            networkHandler: networkHandler,
-                          ),
-                        ),
-                      );
-                    },
-                    child: BlogCard(
-                      addBlogModel: blog,
-                      networkHandler: networkHandler,
-                      onDelete: () => fetchData(),
-                    ),
-                  );
-                },
+            const Center(
+              child: Text(
+                "No Blogs Currently Available",
+                style: TextStyle(fontSize: 18, color: Colors.red),
               ),
+            )
+          else
+            ListView.builder(
+              shrinkWrap: true,
+              // Important to avoid unbounded height
+              physics: const NeverScrollableScrollPhysics(),
+              // Disable scrolling for this list
+              itemCount: data.length,
+              itemBuilder: (context, index) {
+                final blog = data[index];
+                return InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => BlogAfterClick(
+                          addBlogModel: blog,
+                          networkHandler: networkHandler,
+                        ),
+                      ),
+                    );
+                  },
+                  child: BlogCard(
+                    addBlogModel: blog,
+                    networkHandler: networkHandler,
+                    onDelete: () => fetchData(),
+                  ),
+                );
+              },
+            ),
         ],
       ),
     );

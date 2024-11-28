@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:blogapp/Models/profileModel.dart';
 import 'package:blogapp/NetworkHandler.dart';
@@ -93,56 +94,111 @@ class _EditProfileState extends State<EditProfile> {
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Card(
-            elevation: 3,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(15),
-            ),
-            child: Padding(
               padding: const EdgeInsets.all(16.0),
-              child: ListView(
-                shrinkWrap: true,
-                children: [
-                  _buildTextField("Titleline", _titlelineController),
-                  _buildTextField("Name", _nameController),
-                  _buildTextField("Profession", _professionController),
-                  _buildTextField("Date of Birth", _dobController),
-                  _buildTextField(
-                    "About",
-                    _aboutController,
-                    maxLines: 5,
-                  ),
-                  const SizedBox(height: 30),
-                  Center(
-                    child: ElevatedButton(
-                      onPressed: _updateProfile,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.teal,
+              child: Form(
+                key: _formKey,
+                child: kIsWeb
+                    ? Center(
+                      child: SizedBox(
+                                        width: 800,
+                        child: Card(
+                            elevation: 3,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: ListView(
+                                shrinkWrap: true,
+                                children: [
+                                  _buildTextField(
+                                      "Titleline", _titlelineController),
+                                  _buildTextField("Name", _nameController),
+                                  _buildTextField(
+                                      "Profession", _professionController),
+                                  _buildTextField("Date of Birth", _dobController),
+                                  _buildTextField(
+                                    "About",
+                                    _aboutController,
+                                    maxLines: 5,
+                                  ),
+                                  const SizedBox(height: 30),
+                                  Center(
+                                    child: ElevatedButton(
+                                      onPressed: _updateProfile,
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.teal,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(20),
+                                        ),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 40, vertical: 15),
+                                      ),
+                                      child: const Text(
+                                        "Save Changes",
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                      ),
+                    )
+                    : Card(
+                        elevation: 3,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(15),
                         ),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 40, vertical: 15),
-                      ),
-                      child: const Text(
-                        "Save Changes",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: ListView(
+                            shrinkWrap: true,
+                            children: [
+                              _buildTextField(
+                                  "Titleline", _titlelineController),
+                              _buildTextField("Name", _nameController),
+                              _buildTextField(
+                                  "Profession", _professionController),
+                              _buildTextField("Date of Birth", _dobController),
+                              _buildTextField(
+                                "About",
+                                _aboutController,
+                                maxLines: 5,
+                              ),
+                              const SizedBox(height: 30),
+                              Center(
+                                child: ElevatedButton(
+                                  onPressed: _updateProfile,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.teal,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 40, vertical: 15),
+                                  ),
+                                  child: const Text(
+                                    "Save Changes",
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                  ),
-                ],
               ),
             ),
-          ),
-        ),
-      ),
     );
   }
 

@@ -1,8 +1,8 @@
-
 import 'dart:convert';
 
 import 'package:blogapp/Models/profileModel.dart';
 import 'package:blogapp/services/stripe_service.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../Blog/addBlog.dart';
@@ -18,7 +18,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 class HomePage extends StatefulWidget {
   final void Function(Locale) setLocale;
 
-   HomePage({super.key, required this.setLocale,required this.filterState});
+  HomePage({super.key, required this.setLocale, required this.filterState});
 
   int filterState = 0; // Default to "All Posts"
   @override
@@ -50,16 +50,13 @@ class _HomePageState extends State<HomePage> {
 
   List<Widget> widgets = []; // Initialize as an empty list
 
-
   @override
   void initState() {
     super.initState();
     _loadUserRole();
     checkProfile();
 
-
     widgets = [
-
       HomeScreen(filterState: widget.filterState),
       // "All Posts" corresponds to this
       ProfileScreen(),
@@ -167,7 +164,7 @@ class _HomePageState extends State<HomePage> {
       MaterialPageRoute(
         builder: (context) => WelcomePage(setLocale: widget.setLocale),
       ),
-          (route) => false,
+      (route) => false,
     );
   }
 
@@ -209,7 +206,8 @@ class _HomePageState extends State<HomePage> {
                 setState(() {
                   focusedDrawerItem = "All Posts";
                   widget.filterState = 0;
-                  widgets[0] = HomeScreen(filterState: widget.filterState); // Update HomeScreen
+                  widgets[0] = HomeScreen(
+                      filterState: widget.filterState); // Update HomeScreen
                 });
                 Navigator.pop(context);
               },
@@ -222,7 +220,8 @@ class _HomePageState extends State<HomePage> {
                 setState(() {
                   focusedDrawerItem = "BarberShop Posts";
                   widget.filterState = 1;
-                  widgets[0] = HomeScreen(filterState: widget.filterState); // Update HomeScreen
+                  widgets[0] = HomeScreen(
+                      filterState: widget.filterState); // Update HomeScreen
                 });
                 Navigator.pop(context);
               },
@@ -235,7 +234,8 @@ class _HomePageState extends State<HomePage> {
                 setState(() {
                   focusedDrawerItem = "Hospital Posts";
                   widget.filterState = 2;
-                  widgets[0] = HomeScreen(filterState: widget.filterState); // Update HomeScreen
+                  widgets[0] = HomeScreen(
+                      filterState: widget.filterState); // Update HomeScreen
                 });
                 Navigator.pop(context);
               },
@@ -267,7 +267,7 @@ class _HomePageState extends State<HomePage> {
                 _showLanguageDialog(context);
               },
             ),
-            if(userRole=="user")
+            if (userRole == "user")
               ListTile(
                 leading: Icon(Icons.credit_card, color: appColor),
                 title: Text(
@@ -279,7 +279,8 @@ class _HomePageState extends State<HomePage> {
                   print(username);
 
                   // Call the payment method with a callback
-                  await StripeService.instance.makePayment((bool paymentSuccess) async {
+                  await StripeService.instance
+                      .makePayment((bool paymentSuccess) async {
                     if (paymentSuccess) {
                       print("Payment successful. Updating role...");
                       Map<String, dynamic> data = {'role': "customer"};
@@ -292,7 +293,8 @@ class _HomePageState extends State<HomePage> {
                         final serviceId = 'service_lap99wb';
                         final templateId = 'template_d58o7p1';
                         final userId = 'tPJQRVN9PQ2jjZ_6C';
-                        final url = Uri.parse('https://api.emailjs.com/api/v1.0/email/send');
+                        final url = Uri.parse(
+                            'https://api.emailjs.com/api/v1.0/email/send');
 
                         final emailResponse = await http.post(
                           url,
@@ -313,30 +315,35 @@ class _HomePageState extends State<HomePage> {
                         print("Email Response: ${emailResponse.body}");
                         print("User role updated successfully on server.");
                       } else {
-                        print("Failed to update user role on server: Status code ${response.statusCode}");
+                        print(
+                            "Failed to update user role on server: Status code ${response.statusCode}");
                       }
                     } else {
-                      print("Payment failed or was cancelled. Role not updated.");
+                      print(
+                          "Payment failed or was cancelled. Role not updated.");
                     }
                   });
                 },
               ),
-            if(userRole=="customer")
-            ListTile(
-              leading: Icon(Icons.feedback, color: appColor),
-              title: Text(
-                AppLocalizations.of(context)!.feedback,
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+            if (userRole == "customer")
+              ListTile(
+                leading: Icon(Icons.feedback, color: appColor),
+                title: Text(
+                  AppLocalizations.of(context)!.feedback,
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                ),
+                trailing: Icon(Icons.chevron_right, color: Colors.grey),
+                onTap: () {},
               ),
-              trailing: Icon(Icons.chevron_right, color: Colors.grey),
-              onTap: () {},
-            ),
             Divider(thickness: 1, color: Colors.grey.shade400),
             ListTile(
               leading: Icon(Icons.power_settings_new, color: Colors.red),
               title: Text(
                 AppLocalizations.of(context)!.logout,
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.red),
+                style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.red),
               ),
               trailing: Icon(Icons.chevron_right, color: Colors.grey),
               onTap: () {
@@ -349,16 +356,17 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         backgroundColor: appColor,
         title: Text(
-        // titleString[currentState],
+          // titleString[currentState],
 
-            currentState == 0
-                ? AppLocalizations.of(context)!.home
-                : currentState == 1
-                ? AppLocalizations.of(context)!.profile
-                : AppLocalizations.of(context)!.requests, // Assuming "requests" for `currentState == 2`
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-            ),
+          currentState == 0
+              ? AppLocalizations.of(context)!.home
+              : currentState == 1
+                  ? AppLocalizations.of(context)!.profile
+                  : AppLocalizations.of(context)!.requests,
+          // Assuming "requests" for `currentState == 2`
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+          ),
         ),
         centerTitle: true,
         actions: [
@@ -372,15 +380,15 @@ class _HomePageState extends State<HomePage> {
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       floatingActionButton: userRole != "user"
           ? FloatingActionButton(
-        backgroundColor: appColor,
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => AddBlog()),
-          );
-        },
-        child: const Icon(Icons.add, color: Colors.white),
-      )
+              backgroundColor: appColor,
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => AddBlog()),
+                );
+              },
+              child: const Icon(Icons.add, color: Colors.white),
+            )
           : null,
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: currentState,
@@ -418,42 +426,58 @@ class _HomePageState extends State<HomePage> {
     Color? iconColor, // Default null; fallback to appColor
     Color textColor = Colors.black,
   }) {
-    return ListTile(
-      leading: Icon(
-        icon,
-        color: isFocused ? appColor : (iconColor ?? appColor), // Dynamically set the icon color
-      ),
-      title: Text(
-        title,
-        style: TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.w500,
-          color: isFocused ? appColor : textColor,
-        ),
-      ),
-      trailing: isFocused
-          ? Container(width: 5, height: 30, color: appColor) // Highlight focused item
-          : const Icon(Icons.chevron_right, color: Colors.grey),
-      onTap: onTap,
-    );
+    return kIsWeb
+        ? SizedBox(
+         height: 120,
+          child: ListTile(
+              leading: Icon(
+                icon,
+                color: isFocused
+                    ? appColor
+                    : (iconColor ?? appColor), // Dynamically set the icon color
+              ),
+              title: Text(
+                title,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: isFocused ? appColor : textColor,
+                ),
+              ),
+              trailing: isFocused
+                  ? Container(
+                      width: 5,
+                      height: 30,
+                      color: appColor) // Highlight focused item
+                  : const Icon(Icons.chevron_right, color: Colors.grey),
+              onTap: onTap,
+            ),
+        )
+        : ListTile(
+            leading: Icon(
+              icon,
+              color: isFocused
+                  ? appColor
+                  : (iconColor ?? appColor), // Dynamically set the icon color
+            ),
+            title: Text(
+              title,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                color: isFocused ? appColor : textColor,
+              ),
+            ),
+            trailing: isFocused
+                ? Container(
+                    width: 5,
+                    height: 30,
+                    color: appColor) // Highlight focused item
+                : const Icon(Icons.chevron_right, color: Colors.grey),
+            onTap: onTap,
+          );
   }
-
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // import 'package:blogapp/Models/profileModel.dart';
 // import 'package:blogapp/services/stripe_service.dart';
@@ -866,4 +890,3 @@ class _HomePageState extends State<HomePage> {
 //
 //
 // }
-

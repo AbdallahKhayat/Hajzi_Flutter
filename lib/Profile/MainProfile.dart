@@ -1,11 +1,11 @@
 import 'package:blogapp/Models/profileModel.dart';
 import 'package:blogapp/NetworkHandler.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../Blog/Blogs.dart';
 import 'EditProfile.dart';
-
 
 class MainProfile extends StatefulWidget {
   const MainProfile({super.key});
@@ -19,7 +19,7 @@ class _MainProfileState extends State<MainProfile> {
   NetworkHandler networkHandler = NetworkHandler();
   ProfileModel profileModel = ProfileModel();
 
-  final FlutterSecureStorage storage=FlutterSecureStorage();
+  final FlutterSecureStorage storage = FlutterSecureStorage();
   String? userRole;
 
   // Load the user role from secure storage
@@ -40,7 +40,8 @@ class _MainProfileState extends State<MainProfile> {
   void fetchData() async {
     var response = await networkHandler.get("/profile/getData");
     setState(() {
-      profileModel = ProfileModel.fromJson(response["data"]); // Data within 'data'
+      profileModel =
+          ProfileModel.fromJson(response["data"]); // Data within 'data'
       circular = false;
     });
   }
@@ -51,99 +52,100 @@ class _MainProfileState extends State<MainProfile> {
       body: circular
           ? Center(child: CircularProgressIndicator())
           : CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            backgroundColor: Colors.blueAccent,
-            expandedHeight: 200,
-            flexibleSpace: FlexibleSpaceBar(
-              title: Text(
-                profileModel.name ?? "Profile",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
+              slivers: [
+                SliverAppBar(
+                  backgroundColor: Colors.blueAccent,
+                  expandedHeight: 200,
+                  flexibleSpace: FlexibleSpaceBar(
+                    title: Text(
+                      profileModel.name ?? "Profile",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    background: profileModel.username != null
+                        ? Image(
+                            image:
+                                networkHandler.getImage(profileModel.username!)
+                                    as NetworkImage,
+                            fit: BoxFit.cover,
+                          )
+                        : Container(
+                            color: Colors.grey,
+                            child: Center(
+                              child: Text(
+                                "No Image Available",
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ),
+                          ),
+                  ),
+                  actions: [
+                    IconButton(
+                      icon: Icon(Icons.edit),
+                      onPressed: () async {
+                        var updatedData = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                EditProfile(profileModel: profileModel),
+                          ),
+                        );
+                        if (updatedData != null) {
+                          setState(() {
+                            profileModel = ProfileModel.fromJson(updatedData);
+                          });
+                        }
+                      },
+                      color: Colors.white,
+                    ),
+                  ],
                 ),
-              ),
-              background: profileModel.username != null
-                  ? Image(
-                image: networkHandler.getImage(profileModel.username!) as NetworkImage,
-                fit: BoxFit.cover,
-              )
-                  : Container(
-                color: Colors.grey,
-                child: Center(
-                  child: Text(
-                    "No Image Available",
-                    style: TextStyle(color: Colors.white),
+                SliverList(
+                  delegate: SliverChildListDelegate(
+                    [
+                      _buildProfileHeader(context),
+                      Divider(thickness: 1),
+                      _buildInfoCard(
+                        context,
+                        AppLocalizations.of(context)!.about,
+                        profileModel.about ?? "No information available",
+                      ),
+                      _buildInfoCard(
+                        context,
+                        AppLocalizations.of(context)!.name,
+                        profileModel.name ?? "No name provided",
+                      ),
+                      _buildInfoCard(
+                        context,
+                        AppLocalizations.of(context)!.profession,
+                        profileModel.profession ?? "No profession listed",
+                      ),
+                      _buildInfoCard(
+                        context,
+                        AppLocalizations.of(context)!.dob,
+                        profileModel.DOB ?? "No date of birth provided",
+                      ),
+                      Divider(thickness: 1),
+                      if (userRole == "customer")
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          child: Text(
+                            AppLocalizations.of(context)!.myblogs,
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      if (userRole == "customer")
+                        Blogs(url: "/blogpost/getOwnBlog"),
+                    ],
                   ),
                 ),
-              ),
-
-            ),
-            actions: [
-              IconButton(
-                icon: Icon(Icons.edit),
-                onPressed: () async {
-                  var updatedData = await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          EditProfile(profileModel: profileModel),
-                    ),
-                  );
-                  if (updatedData != null) {
-                    setState(() {
-                      profileModel = ProfileModel.fromJson(updatedData);
-                    });
-                  }
-                },
-                color: Colors.white,
-              ),
-            ],
-          ),
-          SliverList(
-            delegate: SliverChildListDelegate(
-              [
-                _buildProfileHeader(context),
-                Divider(thickness: 1),
-                _buildInfoCard(
-                  context,
-                  AppLocalizations.of(context)!.about,
-                  profileModel.about ?? "No information available",
-                ),
-                _buildInfoCard(
-                  context,
-                  AppLocalizations.of(context)!.name,
-                  profileModel.name ?? "No name provided",
-                ),
-                _buildInfoCard(
-                  context,
-                  AppLocalizations.of(context)!.profession,
-                  profileModel.profession ?? "No profession listed",
-                ),
-                _buildInfoCard(
-                  context,
-                  AppLocalizations.of(context)!.dob,
-                  profileModel.DOB ?? "No date of birth provided",
-                ),
-                Divider(thickness: 1),
-                if(userRole=="customer")
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Text(
-                    AppLocalizations.of(context)!.myblogs,
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              if(userRole=="customer")
-                Blogs(url: "/blogpost/getOwnBlog"),
               ],
             ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -185,28 +187,49 @@ class _MainProfileState extends State<MainProfile> {
   }
 
   Widget _buildInfoCard(BuildContext context, String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-      child: Card(
-        elevation: 1,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: ListTile(
-          title: Text(
-            label,
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          ),
-          subtitle: Text(
-            value,
-            style: TextStyle(fontSize: 14, color: Colors.grey.shade700),
-          ),
-        ),
-      ),
-    );
+    return kIsWeb
+        ? Padding(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 300, vertical: 8.0),
+            child: Card(
+              elevation: 1,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: ListTile(
+                title: Text(
+                  label,
+                  style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+                ),
+                subtitle: Text(
+                  value,
+                  style: TextStyle(fontSize: 27, color: Colors.grey.shade700),
+                ),
+              ),
+            ),
+          )
+        : Padding(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            child: Card(
+              elevation: 1,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: ListTile(
+                title: Text(
+                  label,
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                subtitle: Text(
+                  value,
+                  style: TextStyle(fontSize: 14, color: Colors.grey.shade700),
+                ),
+              ),
+            ),
+          );
   }
 }
-
 
 // return Scaffold(
 // appBar: AppBar(
