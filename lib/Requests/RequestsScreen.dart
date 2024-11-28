@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:blogapp/Models/addBlogApproval.dart';
 import 'package:blogapp/NetworkHandler.dart';
@@ -140,90 +141,187 @@ class _RequestsScreenState extends State<RequestsScreen> {
                   itemCount: filteredRequests.length,
                   itemBuilder: (context, index) {
                     final blog = filteredRequests[index];
-                    return Card(
-                      margin: const EdgeInsets.symmetric(
-                          horizontal: 15, vertical: 10),
-                      elevation: 3,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              blog.title ?? "Untitled Blog",
-                              style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.teal,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              blog.body ?? "No content available",
-                              maxLines: 3,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                color: Colors.black87,
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                ElevatedButton.icon(
-                                  onPressed: () =>
-                                      updateBlogStatus(blog.id!, "approved"),
-                                  icon: const Icon(
-                                    Icons.check,
-                                    color: Colors.black,
-                                  ),
-                                  label: const Text(
-                                    "Approve",
-                                    style: TextStyle(
-                                      color: Colors.black,
-                                    ),
-                                  ),
-                                  style: ElevatedButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 20, vertical: 12),
-                                    backgroundColor: Colors.green,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(20),
-                                    ),
+                    return kIsWeb
+                        ? Center(
+                          child: SizedBox(
+                            width: 650,
+                           // height: 200,
+                            child: Card(
+                                margin: const EdgeInsets.symmetric(
+                                    horizontal: 15, vertical: 10),
+                                elevation: 3,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(15),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        blog.title ?? "Untitled Blog",
+                                        style: const TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.teal,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        blog.body ?? "No content available",
+                                        maxLines: 3,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          color: Colors.black87,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 12),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          ElevatedButton.icon(
+                                            onPressed: () => updateBlogStatus(
+                                                blog.id!, "approved"),
+                                            icon: const Icon(
+                                              Icons.check,
+                                              color: Colors.black,
+                                            ),
+                                            label: const Text(
+                                              "Approve",
+                                              style: TextStyle(
+                                                color: Colors.black,
+                                              ),
+                                            ),
+                                            style: ElevatedButton.styleFrom(
+                                              padding: const EdgeInsets.symmetric(
+                                                  horizontal: 20, vertical: 12),
+                                              backgroundColor: Colors.green,
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(20),
+                                              ),
+                                            ),
+                                          ),
+                                          ElevatedButton.icon(
+                                            onPressed: () => updateBlogStatus(
+                                                blog.id!, "rejected"),
+                                            icon: const Icon(
+                                              Icons.cancel,
+                                              color: Colors.black,
+                                            ),
+                                            label: const Text(
+                                              "Deny",
+                                              style: TextStyle(
+                                                color: Colors.black,
+                                              ),
+                                            ),
+                                            style: ElevatedButton.styleFrom(
+                                              padding: const EdgeInsets.symmetric(
+                                                  horizontal: 20, vertical: 12),
+                                              backgroundColor: Colors.red,
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(20),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
                                   ),
                                 ),
-                                ElevatedButton.icon(
-                                  onPressed: () =>
-                                      updateBlogStatus(blog.id!, "rejected"),
-                                  icon: const Icon(
-                                    Icons.cancel,
-                                    color: Colors.black,
-                                  ),
-                                  label: const Text(
-                                    "Deny",
-                                    style: TextStyle(
-                                      color: Colors.black,
-                                    ),
-                                  ),
-                                  style: ElevatedButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 20, vertical: 12),
-                                    backgroundColor: Colors.red,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(20),
-                                    ),
-                                  ),
-                                ),
-                              ],
+                              ),
+                          ),
+                        )
+                        : Card(
+                            margin: const EdgeInsets.symmetric(
+                                horizontal: 15, vertical: 10),
+                            elevation: 3,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15),
                             ),
-                          ],
-                        ),
-                      ),
-                    );
+                            child: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    blog.title ?? "Untitled Blog",
+                                    style: const TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.teal,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    blog.body ?? "No content available",
+                                    maxLines: 3,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      ElevatedButton.icon(
+                                        onPressed: () => updateBlogStatus(
+                                            blog.id!, "approved"),
+                                        icon: const Icon(
+                                          Icons.check,
+                                          color: Colors.black,
+                                        ),
+                                        label: const Text(
+                                          "Approve",
+                                          style: TextStyle(
+                                            color: Colors.black,
+                                          ),
+                                        ),
+                                        style: ElevatedButton.styleFrom(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 20, vertical: 12),
+                                          backgroundColor: Colors.green,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(20),
+                                          ),
+                                        ),
+                                      ),
+                                      ElevatedButton.icon(
+                                        onPressed: () => updateBlogStatus(
+                                            blog.id!, "rejected"),
+                                        icon: const Icon(
+                                          Icons.cancel,
+                                          color: Colors.black,
+                                        ),
+                                        label: const Text(
+                                          "Deny",
+                                          style: TextStyle(
+                                            color: Colors.black,
+                                          ),
+                                        ),
+                                        style: ElevatedButton.styleFrom(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 20, vertical: 12),
+                                          backgroundColor: Colors.red,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(20),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
                   },
                 ),
     );
