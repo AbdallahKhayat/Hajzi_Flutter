@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -7,6 +8,7 @@ import 'package:logger/logger.dart';
 
 import '../NetworkHandler.dart';
 import '../SlideshowPage.dart';
+import 'CheckVerificationPage.dart';
 import 'HomePage.dart';
 
 class EmailSignUpPage extends StatefulWidget {
@@ -154,78 +156,70 @@ class _EmailSignUpPageState extends State<EmailSignUpPage> {
                       setState(() {
                         circular = true;
                       });
-                      await checkUser(); //check user first before sending data to Database server
+
+                      await checkUser(); // Check if the username already exists
 
                       if (_globalKey.currentState!.validate() && validate) {
-                        //if validation is successful then send data  to Database server
-                        Map<String, String> data = {
-                          //username, email,password should be small just like the server
-                          "username": _usernameController.text,
-                          "email": _emailController.text,
-                          "password": _passwordController.text,
-                          "role": selectedRole ?? "user",
-                        }; // to get the values of textfields as a map
-                        print(data);
-                        var response =
-                            await networkHandler.post("/user/register", data);
+                        try {
+                          // Step 1: Create the user with Firebase
+                          UserCredential userCredential = await FirebaseAuth.instance
+                              .createUserWithEmailAndPassword(
+                            email: _emailController.text,
+                            password: _passwordController.text,
+                          );
 
-                        if (response.statusCode == 200 ||
-                            response.statusCode == 201) {
-                          Map<String, dynamic> data = {
+                          // Step 2: Send email verification
+                          await userCredential.user!.sendEmailVerification();
+
+                          // Step 3: Send user data to backend for registration and token generation
+                          Map<String, String> data = {
                             "username": _usernameController.text,
-                            "password": _passwordController.text,
+                            "email": _emailController.text,
+                            "password": _passwordController.text, // Optionally hashed on backend
+                            "role": selectedRole ?? "user",
                           };
 
-                          var response =
-                              await networkHandler.post("/user/login", data);
+                          // Use NetworkHandler to make the backend request
+                          var response = await networkHandler.post("/user/register", data);
 
-                          if (response.statusCode == 200 ||
-                              response.statusCode == 201) {
-                            // Successfully logged in
-                            Map<String, dynamic> output =
-                                json.decode(response.body);
-                            print(output['token']); // Print or store the token
+                          print("Raw response: ${response.body}");
+                          if (response.statusCode == 200 || response.statusCode == 201) {
+                            // Decode the response and retrieve the JWT token
+                            var responseData = json.decode(response.body);
+                            String jwtToken = responseData["token"]; // Ensure the token key matches your backend response
 
-                            await storage.write(
-                                key: "token",
-                                value: output[
-                                    'token']); //store token in secure storage after login
+                            // Store the JWT token in secure storage
+                            await storage.write(key: "token", value: jwtToken);
 
-                            await storage.write(
-                                key: "role",
-                                value: output['role']); // Store the role
+                            // Show a success message
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text("Verification email sent! Please verify your email before logging in."),
+                              ),
+                            );
 
-                            setState(() {
-                              validate = true;
-                              circular = false;
-                            });
-                            Navigator.pushAndRemoveUntil(
-                              //remove all the previous pages and you cannot go back to them like login page etc..
+                            // Navigate to CheckVerificationPage or login screen
+                            Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => SlideshowPage(
-                                  onDone: () {
-                                    Navigator.pushReplacement(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) => HomePage(
-                                                setLocale: widget.setLocale,
-                                                filterState: 0,
-                                              )),
-                                    );
-                                  },
+                                builder: (context) => CheckVerificationPage(
+                                  setLocale: widget.setLocale,
                                 ),
                               ),
-                              (route) => false,
                             );
                           } else {
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                content: Text("Something went wrong")));
+                            throw Exception("Failed to register user on the backend");
                           }
+                        } catch (e) {
+                          log.e("Sign-up error: $e");
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text("Sign-up failed: $e")),
+                          );
+                        } finally {
+                          setState(() {
+                            circular = false;
+                          });
                         }
-                        setState(() {
-                          circular = false;
-                        });
                       } else {
                         setState(() {
                           circular = false;

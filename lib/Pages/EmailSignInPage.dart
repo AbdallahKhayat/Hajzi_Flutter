@@ -25,7 +25,7 @@ class _EmailSignInPageState extends State<EmailSignInPage> {
   bool visible = true; // Password visibility toggle
   final _globalKey = GlobalKey<FormState>();
   NetworkHandler networkHandler = NetworkHandler();
-
+  TextEditingController _emailController = TextEditingController();
   TextEditingController _usernameController = TextEditingController();
   TextEditingController _passwordController = TextEditingController();
 
@@ -99,81 +99,98 @@ class _EmailSignInPageState extends State<EmailSignInPage> {
                   InkWell(
                     onTap: () async {
                       setState(() {
-                        circular = true;
+                        circular = true; // Show progress indicator
                       });
 
+                      // Prepare login data
                       Map<String, dynamic> data = {
                         "username": _usernameController.text,
                         "password": _passwordController.text,
                       };
 
-                      var response =
-                          await networkHandler.post("/user/login", data);
+                      try {
+                        // Send login request to backend
+                        var response = await networkHandler.post("/user/login", data);
 
-                      if (response.statusCode == 200 ||
-                          response.statusCode == 201) {
-                        // Successful login
-                        Map<String, dynamic> output =
-                            json.decode(response.body);
+                        // Log response details for debugging
+                        print("Login response code: ${response.statusCode}");
+                        print("Login response body: ${response.body}");
 
-                        await storage.write(
-                            key: "token", value: output['token']);
+                        if (response.statusCode == 200 || response.statusCode == 201) {
+                          // Decode response to extract the token
+                          Map<String, dynamic> output = json.decode(response.body);
 
-                        // Store user role
-                        await storage.write(
-                            key: "role",
-                            value: output['role']); // Store the role
+                          if (output.containsKey('token')) {
+                            String jwtToken = output['token'];
 
-                        // Load the stored language preference
-                        String? storedLanguage =
-                            await storage.read(key: "language");
+                            // Store the JWT token in secure storage
+                            await storage.write(key: "token", value: jwtToken);
 
-                        // Update the locale if stored
-                        if (storedLanguage != null) {
-                          Locale newLocale = storedLanguage == "Arabic"
-                              ? Locale('ar', 'AE')
-                              : Locale('en', 'US');
-                          widget.setLocale(newLocale);
-                        }
+                            // Store user role if available
+                            if (output.containsKey('role')) {
+                              await storage.write(key: "role", value: output['role']);
+                            }
 
-                        setState(() {
-                          validate = true;
-                          circular = false;
-                        });
+                            // Load the stored language preference
+                            String? storedLanguage = await storage.read(key: "language");
 
-                        Navigator.pushAndRemoveUntil(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => SlideshowPage(
-                              onDone: () {
-                                Navigator.pushReplacement(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => HomePage(
+                            // Update the locale if stored
+                            if (storedLanguage != null) {
+                              Locale newLocale = storedLanguage == "Arabic"
+                                  ? Locale('ar', 'AE')
+                                  : Locale('en', 'US');
+                              widget.setLocale(newLocale);
+                            }
+
+                            setState(() {
+                              circular = false;
+                            });
+
+                            // Navigate to SlideshowPage or HomePage
+                            Navigator.pushAndRemoveUntil(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => SlideshowPage(
+                                  onDone: () {
+                                    Navigator.pushReplacement(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) => HomePage(
                                             setLocale: widget.setLocale,
                                             filterState: 0,
                                           )),
-                                );
-                              },
-                            ),
-                          ),
-                          (route) => false,
-                        );
-                      } else {
-                        // Handle errors
-                        var output;
-                        try {
-                          output = json.decode(response.body);
-                          errorText = output is Map && output.containsKey('msg')
-                              ? output['msg']
-                              : output.toString();
-                        } catch (e) {
-                          errorText = 'An unknown error occurred';
+                                    );
+                                  },
+                                ),
+                              ),
+                                  (route) => false,
+                            );
+                          } else {
+                            throw Exception("Token not found in the response");
+                          }
+                        } else {
+                          // Handle unsuccessful login attempts
+                          var output;
+                          try {
+                            output = json.decode(response.body);
+                            errorText = output is Map && output.containsKey('msg')
+                                ? output['msg']
+                                : output.toString();
+                          } catch (e) {
+                            errorText = 'An unknown error occurred';
+                          }
+                          setState(() {
+                            circular = false;
+                            validate = false;
+                          });
                         }
-
+                      } catch (e) {
+                        // Handle network or other errors
+                        print("Login error: $e");
                         setState(() {
-                          validate = false;
+                          errorText = "Login failed. Please try again.";
                           circular = false;
+                          validate = false;
                         });
                       }
                     },
@@ -326,6 +343,32 @@ class _EmailSignInPageState extends State<EmailSignInPage> {
               errorText: validate ? null : errorText,
             ),
           );
+  }
+  Widget emailTextField() {
+    return TextFormField(
+      controller: _emailController,
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Email can’t be empty!';
+        }
+        if (!value.contains("@")) {
+          return 'Invalid email!';
+        }
+        return null;
+      },
+      decoration: InputDecoration(
+        hintText: "Enter your email",
+        filled: true,
+        fillColor: Colors.white.withOpacity(0.9),
+        prefixIcon: const Icon(Icons.email, color: Colors.black),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: Colors.blue, width: 2),
+        ),
+        errorText: errorText,
+      ),
+    );
   }
 
   Widget passwordTextField() {

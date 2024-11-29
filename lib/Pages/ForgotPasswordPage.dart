@@ -23,6 +23,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   NetworkHandler networkHandler = NetworkHandler();
 
   TextEditingController _usernameController = TextEditingController();
+  TextEditingController _emailController = TextEditingController();
   TextEditingController _passwordController = TextEditingController();
   String? errorText;
   bool validate = false;
@@ -75,7 +76,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                 const SizedBox(
                   height: 20,
                 ),
-                usernameTextField(),
+                emailTextField(),
                 const SizedBox(
                   height: 15,
                 ),
@@ -90,12 +91,12 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                     });
 
                     Map<String, dynamic> data = {
-                      "username": _usernameController.text,
+                      "email": _emailController.text,
                       "password": _passwordController.text,
                     };
 
                     var response = await networkHandler.patch(
-                        "/user/update/${data["username"]}", data);
+                        "/user/update/${data["email"]}", data);
 
                     if (response.statusCode == 200 ||
                         response.statusCode == 201) {
@@ -183,9 +184,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
             ),
           )
         : TextFormField(
-            controller: _usernameController,
+            controller: _emailController,
             decoration: InputDecoration(
-              hintText: "Enter your username",
+              hintText: "Enter your email",
               filled: true,
               fillColor: Colors.white.withOpacity(0.9),
               prefixIcon: const Icon(Icons.person, color: Colors.black),
@@ -200,6 +201,62 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
           );
   }
 
+  Widget emailTextField() {
+    return kIsWeb //web part//////////////////
+        ? Center(
+      child: SizedBox(
+        width: 400,
+        child: TextFormField(
+          controller: _emailController,
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Email can’t be empty!';
+            }
+            if (!value.contains("@")) {
+              return 'Invalid email!';
+            }
+            return null;
+          },
+          decoration: InputDecoration(
+            hintText: "Enter your email",
+            filled: true,
+            fillColor: Colors.white.withOpacity(0.9),
+            prefixIcon: const Icon(Icons.email, color: Colors.black),
+            border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8)),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: Colors.blue, width: 2),
+            ),
+          ),
+        ),
+      ),
+    )
+        : TextFormField(
+      controller: _emailController,
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Email can’t be empty!';
+        }
+        if (!value.contains("@")) {
+          return 'Invalid email!';
+        }
+        return null;
+      },
+      decoration: InputDecoration(
+        hintText: "Enter your email",
+        filled: true,
+        fillColor: Colors.white.withOpacity(0.9),
+        prefixIcon: const Icon(Icons.email, color: Colors.black),
+        border:
+        OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: Colors.blue, width: 2),
+        ),
+      ),
+    );
+  }
   Widget passwordTextField() {
     return kIsWeb
         ? Center(

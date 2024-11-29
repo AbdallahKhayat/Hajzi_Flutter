@@ -1,4 +1,5 @@
 import 'package:blogapp/NetworkHandler.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'CreateProfile.dart';
@@ -24,7 +25,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   void checkProfile() async {
     var response = await networkHandler.get("/profile/checkProfile");
-    if (response["Status"]==true) {//if status is true (200)
+    if (response["Status"] == true) {
+      //if status is true (200)
       setState(() {
         page = MainProfile();
       });
@@ -55,15 +57,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
-          Text(
-            "Tap the button below to add your profile data",
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Colors.teal,
-              fontSize: 18,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
+          kIsWeb
+              ? Center(
+                  child: Text(
+                    "Tap the button below to add your profile data",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.teal,
+                      fontSize: 30,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                )
+              : Text(
+                  "Tap the button below to add your profile data",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.teal,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
           const SizedBox(height: 30),
           ElevatedButton(
             onPressed: () {
@@ -81,14 +95,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
               shadowColor: Colors.teal.withOpacity(0.5),
               elevation: 8,
             ),
-            child: const Text(
-              "Add Profile",
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+            child: kIsWeb
+                ? const Text(
+                    "Add Profile",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 30,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  )
+                : const Text(
+                    "Add Profile",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
           ),
         ],
       ),

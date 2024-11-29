@@ -9,12 +9,38 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-
+import 'package:firebase_core/firebase_core.dart';
 import 'consts.dart'; // Generated localization files
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await _setup(); // Initialize only on supported platforms
+  if (kIsWeb) {
+    await Firebase.initializeApp(
+      options: FirebaseOptions(
+          apiKey: "AIzaSyA8EyZx4Q_06JLRcqrvXwHPMXGVrWfjDUM",
+          authDomain: "hajzi-d17f3.firebaseapp.com",
+          projectId: "hajzi-d17f3",
+          storageBucket: "hajzi-d17f3.firebasestorage.app",
+          messagingSenderId: "69302017569",
+          appId: "1:69302017569:web:4ebe55d616c90317664d60"),
+    );
+  }else{
+    try {
+      await Firebase.initializeApp(
+        options: FirebaseOptions(
+          apiKey: "AIzaSyA8ue9-ZxpTqBhqER6b39WYNBG5H4llADQ",
+          appId: "1:69302017569:android:224fc05a679f67e2664d60",
+          messagingSenderId: "69302017569",
+          projectId: "hajzi-d17f3",
+        ),
+      );
+      print("Firebase initialized successfully");
+    }catch(e,stacktrace){
+      print("Firebase initialization error: $e");
+      print("Stacktrace: $stacktrace");
+    }
+  }
   runApp(const MyApp());
 }
 
@@ -32,13 +58,13 @@ Future<void> _setup() async {
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
-
   @override
   State<MyApp> createState() => _MyAppState();
 }
 
 class _MyAppState extends State<MyApp> {
-  Widget page = const Center(child: CircularProgressIndicator()); // default page value
+  Widget page =
+      const Center(child: CircularProgressIndicator()); // default page value
   final storage = FlutterSecureStorage();
   Locale _locale = const Locale('en', 'US'); // Default locale
 
@@ -113,29 +139,6 @@ class _MyAppState extends State<MyApp> {
     );
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // import 'package:blogapp/Blog/addBlog.dart';
 // import 'package:blogapp/Profile/MainProfile.dart';
