@@ -430,7 +430,7 @@ class _AddBlogState extends State<AddBlog> {
           final emailResponse = await http.post(
             url,
             headers: {
-              'origin': "http://192.168.88.7:5000",
+              'origin': "http://192.168.88.4:5000",
               'Content-Type': 'application/json',
             },
             body: json.encode({
