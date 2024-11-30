@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import '../SlideshowPage.dart';
 import 'HomePage.dart';
 
 class CheckVerificationPage extends StatefulWidget {
@@ -30,9 +31,23 @@ class _CheckVerificationPageState extends State<CheckVerificationPage> {
 
     // If verified, navigate to the homepage
     if (isVerified) {
-      Navigator.pushReplacement(
+      Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (context) => HomePage(setLocale: widget.setLocale,filterState: 0,)),
+        MaterialPageRoute(
+          builder: (context) => SlideshowPage(
+            onDone: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => HomePage(
+                      setLocale: widget.setLocale,
+                      filterState: 0,
+                    )),
+              );
+            },
+          ),
+        ),
+            (route) => false,
       );
     }
   }

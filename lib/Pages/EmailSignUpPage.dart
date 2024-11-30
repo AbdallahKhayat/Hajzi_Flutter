@@ -190,7 +190,7 @@ class _EmailSignUpPageState extends State<EmailSignUpPage> {
 
                             // Store the JWT token in secure storage
                             await storage.write(key: "token", value: jwtToken);
-
+                            await storage.write(key: "role", value: selectedRole);
                             // Show a success message
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
