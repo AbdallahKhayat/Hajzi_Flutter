@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:blogapp/Models/profileModel.dart';
+import 'package:blogapp/Screen/chatscreen.dart';
 import 'package:blogapp/services/stripe_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -60,6 +61,7 @@ class _HomePageState extends State<HomePage> {
       HomeScreen(filterState: widget.filterState),
       // "All Posts" corresponds to this
       ProfileScreen(),
+      ChatScreen(),
       RequestsScreen(),
     ];
   }
@@ -362,7 +364,9 @@ class _HomePageState extends State<HomePage> {
               ? AppLocalizations.of(context)!.home
               : currentState == 1
                   ? AppLocalizations.of(context)!.profile
-                  : AppLocalizations.of(context)!.requests,
+                  : currentState==2
+                  ?AppLocalizations.of(context)!.chat
+                  :AppLocalizations.of(context)!.requests,
           // Assuming "requests" for `currentState == 2`
           style: const TextStyle(
             fontWeight: FontWeight.bold,
@@ -394,7 +398,8 @@ class _HomePageState extends State<HomePage> {
         currentIndex: currentState,
         selectedItemColor: Colors.white,
         unselectedItemColor: Colors.black,
-        backgroundColor: appColor,
+        backgroundColor: appColor ,
+        type: BottomNavigationBarType.fixed, // Ensure proper layout for 4 or more items
         items: [
           BottomNavigationBarItem(
             icon: const Icon(Icons.home),
@@ -403,6 +408,10 @@ class _HomePageState extends State<HomePage> {
           BottomNavigationBarItem(
             icon: const Icon(Icons.person),
             label: AppLocalizations.of(context)!.profile,
+          ),
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.chat),
+            label: AppLocalizations.of(context)!.chat,
           ),
           if (userRole == "admin")
             BottomNavigationBarItem(

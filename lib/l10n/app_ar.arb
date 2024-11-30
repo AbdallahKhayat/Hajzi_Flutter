@@ -21,5 +21,6 @@
   "customer":"صاحب محل",
 
   "barberShopPosts": "محلات الحلاقة",
-  "hospitalPosts": "المستشفيات"
+  "hospitalPosts": "المستشفيات",
+  "chat" : "محادثة"
 }

@@ -20,6 +20,7 @@
   "requests": "Requests",
   "customer":"Customer",
   "barberShopPosts": "BarberShop Posts",
-  "hospitalPosts": "Hospital Posts"
+  "hospitalPosts": "Hospital Posts",
+  "chat" : "Chat"
 
 }
