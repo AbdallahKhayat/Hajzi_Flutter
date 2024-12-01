@@ -16,6 +16,9 @@ import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'WelcomePage.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
+import 'package:blogapp/constants.dart';
+
+
 class HomePage extends StatefulWidget {
   final void Function(Locale) setLocale;
 
@@ -36,7 +39,7 @@ class _HomePageState extends State<HomePage> {
   String username = "";
   String? userRole;
 
-  Color appColor = Colors.teal; // Default app theme color
+  //Color appColor = Colors.teal; // Default app theme color
   String selectedLanguage = "English";
 
   Widget profilePhoto = Container(
