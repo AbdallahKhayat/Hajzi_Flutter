@@ -19,50 +19,53 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
   }
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Hajzi Chats"),
-        actions: [
-          IconButton(icon: Icon(Icons.search), onPressed: () {},),
-          PopupMenuButton<String>(
-              onSelected: (value){
-               // print(value);
-              },
-              itemBuilder: (BuildContext context){
-            return [
-              PopupMenuItem(child: Text("New group"), value: "New group",),
-              PopupMenuItem(child: Text("New broadcast"), value: "New broadcast",),
-              PopupMenuItem(child: Text("Hajzi web"), value: "Hajzi web",),
-              PopupMenuItem(child: Text("Starred messages"), value: "Starred messages",),
-              PopupMenuItem(child: Text("Settings"), value: "Settings",),
-            ];
-          })
-        ],
-        bottom: TabBar(
-          controller: _controller,
-          indicatorColor: appColor,
-          tabs: [
-            Tab(
-              icon: Icon(Icons.camera_alt),
+    return ValueListenableBuilder<Color>(
+      valueListenable: appColorNotifier,
+      builder: (context, appColor, child) {
+        return Scaffold(
+          appBar: AppBar(
+            backgroundColor: appColor,
+            title: const Text("Hajzi Chats", style: TextStyle(color: Colors.white)),
+            actions: [
+              IconButton(icon: Icon(Icons.search), color: Colors.white, onPressed: () {}),
+              PopupMenuButton<String>(
+                icon: Icon(Icons.more_vert, color: Colors.white),
+                onSelected: (value) {},
+                itemBuilder: (BuildContext context) {
+                  return const [
+                    PopupMenuItem(value: "New group", child: Text("New group")),
+                    PopupMenuItem(value: "New broadcast", child: Text("New broadcast")),
+                    PopupMenuItem(value: "Hajzi web", child: Text("Hajzi web")),
+                    PopupMenuItem(value: "Starred messages", child: Text("Starred messages")),
+                    PopupMenuItem(value: "Settings", child: Text("Settings")),
+                  ];
+                },
+              )
+            ],
+            bottom: TabBar(
+              controller: _controller,
+              indicatorColor: Colors.white,
+              labelColor: Colors.white,
+              unselectedLabelColor: Colors.white70,
+              tabs: const [
+                Tab(icon: Icon(Icons.camera_alt)),
+                Tab(text: "CHATS"),
+                Tab(text: "STATUS"),
+                Tab(text: "CALLS"),
+              ],
             ),
-            Tab(
-              text: "CHATS",
-            ),
-            Tab(
-              text: "STATUS",
-            ),
-            Tab(text: "CALLS",),
-          ],
-        ),
-      ),
-      body: TabBarView(
-        controller: _controller,
-        children: [
-        Text("Camera"),
-        ChatPage(),
-        Text("Status"),
-        Text("Calls"),
-      ],),
+          ),
+          body: TabBarView(
+            controller: _controller,
+            children: const [
+              Text("Camera"),
+              Text("Chats"),
+              Text("Status"),
+              Text("Calls"),
+            ],
+          ),
+        );
+      },
     );
   }
 }
