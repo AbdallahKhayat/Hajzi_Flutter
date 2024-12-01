@@ -1,37 +1,82 @@
 import 'dart:convert';
-
-import 'package:blogapp/Pages/EmailSignInPage.dart';
-import 'package:flutter/foundation.dart';
+import 'package:blogapp/NetworkHandler.dart';
 import 'package:flutter/material.dart';
-import 'package:logger/logger.dart';
+import 'package:http/http.dart' as http;
 
-import '../NetworkHandler.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'EmailSignInPage.dart';
 
 class ForgotPasswordPage extends StatefulWidget {
-  final Function(Locale locale) setLocale; // Add this parameter
+  final Function(Locale locale) setLocale;
 
-  const ForgotPasswordPage({super.key, required this.setLocale});
+  const ForgotPasswordPage({Key? key, required this.setLocale})
+      : super(key: key);
 
   @override
   State<ForgotPasswordPage> createState() => _ForgotPasswordPageState();
 }
 
 class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
-  bool visible = true;
   final _globalKey = GlobalKey<FormState>();
-  NetworkHandler networkHandler = NetworkHandler();
-
-  TextEditingController _usernameController = TextEditingController();
-  TextEditingController _emailController = TextEditingController();
-  TextEditingController _passwordController = TextEditingController();
-  String? errorText;
-  bool validate = false;
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  bool visible = true;
   bool circular = false;
+  String? errorText;
+NetworkHandler networkHandler=NetworkHandler();
+  Future<void> sendVerificationEmail(String email) async {
+    final serviceId = 'service_8eg3t9i'; // Replace with your EmailJS Service ID
+    final templateId = 'template_xcrzqrq'; // Replace with your EmailJS Template ID
+    final userId = '3QhZNOXQgjXaKjDRk'; // Replace with your EmailJS User ID
 
-  final storage = FlutterSecureStorage();
+    final url = Uri.parse('https://api.emailjs.com/api/v1.0/email/send');
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json','origin': 'http://localhost'},
+      body: json.encode({
+        'service_id': serviceId,
+        'template_id': templateId,
+        'user_id': userId,
+        'template_params': {
+          'from_name':"Hajzi Team",
+          'to_name': email, // Matches your template parameter
+          'to_email': email, // Matches your template parameter
+          'reset_link': 'http://192.168.88.2:5000/user/verify/$email',
+        },
+      }),
+    );
 
-  var log = Logger();
+    if (response.statusCode == 200) {
+      print('Verification email sent successfully!');
+    } else {
+      throw Exception('Failed to send email: ${response.body}');
+    }
+  }
+
+  Future<bool> isVerified(String email) async {
+    final response = await networkHandler.get2E('/user/isVerified/$email', requireAuth: false);
+
+    print("Raw Response from /isVerified: $response");
+
+    if (response != null && response['verified'] != null) {
+      print("Verification status from response: ${response['verified']}");
+      return response['verified'] == true;
+    } else {
+      print("Unexpected response: $response");
+      throw Exception('Failed to fetch verification status');
+    }
+  }
+
+  Future<void> updatePassword(String email, String password) async {
+    final response = await networkHandler.patch2E(
+      '/user/update/$email',
+      {'password': password},
+      requireAuth: false
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to update password');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,10 +84,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [
-              Colors.white,
-              Colors.green[200]!,
-            ],
+            colors: [Colors.white, Colors.green[200]!],
             begin: const FractionalOffset(0.0, 1.0),
             end: const FractionalOffset(0.0, 1.0),
             stops: [0.0, 1.0],
@@ -52,8 +94,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
         child: Form(
           key: _globalKey,
           child: Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 40.0, vertical: 10.0),
+            padding: const EdgeInsets.symmetric(horizontal: 40.0, vertical: 10.0),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -65,73 +106,85 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                     letterSpacing: 2,
                   ),
                 ),
-                const SizedBox(
-                  height: 20,
-                ),
+                const SizedBox(height: 20),
                 const Icon(
-                  Icons.key, // Key icon for visual representation
+                  Icons.key,
                   size: 60,
                   color: Colors.black,
                 ),
-                const SizedBox(
-                  height: 20,
-                ),
+                const SizedBox(height: 20),
                 emailTextField(),
-                const SizedBox(
-                  height: 15,
-                ),
+                const SizedBox(height: 15),
                 passwordTextField(),
-                const SizedBox(
-                  height: 20,
-                ),
+                const SizedBox(height: 20),
                 InkWell(
                   onTap: () async {
-                    setState(() {
-                      circular = true;
-                    });
-
-                    Map<String, dynamic> data = {
-                      "email": _emailController.text,
-                      "password": _passwordController.text,
-                    };
-
-                    var response = await networkHandler.patch(
-                        "/user/update/${data["email"]}", data);
-
-                    if (response.statusCode == 200 ||
-                        response.statusCode == 201) {
+                    if (_globalKey.currentState!.validate()) {
                       setState(() {
-                        validate = true;
-                        circular = false;
+                        circular = true;
                       });
-                      Navigator.pushAndRemoveUntil(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => EmailSignInPage(
-                            setLocale: widget.setLocale, // Pass setLocale
-                          ),
-                        ),
-                        (route) => route.isFirst,
-                      );
-                    } else {
-                      var output;
+
                       try {
-                        output = json.decode(response.body);
-                        if (output is Map && output.containsKey('msg')) {
-                          errorText = output['msg'];
-                        } else if (output is String) {
-                          errorText = output;
+                        // Check if the user is already verified
+                        bool verified = await isVerified(_emailController.text);
+
+                        print(verified);
+
+                        if (verified==true) {
+                          // If already verified, directly update the password
+                          try {
+                            await updatePassword(
+                              _emailController.text,
+                              _passwordController.text,
+                            );
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Password updated successfully!'),
+                              ),
+                            );
+
+                            // Navigate to EmailSignInPage
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => EmailSignInPage(
+                                  setLocale: widget.setLocale, // Pass setLocale if required
+                                ),
+                              ),
+                            );
+                          } catch (e) {
+                            setState(() {
+                              errorText = e.toString();
+                            });
+                          }
+                        } else {
+                          // If not verified, send the verification email
+                          try {
+                            await sendVerificationEmail(_emailController.text);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Verification email sent! Please check your inbox.'),
+                              ),
+                            );
+                          } catch (e) {
+                            setState(() {
+                              errorText = e.toString();
+                            });
+                          }
                         }
                       } catch (e) {
-                        errorText = 'An unknown error occurred';
+                        setState(() {
+                          errorText = e.toString();
+                        });
+                      } finally {
+                        setState(() {
+                          circular = false;
+                        });
                       }
-
-                      setState(() {
-                        validate = false;
-                        circular = false;
-                      });
                     }
                   },
+
+
                   child: Container(
                     width: 170,
                     height: 50,
@@ -145,10 +198,10 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                       child: circular
                           ? const CircularProgressIndicator()
                           : const Text(
-                              "Update Password",
-                              style: TextStyle(
-                                  fontSize: 17, fontWeight: FontWeight.bold),
-                            ),
+                        "Update Password",
+                        style: TextStyle(
+                            fontSize: 17, fontWeight: FontWeight.bold),
+                      ),
                     ),
                   ),
                 ),
@@ -160,79 +213,8 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     );
   }
 
-  Widget usernameTextField() {
-    return kIsWeb
-        ? Center(
-            child: SizedBox(
-              width: 400,
-              child: TextFormField(
-                controller: _usernameController,
-                decoration: InputDecoration(
-                  hintText: "Enter your username",
-                  filled: true,
-                  fillColor: Colors.white.withOpacity(0.9),
-                  prefixIcon: const Icon(Icons.person, color: Colors.black),
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8)),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: Colors.blue, width: 2),
-                  ),
-                  errorText: validate ? null : errorText,
-                ),
-              ),
-            ),
-          )
-        : TextFormField(
-            controller: _emailController,
-            decoration: InputDecoration(
-              hintText: "Enter your email",
-              filled: true,
-              fillColor: Colors.white.withOpacity(0.9),
-              prefixIcon: const Icon(Icons.person, color: Colors.black),
-              border:
-                  OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: Colors.blue, width: 2),
-              ),
-              errorText: validate ? null : errorText,
-            ),
-          );
-  }
-
   Widget emailTextField() {
-    return kIsWeb //web part//////////////////
-        ? Center(
-      child: SizedBox(
-        width: 400,
-        child: TextFormField(
-          controller: _emailController,
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'Email can’t be empty!';
-            }
-            if (!value.contains("@")) {
-              return 'Invalid email!';
-            }
-            return null;
-          },
-          decoration: InputDecoration(
-            hintText: "Enter your email",
-            filled: true,
-            fillColor: Colors.white.withOpacity(0.9),
-            prefixIcon: const Icon(Icons.email, color: Colors.black),
-            border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8)),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Colors.blue, width: 2),
-            ),
-          ),
-        ),
-      ),
-    )
-        : TextFormField(
+    return TextFormField(
       controller: _emailController,
       validator: (value) {
         if (value == null || value.isEmpty) {
@@ -248,8 +230,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
         filled: true,
         fillColor: Colors.white.withOpacity(0.9),
         prefixIcon: const Icon(Icons.email, color: Colors.black),
-        border:
-        OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
           borderSide: const BorderSide(color: Colors.blue, width: 2),
@@ -257,63 +238,30 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
       ),
     );
   }
+
   Widget passwordTextField() {
-    return kIsWeb
-        ? Center(
-            child: SizedBox(
-              width: 400,
-              child: TextFormField(
-                controller: _passwordController,
-                obscureText: visible,
-                decoration: InputDecoration(
-                  hintText: "Enter your new password",
-                  filled: true,
-                  fillColor: Colors.white.withOpacity(0.9),
-                  prefixIcon: const Icon(Icons.lock, color: Colors.black),
-                  suffixIcon: IconButton(
-                    icon:
-                        Icon(visible ? Icons.visibility_off : Icons.visibility),
-                    onPressed: () {
-                      setState(() {
-                        visible = !visible;
-                      });
-                    },
-                  ),
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8)),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: Colors.blue, width: 2),
-                  ),
-                  errorText: validate ? null : errorText,
-                ),
-              ),
-            ),
-          )
-        : TextFormField(
-            controller: _passwordController,
-            obscureText: visible,
-            decoration: InputDecoration(
-              hintText: "Enter your new password",
-              filled: true,
-              fillColor: Colors.white.withOpacity(0.9),
-              prefixIcon: const Icon(Icons.lock, color: Colors.black),
-              suffixIcon: IconButton(
-                icon: Icon(visible ? Icons.visibility_off : Icons.visibility),
-                onPressed: () {
-                  setState(() {
-                    visible = !visible;
-                  });
-                },
-              ),
-              border:
-                  OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: Colors.blue, width: 2),
-              ),
-              errorText: validate ? null : errorText,
-            ),
-          );
+    return TextFormField(
+      controller: _passwordController,
+      obscureText: visible,
+      decoration: InputDecoration(
+        hintText: "Enter your new password",
+        filled: true,
+        fillColor: Colors.white.withOpacity(0.9),
+        prefixIcon: const Icon(Icons.lock, color: Colors.black),
+        suffixIcon: IconButton(
+          icon: Icon(visible ? Icons.visibility_off : Icons.visibility),
+          onPressed: () {
+            setState(() {
+              visible = !visible;
+            });
+          },
+        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: Colors.blue, width: 2),
+        ),
+      ),
+    );
   }
 }

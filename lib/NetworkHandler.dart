@@ -9,7 +9,7 @@ import 'package:logger/logger.dart';
 
 class NetworkHandler{
 
-  String baseurl = "http://192.168.88.4:5000";
+  String baseurl = "http://192.168.88.2:5000";
  // String baseurl = "https://flutter-sign-up-production.up.railway.app";
 
   var log = Logger();
@@ -32,6 +32,65 @@ class NetworkHandler{
       return {'Status': false}; // Return a map with Status false if there's an error
     }
   }
+
+  Future<dynamic> get2E(String url, {bool requireAuth = true}) async {
+    String? token = requireAuth ? await storage.read(key: "token") : null;
+    url = formater(url);
+    var uri = Uri.parse(url);
+    var headers = {
+      "Content-Type": "application/json",
+    };
+
+    // Add Authorization header only if token is available and required
+    if (requireAuth && token != null) {
+      headers["Authorization"] = "Bearer $token";
+    }
+
+    print("GET Request to URL: $uri");
+    print("Headers: $headers");
+
+    var response = await http.get(uri, headers: headers);
+
+    print("Response Status: ${response.statusCode}");
+    print("Response Body: ${response.body}");
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return json.decode(response.body);
+    } else {
+      return {'Status': false}; // Return a map with Status false if there's an error
+    }
+  }
+
+  Future<http.Response> patch2E(String url, Map<String, dynamic> body, {bool requireAuth = true}) async {
+    url = formater(url);
+    var uri = Uri.parse(url);
+    String? token = requireAuth ? await storage.read(key: "token") : null;
+
+    var headers = {
+      "Content-Type": "application/json",
+    };
+
+    // Add Authorization header only if a token is available and required
+    if (requireAuth && token != null) {
+      headers["Authorization"] = "Bearer $token";
+    }
+
+    print("PATCH Request to URL: $uri");
+    print("Headers: $headers");
+    print("Body: ${json.encode(body)}");
+
+    var response = await http.patch(
+      uri,
+      headers: headers,
+      body: json.encode(body),
+    );
+
+    print("Response Status: ${response.statusCode}");
+    print("Response Body: ${response.body}");
+
+    return response;
+  }
+
 
   Future post2(String endpoint, Map<String, dynamic> data, {Map<String, String>? headers}) async {
     try {
@@ -166,6 +225,7 @@ class NetworkHandler{
     );
     return response;
   }
+
 
 
   String formater(String url){
