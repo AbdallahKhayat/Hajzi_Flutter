@@ -10,6 +10,14 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold();
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("whatsapp clone"),
+        actions: [
+          IconButton(icon: Icon(Icons.search), onPressed: () {},),
+          IconButton(icon: Icon(Icons.more_vert), onPressed: () {},)
+        ],
+      ),
+    );
   }
 }
