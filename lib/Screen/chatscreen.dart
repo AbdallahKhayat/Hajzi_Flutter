@@ -59,7 +59,7 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
             controller: _controller,
             children: const [
               Text("Camera"),
-              Text("Chats"),
+              ChatPage(),
               Text("Status"),
               Text("Calls"),
             ],
