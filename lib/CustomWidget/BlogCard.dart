@@ -5,17 +5,19 @@ import '../Models/addBlogModel.dart';
 import '../NetworkHandler.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
+import '../Screen/editshopscreen.dart';
+
 class BlogCard extends StatefulWidget {
   BlogCard(
       {super.key,
       required this.addBlogModel,
       required this.networkHandler,
-      required this.onDelete});
+      required this.onDelete,required this.flag});
 
   final AddBlogModel addBlogModel;
   final NetworkHandler networkHandler;
   final VoidCallback onDelete;
-
+ final int flag;
   @override
   State<BlogCard> createState() => _BlogCardState();
 }
@@ -165,7 +167,15 @@ class _BlogCardState extends State<BlogCard> {
                         ),
                       ),
                     ),
-
+                    Positioned(
+                      top: 16,
+                      left: 16,
+                      right: 16,
+                      child: IconButton(
+                        onPressed: () {},
+                        icon: Icon(Icons.edit, color: Colors.teal.shade200,size: 50,),
+                      ),
+                    )
                     // Optional Add: Blog Details Button (can be removed)
                   ],
                 ),
@@ -281,6 +291,26 @@ class _BlogCardState extends State<BlogCard> {
                         ),
                       ),
                     ),
+                    if(widget.flag==1)
+                    if (userRole == "customer")
+                    Positioned(
+                      top: 5, // Spacing from the top edge
+                      right: 3,
+                      child: IconButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => EditShopScreen(
+                                addBlogModel: widget.addBlogModel,
+                                networkHandler: widget.networkHandler,
+                              ),
+                            ),
+                          );
+                        },
+                        icon: Icon(Icons.edit, color: Colors.teal.shade200,size: 40,),
+                      ),
+                    )
 
                     // Optional Add: Blog Details Button (can be removed)
                   ],

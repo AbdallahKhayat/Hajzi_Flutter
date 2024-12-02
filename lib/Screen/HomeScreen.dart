@@ -58,8 +58,9 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: const Color(0xffe9f7ef),
       body: Blogs(
-        key: ValueKey(widget.filterState), // Enforce rebuild on filterState change
+        key: ValueKey(widget.filterState,), // Enforce rebuild on filterState change
         url: _getUrlForFilterState(),
+        flag: 0,
       ),
     );
   }

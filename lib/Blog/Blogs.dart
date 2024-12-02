@@ -8,8 +8,8 @@ import '../CustomWidget/BlogCard.dart';
 
 class Blogs extends StatefulWidget {
   final String url;
-
-  const Blogs({super.key, required this.url});
+  final int flag;
+  const Blogs({super.key, required this.url,required this.flag});
 
   @override
   State<Blogs> createState() => _BlogsState();
@@ -90,7 +90,7 @@ class _BlogsState extends State<Blogs> {
                       },
                     ),
                 )
-                : TextField(
+                : widget.flag==0? TextField(
                     controller: _searchController,
                     decoration: InputDecoration(
                       labelText: 'Search Blogs',
@@ -107,7 +107,7 @@ class _BlogsState extends State<Blogs> {
                       fetchData(
                           searchQuery: value); // Update results based on input
                     },
-                  ),
+                  ):null,
           ),
           if (_isLoading)
             const Center(child: CircularProgressIndicator())
@@ -150,6 +150,7 @@ class _BlogsState extends State<Blogs> {
                     addBlogModel: blog,
                     networkHandler: networkHandler,
                     onDelete: () => fetchData(),
+                    flag: widget.flag,
                   ),
                 );
               },

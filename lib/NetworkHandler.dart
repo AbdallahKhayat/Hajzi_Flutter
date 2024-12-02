@@ -10,6 +10,7 @@ import 'package:logger/logger.dart';
 class NetworkHandler{
 
   String baseurl = "http://192.168.88.2:5000";
+  String baseurl2="http://192.168.88.2:5000/";
  // String baseurl = "https://flutter-sign-up-production.up.railway.app";
 
   var log = Logger();
@@ -159,6 +160,25 @@ class NetworkHandler{
     }
   }
 
+  Future<dynamic> delete2(String url, {Map<String, String>? headers, String? body}) async {
+    String? token = await storage.read(key: "token");
+
+    // Merge additional headers if provided
+    final combinedHeaders = {
+      "Authorization": "Bearer $token",
+      "Content-Type": "application/json", // Ensure JSON content type
+      if (headers != null) ...headers,
+    };
+
+    final response = await http.delete(
+      Uri.parse(baseurl + url),
+      headers: combinedHeaders,
+      body: body, // Add support for request body
+    );
+
+    // Return decoded response
+    return json.decode(response.body);
+  }
 
 
   Future<http.Response> post(String url, Map<String, dynamic> body) async {
@@ -230,6 +250,10 @@ class NetworkHandler{
 
   String formater(String url){
     return baseurl+url;
+  }
+
+  String formater2(String url){
+    return baseurl2+url;
   }
 
   // Check if the current user has liked the blog post

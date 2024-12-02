@@ -128,19 +128,19 @@ class _MainProfileState extends State<MainProfile> {
                         profileModel.DOB ?? "No date of birth provided",
                       ),
                       Divider(thickness: 1),
-                      if (userRole == "customer")
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                          child: Text(
-                            AppLocalizations.of(context)!.myblogs,
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      if (userRole == "customer")
-                        Blogs(url: "/blogpost/getOwnBlog"),
+                      // if (userRole == "customer")
+                      //   Padding(
+                      //     padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      //     child: Text(
+                      //       AppLocalizations.of(context)!.myblogs,
+                      //       style: TextStyle(
+                      //         fontSize: 18,
+                      //         fontWeight: FontWeight.bold,
+                      //       ),
+                      //     ),
+                      //   ),
+                      // if (userRole == "customer")
+                      //   Blogs(url: "/blogpost/getOwnBlog"),
                     ],
                   ),
                 ),
