@@ -13,11 +13,11 @@ import '../Screen/HomeScreen.dart';
 import '../Profile/ProfileScreen.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+import '../Screen/shopsscreen.dart';
 import 'WelcomePage.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import 'package:blogapp/constants.dart';
-
 
 class HomePage extends StatefulWidget {
   final void Function(Locale) setLocale;
@@ -65,6 +65,7 @@ class _HomePageState extends State<HomePage> {
       // "All Posts" corresponds to this
       ProfileScreen(),
       ChatScreen(),
+      ShopsScreen(),
       RequestsScreen(),
     ];
   }
@@ -175,264 +176,302 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+
+    // Dynamically create widgets based on userRole
+    List<Widget> visibleWidgets = [
+      HomeScreen(filterState: widget.filterState),
+      ProfileScreen(),
+      ChatScreen(),
+    ];
+
+    if (userRole == "customer") {
+      visibleWidgets.add(ShopsScreen());
+    } else if (userRole == "admin") {
+      visibleWidgets.add(RequestsScreen());
+    }
+
+    // Dynamically create nav items based on userRole
+    List<BottomNavigationBarItem> navItems = [
+      BottomNavigationBarItem(
+        icon: const Icon(Icons.home),
+        label: AppLocalizations.of(context)!.home,
+      ),
+      BottomNavigationBarItem(
+        icon: const Icon(Icons.person),
+        label: AppLocalizations.of(context)!.profile,
+      ),
+      BottomNavigationBarItem(
+        icon: const Icon(Icons.chat),
+        label: AppLocalizations.of(context)!.chat,
+      ),
+    ];
+
+    if (userRole == "customer") {
+      navItems.add(BottomNavigationBarItem(
+        icon: const Icon(Icons.shop_two),
+        label: AppLocalizations.of(context)!.myshops,
+      ));
+    } else if (userRole == "admin") {
+      navItems.add(BottomNavigationBarItem(
+        icon: const Icon(Icons.add_business),
+        label: AppLocalizations.of(context)!.requests,
+      ));
+    }
+
+    // Ensure currentState does not exceed visibleWidgets length
+    if (currentState >= visibleWidgets.length) {
+      currentState = 0; // Reset to HomeScreen if out of bounds
+    }
+
     return ValueListenableBuilder<Color>(
-      valueListenable: appColorNotifier,
+        valueListenable: appColorNotifier,
         builder: (context, appColor, child) {
-      return Scaffold(
-        drawer: Drawer(
-          child: ListView(
-            children: [
-              DrawerHeader(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [appColor.withOpacity(0.8), appColor],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    profilePhoto,
-                    const SizedBox(height: 10),
-                    Text(
-                      '@$username',
-                      style: const TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+          return Scaffold(
+            drawer: Drawer(
+              child: ListView(
+                children: [
+                  DrawerHeader(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [appColor.withOpacity(0.8), appColor],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
                       ),
                     ),
-                  ],
-                ),
-              ),
-              _drawerItem(
-                title: AppLocalizations.of(context)!.allposts,
-                icon: Icons.launch,
-                isFocused: focusedDrawerItem == "All Posts",
-                onTap: () {
-                  setState(() {
-                    focusedDrawerItem = "All Posts";
-                    widget.filterState = 0;
-                    widgets[0] = HomeScreen(
-                        filterState: widget.filterState); // Update HomeScreen
-                  });
-                  Navigator.pop(context);
-                },
-              ),
-              _drawerItem(
-                title: AppLocalizations.of(context)!.barberShopPosts,
-                icon: Icons.content_cut,
-                isFocused: focusedDrawerItem == "BarberShop Posts",
-                onTap: () {
-                  setState(() {
-                    focusedDrawerItem = "BarberShop Posts";
-                    widget.filterState = 1;
-                    widgets[0] = HomeScreen(
-                        filterState: widget.filterState); // Update HomeScreen
-                  });
-                  Navigator.pop(context);
-                },
-              ),
-              _drawerItem(
-                title: AppLocalizations.of(context)!.hospitalPosts,
-                icon: Icons.local_hospital,
-                isFocused: focusedDrawerItem == "Hospital Posts",
-                onTap: () {
-                  setState(() {
-                    focusedDrawerItem = "Hospital Posts";
-                    widget.filterState = 2;
-                    widgets[0] = HomeScreen(
-                        filterState: widget.filterState); // Update HomeScreen
-                  });
-                  Navigator.pop(context);
-                },
-              ),
-              _drawerItem(
-                title: AppLocalizations.of(context)!.newstory,
-                icon: Icons.add,
-                isFocused: focusedDrawerItem == "New Story",
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => AddBlog()),
-                  );
-                },
-              ),
-              _drawerItem(
-                title: AppLocalizations.of(context)!.settings,
-                icon: Icons.settings,
-                isFocused: focusedDrawerItem == "Settings",
-                onTap: () {
-                  pickColor(context);
-                },
-              ),
-              _drawerItem(
-                title: AppLocalizations.of(context)!.changelanguage,
-                icon: Icons.language,
-                isFocused: focusedDrawerItem == "Change Language",
-                onTap: () {
-                  _showLanguageDialog(context);
-                },
-              ),
-              if (userRole == "user")
-                ListTile(
-                  leading: Icon(Icons.credit_card, color: appColor),
-                  title: Text(
-                    AppLocalizations.of(context)!.customer,
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        profilePhoto,
+                        const SizedBox(height: 10),
+                        Text(
+                          '@$username',
+                          style: const TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  trailing: Icon(Icons.chevron_right, color: Colors.grey),
-                  onTap: () async {
-                    print(username);
-
-                    // Call the payment method with a callback
-                    await StripeService.instance
-                        .makePayment((bool paymentSuccess) async {
-                      if (paymentSuccess) {
-                        print("Payment successful. Updating role...");
-                        Map<String, dynamic> data = {'role': "customer"};
-                        var response = await networkHandler.patch(
-                          "/user/updateRole/$username",
-                          data,
-                        );
-                        if (response.statusCode == 200) {
-                          // Send an email notification
-                          final serviceId = 'service_lap99wb';
-                          final templateId = 'template_d58o7p1';
-                          final userId = 'tPJQRVN9PQ2jjZ_6C';
-                          final url = Uri.parse(
-                              'https://api.emailjs.com/api/v1.0/email/send');
-
-                          final emailResponse = await http.post(
-                            url,
-                            headers: {
-                              'origin': "http://192.168.88.4:5000",
-                              'Content-Type': 'application/json',
-                            },
-                            body: json.encode({
-                              'service_id': serviceId,
-                              'template_id': templateId,
-                              'user_id': userId,
-                              'template_params': {
-                                'user_name': username,
-                              },
-                            }),
-                          );
-
-                          print("Email Response: ${emailResponse.body}");
-                          print("User role updated successfully on server.");
-                        } else {
-                          print(
-                              "Failed to update user role on server: Status code ${response.statusCode}");
-                        }
-                      } else {
-                        print(
-                            "Payment failed or was cancelled. Role not updated.");
-                      }
-                    });
-                  },
-                ),
-              if (userRole == "customer")
-                ListTile(
-                  leading: Icon(Icons.feedback, color: appColor),
-                  title: Text(
-                    AppLocalizations.of(context)!.feedback,
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                  _drawerItem(
+                    title: AppLocalizations.of(context)!.allposts,
+                    icon: Icons.launch,
+                    isFocused: focusedDrawerItem == "All Posts",
+                    onTap: () {
+                      setState(() {
+                        focusedDrawerItem = "All Posts";
+                        widget.filterState = 0;
+                        widgets[0] = HomeScreen(
+                            filterState:
+                                widget.filterState); // Update HomeScreen
+                      });
+                      Navigator.pop(context);
+                    },
                   ),
-                  trailing: Icon(Icons.chevron_right, color: Colors.grey),
-                  onTap: () {},
-                ),
-              Divider(thickness: 1, color: Colors.grey.shade400),
-              ListTile(
-                leading: Icon(Icons.power_settings_new, color: Colors.red),
-                title: Text(
-                  AppLocalizations.of(context)!.logout,
-                  style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.red),
-                ),
-                trailing: Icon(Icons.chevron_right, color: Colors.grey),
-                onTap: () {
-                  logout();
-                },
-              ),
-            ],
-          ),
-        ),
-        appBar: AppBar(
-          backgroundColor: appColor,
-          title: Text(
-            // titleString[currentState],
+                  _drawerItem(
+                    title: AppLocalizations.of(context)!.barberShopPosts,
+                    icon: Icons.content_cut,
+                    isFocused: focusedDrawerItem == "BarberShop Posts",
+                    onTap: () {
+                      setState(() {
+                        focusedDrawerItem = "BarberShop Posts";
+                        widget.filterState = 1;
+                        widgets[0] = HomeScreen(
+                            filterState:
+                                widget.filterState); // Update HomeScreen
+                      });
+                      Navigator.pop(context);
+                    },
+                  ),
+                  _drawerItem(
+                    title: AppLocalizations.of(context)!.hospitalPosts,
+                    icon: Icons.local_hospital,
+                    isFocused: focusedDrawerItem == "Hospital Posts",
+                    onTap: () {
+                      setState(() {
+                        focusedDrawerItem = "Hospital Posts";
+                        widget.filterState = 2;
+                        widgets[0] = HomeScreen(
+                            filterState:
+                                widget.filterState); // Update HomeScreen
+                      });
+                      Navigator.pop(context);
+                    },
+                  ),
+                  _drawerItem(
+                    title: AppLocalizations.of(context)!.newstory,
+                    icon: Icons.add,
+                    isFocused: focusedDrawerItem == "New Story",
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => AddBlog()),
+                      );
+                    },
+                  ),
+                  _drawerItem(
+                    title: AppLocalizations.of(context)!.settings,
+                    icon: Icons.settings,
+                    isFocused: focusedDrawerItem == "Settings",
+                    onTap: () {
+                      pickColor(context);
+                    },
+                  ),
+                  _drawerItem(
+                    title: AppLocalizations.of(context)!.changelanguage,
+                    icon: Icons.language,
+                    isFocused: focusedDrawerItem == "Change Language",
+                    onTap: () {
+                      _showLanguageDialog(context);
+                    },
+                  ),
+                  if (userRole == "user")
+                    ListTile(
+                      leading: Icon(Icons.credit_card, color: appColor),
+                      title: Text(
+                        AppLocalizations.of(context)!.customer,
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.w500),
+                      ),
+                      trailing: Icon(Icons.chevron_right, color: Colors.grey),
+                      onTap: () async {
+                        print(username);
 
-            currentState == 0
-                ? AppLocalizations.of(context)!.home
-                : currentState == 1
-                    ? AppLocalizations.of(context)!.profile
-                    : currentState==2
-                    ?AppLocalizations.of(context)!.chat
-                    :AppLocalizations.of(context)!.requests,
-            // Assuming "requests" for `currentState == 2`
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          centerTitle: true,
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.notifications),
-              color: Colors.black,
-              onPressed: () {},
-            ),
-          ],
-        ),
-        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-        floatingActionButton: userRole != "user"
-            ? FloatingActionButton(
-                backgroundColor: appColor,
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => AddBlog()),
-                  );
-                },
-                child: const Icon(Icons.add, color: Colors.white),
-              )
-            : null,
-        bottomNavigationBar: BottomNavigationBar(
-          currentIndex: currentState,
-          selectedItemColor: Colors.white,
-          unselectedItemColor: Colors.black,
-          backgroundColor: appColor ,
-          type: BottomNavigationBarType.fixed, // Ensure proper layout for 4 or more items
-          items: [
-            BottomNavigationBarItem(
-              icon: const Icon(Icons.home),
-              label: AppLocalizations.of(context)!.home,
-            ),
-            BottomNavigationBarItem(
-              icon: const Icon(Icons.person),
-              label: AppLocalizations.of(context)!.profile,
-            ),
-            BottomNavigationBarItem(
-              icon: const Icon(Icons.chat),
-              label: AppLocalizations.of(context)!.chat,
-            ),
-            if (userRole == "admin")
-              BottomNavigationBarItem(
-                icon: const Icon(Icons.add_business),
-                label: AppLocalizations.of(context)!.requests,
+                        // Call the payment method with a callback
+                        await StripeService.instance
+                            .makePayment((bool paymentSuccess) async {
+                          if (paymentSuccess) {
+                            print("Payment successful. Updating role...");
+                            Map<String, dynamic> data = {'role': "customer"};
+                            var response = await networkHandler.patch(
+                              "/user/updateRole/$username",
+                              data,
+                            );
+                            if (response.statusCode == 200) {
+                              // Send an email notification
+                              final serviceId = 'service_lap99wb';
+                              final templateId = 'template_d58o7p1';
+                              final userId = 'tPJQRVN9PQ2jjZ_6C';
+                              final url = Uri.parse(
+                                  'https://api.emailjs.com/api/v1.0/email/send');
+
+                              final emailResponse = await http.post(
+                                url,
+                                headers: {
+                                  'origin': "http://192.168.88.2:5000",
+                                  'Content-Type': 'application/json',
+                                },
+                                body: json.encode({
+                                  'service_id': serviceId,
+                                  'template_id': templateId,
+                                  'user_id': userId,
+                                  'template_params': {
+                                    'user_name': username,
+                                  },
+                                }),
+                              );
+
+                              print("Email Response: ${emailResponse.body}");
+                              print(
+                                  "User role updated successfully on server.");
+                            } else {
+                              print(
+                                  "Failed to update user role on server: Status code ${response.statusCode}");
+                            }
+                          } else {
+                            print(
+                                "Payment failed or was cancelled. Role not updated.");
+                          }
+                        });
+                      },
+                    ),
+                  if (userRole == "customer")
+                    ListTile(
+                      leading: Icon(Icons.feedback, color: appColor),
+                      title: Text(
+                        AppLocalizations.of(context)!.feedback,
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.w500),
+                      ),
+                      trailing: Icon(Icons.chevron_right, color: Colors.grey),
+                      onTap: () {},
+                    ),
+                  Divider(thickness: 1, color: Colors.grey.shade400),
+                  ListTile(
+                    leading: Icon(Icons.power_settings_new, color: Colors.red),
+                    title: Text(
+                      AppLocalizations.of(context)!.logout,
+                      style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.red),
+                    ),
+                    trailing: Icon(Icons.chevron_right, color: Colors.grey),
+                    onTap: () {
+                      logout();
+                    },
+                  ),
+                ],
               ),
-          ],
-          onTap: (index) => setState(() {
-            currentState = index;
-          }),
-        ),
-        body: widgets[currentState],
-      );
-      }
-    );
+            ),
+            appBar: AppBar(
+              backgroundColor: appColor,
+              title: Text(
+                // titleString[currentState],
+
+                currentState == 0
+                    ? AppLocalizations.of(context)!.home
+                    : currentState == 1
+                        ? AppLocalizations.of(context)!.profile
+                        : currentState == 2
+                            ? AppLocalizations.of(context)!.chat
+                            : userRole=="customer"&&currentState == 3
+                                ? AppLocalizations.of(context)!.myshops
+                                : AppLocalizations.of(context)!.requests,
+                // Assuming "requests" for `currentState == 2`
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              centerTitle: true,
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.notifications),
+                  color: Colors.black,
+                  onPressed: () {},
+                ),
+              ],
+            ),
+            floatingActionButtonLocation:
+                FloatingActionButtonLocation.startFloat,
+            floatingActionButton: userRole != "user"
+                ? FloatingActionButton(
+                    backgroundColor: appColor,
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => AddBlog()),
+                      );
+                    },
+                    child: const Icon(Icons.add, color: Colors.white),
+                  )
+                : null,
+            bottomNavigationBar: BottomNavigationBar(
+              currentIndex: currentState,
+              selectedItemColor: Colors.white,
+              unselectedItemColor: Colors.black,
+              backgroundColor: appColor,
+              type: BottomNavigationBarType.fixed,
+              // Ensure proper layout for 4 or more items
+              items: navItems,
+              onTap: (index) => setState(() {
+                currentState = index;
+              }),
+            ),
+            body: visibleWidgets[currentState],
+          );
+        });
   }
 
   Widget _drawerItem({
@@ -445,13 +484,15 @@ class _HomePageState extends State<HomePage> {
   }) {
     return kIsWeb
         ? SizedBox(
-         height: 120,
-          child: ListTile(
+            height: 120,
+            child: ListTile(
               leading: Icon(
                 icon,
                 color: isFocused
                     ? appColorNotifier.value
-                    : (iconColor ?? appColorNotifier.value), // Dynamically set the icon color
+                    : (iconColor ??
+                        appColorNotifier
+                            .value), // Dynamically set the icon color
               ),
               title: Text(
                 title,
@@ -469,13 +510,14 @@ class _HomePageState extends State<HomePage> {
                   : const Icon(Icons.chevron_right, color: Colors.grey),
               onTap: onTap,
             ),
-        )
+          )
         : ListTile(
             leading: Icon(
               icon,
               color: isFocused
                   ? appColorNotifier.value
-                  : (iconColor ?? appColorNotifier.value), // Dynamically set the icon color
+                  : (iconColor ??
+                      appColorNotifier.value), // Dynamically set the icon color
             ),
             title: Text(
               title,

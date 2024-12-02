@@ -21,6 +21,8 @@
   "customer":"Customer",
   "barberShopPosts": "BarberShop Posts",
   "hospitalPosts": "Hospital Posts",
-  "chat" : "Chat"
+  "chat" : "Chat",
+
+  "myshops": "MyShops"
 
 }
