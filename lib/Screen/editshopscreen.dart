@@ -141,7 +141,10 @@ class _EditShopScreenState extends State<EditShopScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Edit Blog"),
+        backgroundColor: Colors.teal,
+        title: const Text("Edit Shop",style: TextStyle(
+          fontWeight: FontWeight.bold,
+        ),),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -198,6 +201,11 @@ class _EditShopScreenState extends State<EditShopScreen> {
               TextButton(
                 onPressed: _pickPreviewImage,
                 child: const Text("Change Preview Image"),
+                style: const ButtonStyle(
+                  foregroundColor: MaterialStatePropertyAll<Color>(Colors.black),
+                  backgroundColor: MaterialStatePropertyAll<Color>(Colors.teal),
+
+                ),
               ),
               const SizedBox(height: 16),
               Text("Slideshow Images", style: Theme.of(context).textTheme.titleMedium),
@@ -238,11 +246,21 @@ class _EditShopScreenState extends State<EditShopScreen> {
               TextButton(
                 onPressed: _pickNewCoverImages,
                 child: const Text("Add New Images"),
+                style: const ButtonStyle(
+                  foregroundColor: MaterialStatePropertyAll<Color>(Colors.black),
+                  backgroundColor: MaterialStatePropertyAll<Color>(Colors.teal),
+
+                ),
               ),
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: _submitChanges,
                 child: const Text("Save Changes"),
+                style: const ButtonStyle(
+                  foregroundColor: MaterialStatePropertyAll<Color>(Colors.black),
+                 backgroundColor: MaterialStatePropertyAll<Color>(Colors.blueGrey),
+
+                ),
               ),
             ],
           ),
