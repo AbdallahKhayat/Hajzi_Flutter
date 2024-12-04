@@ -1,89 +1,59 @@
+import 'package:blogapp/Pages/IndividualPage.dart';
 import 'package:flutter/material.dart';
 
+import '../Models/ChatModel.dart';
 import '../constants.dart';
 
 class CustomCard extends StatelessWidget {
-  const CustomCard({super.key});
+  const CustomCard({super.key, required this.chatModel});
+
+  final ChatModel chatModel;
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () {},
+      onTap: () {
+        Navigator.push(
+            context, MaterialPageRoute(builder: (context) => IndividualPage()));
+      },
       child: Column(
         children: [
           ListTile(
             leading: ValueListenableBuilder<Color>(
-              // ***
-              valueListenable: appColorNotifier, // ***
+              valueListenable: appColorNotifier, // Correct usage
               builder: (context, currentColor, child) {
-                // ***
                 return CircleAvatar(
                   radius: 30,
                   child: Icon(
-                    Icons.groups,
+                    chatModel.icon, // Use dynamic icon from the model
                     color: Colors.white,
                     size: 37,
                   ),
-                  backgroundColor: currentColor, // ***
+                  backgroundColor: currentColor,
                 );
-              }, // ***
+              },
             ),
             title: Text(
-              "Jack",
+              chatModel.name,
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             subtitle: Row(
               children: [
                 Icon(Icons.done_all),
-                SizedBox(
-                  width: 3,
-                ),
+                SizedBox(width: 3),
                 Text(
-                  "Hello Jack",
+                  chatModel.currentMessage,
                   style: TextStyle(fontSize: 13),
                 ),
               ],
             ),
-            trailing: Text("18:04"),
+            trailing: Text(chatModel.time),
           ),
           Padding(
             padding: const EdgeInsets.only(right: 20, left: 80),
-            child: Divider(
-              thickness: 1,
-            ),
-          )
+            child: Divider(thickness: 1),
+          ),
         ],
-      ),
-    );
-  }
-}
-
-void main() {
-  runApp(MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          title: Text('Dynamic Color Example'),
-        ),
-        body: Column(
-          children: [
-            CustomCard(),
-            ElevatedButton(
-              onPressed: () {
-                // ***
-                // Change the color dynamically
-                appColorNotifier.value =
-                    Colors.blue; // *** Update to a new color
-              }, // ***
-              child: Text("Change Color"), // ***
-            ),
-          ],
-        ),
       ),
     );
   }
