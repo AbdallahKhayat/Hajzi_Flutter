@@ -49,7 +49,7 @@ class _EditShopScreenState extends State<EditShopScreen> {
           type: selectedRole ?? "general",
           createdAt: widget.addBlogModel.createdAt,
           status: "approved", // Keep the status
-          username: widget.addBlogModel.username,
+          email: widget.addBlogModel.email,
         );
 
         // Update text fields on the server

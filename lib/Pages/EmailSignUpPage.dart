@@ -349,13 +349,13 @@ class _EmailSignUpPageState extends State<EmailSignUpPage> {
         });
       } else {
         var response = await networkHandler
-            .get("/user/checkusername/${_usernameController.text}");
+            .get("/user/checkemail/${_emailController.text}");
         if (response != null && response['Status'] != null) {
           if (response["Status"]) {
             setState(() {
               circular = false;
               validate = false;
-              errorText = "Username already taken";
+              errorText = "email already taken";
             });
           } else {
             setState(() {
@@ -367,7 +367,7 @@ class _EmailSignUpPageState extends State<EmailSignUpPage> {
           setState(() {
             circular = false;
             validate = false;
-            errorText = "Error checking username. Try again.";
+            errorText = "Error checking email. Try again.";
           });
         }
       }

@@ -37,6 +37,7 @@ class _HomePageState extends State<HomePage> {
 
   String focusedDrawerItem = "All Posts"; // Tracks which drawer item is focused
   String username = "";
+  String email="";
   String? userRole;
 
   //Color appColor = Colors.teal; // Default app theme color
@@ -80,13 +81,13 @@ class _HomePageState extends State<HomePage> {
   void checkProfile() async {
     var response = await networkHandler.get("/profile/checkProfile");
     setState(() {
-      username = response["username"] ?? "Username";
+      email = response["email"] ?? "email";
       profilePhoto = CircleAvatar(
         radius: 50,
-        backgroundImage: response["username"] != null
-            ? NetworkHandler().getImage(response["username"])
+        backgroundImage: response["email"] != null
+            ? NetworkHandler().getImage(response["email"])
             : null,
-        child: response["username"] == null
+        child: response["email"] == null
             ? const Icon(Icons.person, size: 50, color: Colors.grey)
             : null,
       );
@@ -244,7 +245,7 @@ class _HomePageState extends State<HomePage> {
                         profilePhoto,
                         const SizedBox(height: 10),
                         Text(
-                          '@$username',
+                          '$email',
                           style: const TextStyle(
                             fontSize: 17,
                             fontWeight: FontWeight.bold,
@@ -336,7 +337,7 @@ class _HomePageState extends State<HomePage> {
                       ),
                       trailing: Icon(Icons.chevron_right, color: Colors.grey),
                       onTap: () async {
-                        print(username);
+                        print(email);
 
                         // Call the payment method with a callback
                         await StripeService.instance
@@ -345,7 +346,7 @@ class _HomePageState extends State<HomePage> {
                             print("Payment successful. Updating role...");
                             Map<String, dynamic> data = {'role': "customer"};
                             var response = await networkHandler.patch(
-                              "/user/updateRole/$username",
+                              "/user/updateRole/$email",
                               data,
                             );
                             if (response.statusCode == 200) {
@@ -367,7 +368,7 @@ class _HomePageState extends State<HomePage> {
                                   'template_id': templateId,
                                   'user_id': userId,
                                   'template_params': {
-                                    'user_name': username,
+                                    'user_name': email,
                                   },
                                 }),
                               );

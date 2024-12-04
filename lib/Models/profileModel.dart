@@ -9,12 +9,13 @@ class ProfileModel{
  //we dont need img variable since in NetWork handler we pass username to ImageNetwork
   String? name;
   String? username;
+  String? email;
   String? profession;
   String? DOB;
   String? titleline;
   String? about;
 
-  ProfileModel([this.name,this.username,this.profession,this.DOB,this.titleline,this.about]);
+  ProfileModel([this.name,this.username,this.email,this.profession,this.DOB,this.titleline,this.about]);
 
   factory ProfileModel.fromJson(Map<String, dynamic> json) => _$ProfileModelFromJson(json);
 

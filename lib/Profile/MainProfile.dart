@@ -64,10 +64,10 @@ class _MainProfileState extends State<MainProfile> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    background: profileModel.username != null
+                    background: profileModel.email != null
                         ? Image(
                             image:
-                                networkHandler.getImage(profileModel.username!)
+                                networkHandler.getImage(profileModel.email!)
                                     as NetworkImage,
                             fit: BoxFit.cover,
                           )
@@ -159,14 +159,14 @@ class _MainProfileState extends State<MainProfile> {
           children: [
             CircleAvatar(
               radius: 50,
-              backgroundImage: profileModel.username == null
+              backgroundImage: profileModel.email == null
                   ? null
-                  : NetworkHandler().getImage(profileModel.username!),
+                  : NetworkHandler().getImage(profileModel.email!),
               backgroundColor: Colors.grey.shade300,
             ),
             SizedBox(height: 10),
             Text(
-              profileModel.username ?? "Username not available",
+              profileModel.email ?? "Email not available",
               style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.bold,

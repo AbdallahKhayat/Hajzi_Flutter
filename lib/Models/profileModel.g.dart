@@ -9,6 +9,7 @@ part of 'profileModel.dart';
 ProfileModel _$ProfileModelFromJson(Map<String, dynamic> json) => ProfileModel(
       json['name'] as String?,
       json['username'] as String?,
+      json['email'] as String?,
       json['profession'] as String?,
       json['DOB'] as String?,
       json['titleline'] as String?,
@@ -19,6 +20,7 @@ Map<String, dynamic> _$ProfileModelToJson(ProfileModel instance) =>
     <String, dynamic>{
       if (instance.name case final value?) 'name': value,
       if (instance.username case final value?) 'username': value,
+      if (instance.email case final value?) 'email': value,
       if (instance.profession case final value?) 'profession': value,
       if (instance.DOB case final value?) 'DOB': value,
       if (instance.titleline case final value?) 'titleline': value,

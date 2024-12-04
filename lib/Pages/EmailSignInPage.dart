@@ -85,8 +85,8 @@ class _EmailSignInPageState extends State<EmailSignInPage> {
                   ),
                   const SizedBox(height: 30),
 
-                  // Username Input
-                  usernameTextField(),
+                  // email Input
+                  emailTextField(),
 
                   const SizedBox(height: 20),
 
@@ -104,21 +104,24 @@ class _EmailSignInPageState extends State<EmailSignInPage> {
 
                       // Prepare login data
                       Map<String, dynamic> data = {
-                        "username": _usernameController.text,
+                        "email": _emailController.text,
                         "password": _passwordController.text,
                       };
 
                       try {
                         // Send login request to backend
-                        var response = await networkHandler.post("/user/login", data);
+                        var response =
+                            await networkHandler.post("/user/login", data);
 
                         // Log response details for debugging
                         print("Login response code: ${response.statusCode}");
                         print("Login response body: ${response.body}");
 
-                        if (response.statusCode == 200 || response.statusCode == 201) {
+                        if (response.statusCode == 200 ||
+                            response.statusCode == 201) {
                           // Decode response to extract the token
-                          Map<String, dynamic> output = json.decode(response.body);
+                          Map<String, dynamic> output =
+                              json.decode(response.body);
 
                           if (output.containsKey('token')) {
                             String jwtToken = output['token'];
@@ -128,11 +131,13 @@ class _EmailSignInPageState extends State<EmailSignInPage> {
 
                             // Store user role if available
                             if (output.containsKey('role')) {
-                              await storage.write(key: "role", value: output['role']);
+                              await storage.write(
+                                  key: "role", value: output['role']);
                             }
 
                             // Load the stored language preference
-                            String? storedLanguage = await storage.read(key: "language");
+                            String? storedLanguage =
+                                await storage.read(key: "language");
 
                             // Update the locale if stored
                             if (storedLanguage != null) {
@@ -156,14 +161,14 @@ class _EmailSignInPageState extends State<EmailSignInPage> {
                                       context,
                                       MaterialPageRoute(
                                           builder: (context) => HomePage(
-                                            setLocale: widget.setLocale,
-                                            filterState: 0,
-                                          )),
+                                                setLocale: widget.setLocale,
+                                                filterState: 0,
+                                              )),
                                     );
                                   },
                                 ),
                               ),
-                                  (route) => false,
+                              (route) => false,
                             );
                           } else {
                             throw Exception("Token not found in the response");
@@ -173,9 +178,10 @@ class _EmailSignInPageState extends State<EmailSignInPage> {
                           var output;
                           try {
                             output = json.decode(response.body);
-                            errorText = output is Map && output.containsKey('msg')
-                                ? output['msg']
-                                : output.toString();
+                            errorText =
+                                output is Map && output.containsKey('msg')
+                                    ? output['msg']
+                                    : output.toString();
                           } catch (e) {
                             errorText = 'An unknown error occurred';
                           }
@@ -223,8 +229,8 @@ class _EmailSignInPageState extends State<EmailSignInPage> {
                   // Forgot Password
                   kIsWeb
                       ? Padding(
-                        padding: const EdgeInsets.only(left:300),
-                        child: Align(
+                          padding: const EdgeInsets.only(left: 300),
+                          child: Align(
                             alignment: Alignment.center,
                             child: TextButton(
                               onPressed: () {
@@ -244,7 +250,7 @@ class _EmailSignInPageState extends State<EmailSignInPage> {
                               ),
                             ),
                           ),
-                      )
+                        )
                       : Align(
                           alignment: Alignment.centerRight,
                           child: TextButton(
@@ -344,31 +350,62 @@ class _EmailSignInPageState extends State<EmailSignInPage> {
             ),
           );
   }
+
   Widget emailTextField() {
-    return TextFormField(
-      controller: _emailController,
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Email can’t be empty!';
-        }
-        if (!value.contains("@")) {
-          return 'Invalid email!';
-        }
-        return null;
-      },
-      decoration: InputDecoration(
-        hintText: "Enter your email",
-        filled: true,
-        fillColor: Colors.white.withOpacity(0.9),
-        prefixIcon: const Icon(Icons.email, color: Colors.black),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Colors.blue, width: 2),
-        ),
-        errorText: errorText,
-      ),
-    );
+    return kIsWeb //web part//////////////////
+        ? Center(
+            child: SizedBox(
+              width: 400,
+              child: TextFormField(
+                controller: _emailController,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Email can’t be empty!';
+                  }
+                  if (!value.contains("@")) {
+                    return 'Invalid email!';
+                  }
+                  return null;
+                },
+                decoration: InputDecoration(
+                  hintText: "Enter your email",
+                  filled: true,
+                  fillColor: Colors.white.withOpacity(0.9),
+                  prefixIcon: const Icon(Icons.email, color: Colors.black),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8)),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: Colors.blue, width: 2),
+                  ),
+                ),
+              ),
+            ),
+          )
+        : TextFormField(
+            controller: _emailController,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Email can’t be empty!';
+              }
+              if (!value.contains("@")) {
+                return 'Invalid email!';
+              }
+              return null;
+            },
+            decoration: InputDecoration(
+              hintText: "Enter your email",
+              filled: true,
+              fillColor: Colors.white.withOpacity(0.9),
+              prefixIcon: const Icon(Icons.email, color: Colors.black),
+              border:
+                  OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: const BorderSide(color: Colors.blue, width: 2),
+              ),
+            ),
+          );
   }
 
   Widget passwordTextField() {

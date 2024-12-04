@@ -33,12 +33,12 @@ class _AddBlogState extends State<AddBlog> {
   NetworkHandler networkHandler = NetworkHandler();
   final storage = FlutterSecureStorage();
 
-  Future<String?> extractUsernameFromToken() async {
+  Future<String?> extractEmailFromToken() async {
     String? token = await storage.read(key: "token");
     if (token != null && token.isNotEmpty) {
       try {
         Map<String, dynamic> decodedToken = JwtDecoder.decode(token);
-        return decodedToken["username"];
+        return decodedToken["email"];
       } catch (e) {
         print("Error decoding token: $e");
       }
@@ -398,11 +398,11 @@ class _AddBlogState extends State<AddBlog> {
     return InkWell(
       onTap: () async {
         if (_GlobalKey.currentState!.validate() && imageFiles.isNotEmpty) {
-          // Step 1: Get the username from the token
-          String? customerUsername = await extractUsernameFromToken();
-          if (customerUsername == null || customerUsername.isEmpty) {
+          // Step 1: Get the email from the token
+          String? customerEmail = await extractEmailFromToken();
+          if (customerEmail == null || customerEmail.isEmpty) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Unable to retrieve customer username!')),
+              SnackBar(content: Text('Unable to retrieve customer email!')),
             );
             return;
           }
@@ -411,7 +411,7 @@ class _AddBlogState extends State<AddBlog> {
           AddBlogApproval addBlogApproval = AddBlogApproval(
             title: _titleController.text,
             body: _bodyController.text,
-            username: customerUsername,
+            email: customerEmail,
             type: selectedRole ?? "general",
           );
 
@@ -430,7 +430,7 @@ class _AddBlogState extends State<AddBlog> {
           final emailResponse = await http.post(
             url,
             headers: {
-              'origin': "http://192.168.88.4:5000",
+              'origin': "http://192.168.88.2:5000",
               'Content-Type': 'application/json',
             },
             body: json.encode({
@@ -440,7 +440,7 @@ class _AddBlogState extends State<AddBlog> {
               'template_params': {
                 'user_title': addBlogApproval.title,
                 'user_message': addBlogApproval.body,
-                'user_name': addBlogApproval.username,
+                'user_name': addBlogApproval.email,
               },
             }),
           );
@@ -485,7 +485,7 @@ class _AddBlogState extends State<AddBlog> {
                 status: "approved",
                 createdAt: DateTime.now(),
                 type: selectedRole ?? "general",
-                username: addBlogApproval.username,
+                email: addBlogApproval.email,
               );
 
               var addResponse = await networkHandler.post(

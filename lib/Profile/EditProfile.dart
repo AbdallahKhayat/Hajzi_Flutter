@@ -53,7 +53,7 @@ class _EditProfileState extends State<EditProfile> {
       });
 
       Map<String, dynamic> data = {
-        "username": widget.profileModel.username, // Include username
+        "email": widget.profileModel.email, // Include username
         "name": _nameController.text,
         "profession": _professionController.text,
         "DOB": _dobController.text,

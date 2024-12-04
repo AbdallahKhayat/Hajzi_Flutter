@@ -14,6 +14,7 @@ class AddBlogModel {
   @JsonKey(name: "_id") // Provide the actual name of id from the API
   String? id;
   String? username;
+  String? email;
   String? title;
   String? body;
   String? status;
@@ -27,6 +28,7 @@ class AddBlogModel {
     this.comment,
     this.id,
     this.username,
+    this.email,
     this.title,
     this.body,
     this.status,
