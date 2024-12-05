@@ -60,6 +60,11 @@ void main() async {
     }
   }
 
+  FirebaseMessaging.instance.getToken().then((token) {
+    print("Admin Device Token: $token");
+  });
+
+
   FirebaseMessaging.instance.getInitialMessage().then((message) {
     if (message != null && message.data["type"] == "blog_approval") {
       navigationKey.currentState?.pushNamed("/Requests/RequestsScreen",arguments: message);
@@ -148,6 +153,8 @@ class _MyAppState extends State<MyApp> {
     String language = locale.languageCode == 'ar' ? "Arabic" : "English";
     await storage.write(key: "language", value: language);
   }
+
+
 
   @override
   Widget build(BuildContext context) {
