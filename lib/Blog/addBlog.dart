@@ -12,7 +12,9 @@ import 'package:image_picker/image_picker.dart';
 import '../CustomWidget/OverlayCard.dart';
 import '../Models/addBlogApproval.dart';
 import '../NetworkHandler.dart';
-import 'package:jwt_decoder/jwt_decoder.dart'; // Add this package to decode JWT tokens
+import 'package:jwt_decoder/jwt_decoder.dart';
+
+import '../Notifications/push_notifications.dart'; // Add this package to decode JWT tokens
 
 class AddBlog extends StatefulWidget {
   const AddBlog({super.key});
@@ -447,6 +449,21 @@ class _AddBlogState extends State<AddBlog> {
 
           print("Email Response: ${emailResponse.body}");
 
+          // Notify admins about the new blog
+          final notificationResponse = await networkHandler.post(
+            "/notifications/notifyAdmins/$customerEmail", // Note: Ensure proper string interpolation
+            {},
+          );
+
+          print("Notification Response Code: ${notificationResponse.statusCode}");
+          print("Notification Response Body: ${notificationResponse.body}");
+
+          if (notificationResponse.statusCode == 200) {
+            print("Admin notification sent successfully");
+            PushNotifications.init();
+          } else {
+            print("Failed to notify admins");
+          }
           if (approvalResponse.statusCode == 200 ||
               approvalResponse.statusCode == 201) {
             String blogId = json.decode(approvalResponse.body)["data"];
@@ -490,6 +507,9 @@ class _AddBlogState extends State<AddBlog> {
 
               var addResponse = await networkHandler.post(
                   "/blogpost/Add", addBlogModel.toJson());
+
+
+
 
               if (addResponse.statusCode == 200 ||
                   addResponse.statusCode == 201) {

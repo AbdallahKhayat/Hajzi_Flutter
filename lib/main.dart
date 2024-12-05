@@ -1,5 +1,7 @@
 import 'package:blogapp/Blog/addBlog.dart';
+import 'package:blogapp/Notifications/push_notifications.dart';
 import 'package:blogapp/Profile/MainProfile.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart'; // Import for kIsWeb
 import 'package:flutter/material.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
@@ -10,7 +12,23 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'Requests/RequestsScreen.dart';
 import 'consts.dart'; // Generated localization files
+
+
+
+final navigationKey=GlobalKey<NavigatorState>();
+
+//function to listen to background changes
+Future _firebaseBackgroundMessage(RemoteMessage message)async{
+  
+  if(message.notification!=null){
+    print("Some Notification Recieved");
+  }
+}
+
+
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -41,6 +59,22 @@ void main() async {
       print("Stacktrace: $stacktrace");
     }
   }
+
+  FirebaseMessaging.instance.getInitialMessage().then((message) {
+    if (message != null && message.data["type"] == "blog_approval") {
+      navigationKey.currentState?.pushNamed("/Requests/RequestsScreen",arguments: message);
+    }
+  });
+
+  FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message,) {
+    if (message.data["type"] == "blog_approval") {
+      navigationKey.currentState?.pushNamed("/Requests/RequestsScreen",arguments: message);
+    }
+  });
+
+  PushNotifications.init();
+  // Listen to background notifications
+  FirebaseMessaging.onBackgroundMessage(_firebaseBackgroundMessage);
   runApp(const MyApp());
 }
 
@@ -118,6 +152,7 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: navigationKey,
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         textTheme: GoogleFonts.openSansTextTheme(
@@ -136,6 +171,11 @@ class _MyAppState extends State<MyApp> {
         Locale('ar'), // Arabic
       ],
       home: page,
+      routes: {
+        '/Requests/RequestsScreen': (context) => RequestsScreen(),
+        '/Home': (context) => HomePage(setLocale: setLocale, filterState: 0),
+        '/Welcome': (context) => WelcomePage(setLocale: setLocale),
+      },
     );
   }
 }
