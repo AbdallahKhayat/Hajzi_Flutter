@@ -1,5 +1,5 @@
+import 'package:blogapp/Screen/CameraView.dart';
 import 'package:camera/camera.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 late List<CameraDescription> cameras;
@@ -23,33 +23,38 @@ class _CameraScreenState extends State<CameraScreen> {
   }
 
   @override
+  void dispose() {
+    _cameraController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
         children: [
-          // Adjusted to prevent the white line issue
           FutureBuilder(
-              future: cameravalue,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.done) {
-                  return Positioned.fill(
-                    child: AspectRatio(
-                      aspectRatio: _cameraController.value.aspectRatio,
-                      child: CameraPreview(_cameraController),
-                    ),
-                  );
-                } else {
-                  return const Center(
-                    child: CircularProgressIndicator(),
-                  );
-                }
-              }),
-          // Camera control UI
+            future: cameravalue,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.done) {
+                return Positioned.fill(
+                  child: AspectRatio(
+                    aspectRatio: _cameraController.value.aspectRatio,
+                    child: CameraPreview(_cameraController),
+                  ),
+                );
+              } else {
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
+              }
+            },
+          ),
           Positioned(
             bottom: 0.0,
             child: Container(
               padding: const EdgeInsets.only(bottom: 20, top: 10),
-              color: Colors.black.withOpacity(0.8), // Added slight transparency
+              color: Colors.black.withOpacity(0.8),
               width: MediaQuery.of(context).size.width,
               child: Column(
                 children: [
@@ -66,7 +71,7 @@ class _CameraScreenState extends State<CameraScreen> {
                       ),
                       GestureDetector(
                         onTap: () {
-                          // Handle capture action here
+                          takePhoto(context);
                         },
                         child: Container(
                           width: 70,
@@ -84,7 +89,7 @@ class _CameraScreenState extends State<CameraScreen> {
                       ),
                       IconButton(
                         onPressed: () {
-                          // Handle flip camera action here
+                          // Flip camera functionality (optional).
                         },
                         icon: const Icon(
                           Icons.flip_camera_ios,
@@ -107,5 +112,22 @@ class _CameraScreenState extends State<CameraScreen> {
         ],
       ),
     );
+  }
+
+  void takePhoto(BuildContext context) async {
+    try {
+      // Take a picture and get the XFile object
+      final XFile picture = await _cameraController.takePicture();
+
+      // Navigate to the CameraViewPage with the picture path
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (builder) => CameraViewPage(path: picture.path),
+        ),
+      );
+    } catch (e) {
+      print('Error capturing photo: $e');
+    }
   }
 }
