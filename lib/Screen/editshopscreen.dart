@@ -5,6 +5,8 @@ import '../Models/addBlogModel.dart';
 import '../NetworkHandler.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../Notifications/push_notifications.dart';
+
 class EditShopScreen extends StatefulWidget {
   final AddBlogModel addBlogModel;
   final NetworkHandler networkHandler;
@@ -28,6 +30,7 @@ class _EditShopScreenState extends State<EditShopScreen> {
   List<File> newCoverImages = []; // For new slideshow images
   List<String> existingCoverImages = [];
   final ImagePicker _picker = ImagePicker();
+  NetworkHandler networkHandler=NetworkHandler();
 
   @override
   void initState() {
@@ -75,6 +78,21 @@ class _EditShopScreenState extends State<EditShopScreen> {
                 image.path,
               );
             }
+          }
+
+          final notificationResponse = await networkHandler.post(
+            "/notifications/notifyAdmins/updateShop/${widget.addBlogModel.email}/${widget.addBlogModel.id}", // Note: Ensure proper string interpolation
+            {},
+          );
+
+          print("Notification Response Code: ${notificationResponse.statusCode}");
+          print("Notification Response Body: ${notificationResponse.body}");
+
+          if (notificationResponse.statusCode == 200) {
+            print("Admin notification sent successfully");
+            PushNotifications.init();
+          } else {
+            print("Failed to notify admins");
           }
 
           if (mounted) {

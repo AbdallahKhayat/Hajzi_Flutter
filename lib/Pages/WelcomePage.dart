@@ -83,19 +83,29 @@ class _WelcomePageState extends State<WelcomePage>
           padding: const EdgeInsets.symmetric(horizontal: 30.0, vertical: 60.0),
           child: Column(
             children: [
-              SlideTransition(
-                position: animation1,
-                child: const Text(
-                  "Hajzi",
-                  style: TextStyle(
-                    fontSize: 38,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 2,
-                  ),
+              // SlideTransition(
+              //   position: animation1,
+              //   child: const Text(
+              //     "Hajzi",
+              //     style: TextStyle(
+              //       fontSize: 38,
+              //       fontWeight: FontWeight.w600,
+              //       letterSpacing: 2,
+              //     ),
+              //   ),
+              // ),
+
+              ClipOval(
+                child: Image.asset(
+                  "assets/Hajzi.png",
+                  width: 250, // Set the width
+                  height: 300, // Set the height
+                  fit: BoxFit.cover, // Adjust how the image should fit
                 ),
               ),
+
               SizedBox(
-                height: MediaQuery.of(context).size.height / 6,
+                height:MediaQuery.of(context).size.height*0.01,
               ),
               SlideTransition(
                 position: animation1,
@@ -214,47 +224,49 @@ class _WelcomePageState extends State<WelcomePage>
   Widget boxContainer(String path, String text, VoidCallback? onClick) {
     return kIsWeb //check if web or not///////////////////////////////////////////
         ? SlideTransition(
-      position: animation2,
-      child: InkWell(
-        onTap: onClick,
-        child: Container(
-          height: 50, // Reduced height for a sleeker appearance
-          width: 400, // Fixed width for consistency
-          child: Card(
-            elevation: 2, // Add subtle elevation for a cleaner design
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8), // Rounded corners
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 15.0, vertical: 8), // Adjusted padding
-              child: Row(
-                children: [
-                  Image.asset(
-                    path,
-                    height: 30, // Slightly smaller icon size
-                    width: 30,
+            position: animation2,
+            child: InkWell(
+              onTap: onClick,
+              child: Container(
+                height: 50, // Reduced height for a sleeker appearance
+                width: 400, // Fixed width for consistency
+                child: Card(
+                  elevation: 2, // Add subtle elevation for a cleaner design
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8), // Rounded corners
                   ),
-                  const SizedBox(width: 15), // Reduced spacing
-                  Expanded( // Ensure the text doesn't overflow
-                    child: Text(
-                      text,
-                      style: const TextStyle(
-                        fontSize: 14, // Slightly smaller font size
-                        color: Colors.black87,
-                        fontWeight: FontWeight.w500, // Add subtle weight
-                      ),
-                      maxLines: 1, // Limit to a single line
-                      overflow: TextOverflow.ellipsis, // Ellipsis for overflow
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 15.0, vertical: 8), // Adjusted padding
+                    child: Row(
+                      children: [
+                        Image.asset(
+                          path,
+                          height: 30, // Slightly smaller icon size
+                          width: 30,
+                        ),
+                        const SizedBox(width: 15), // Reduced spacing
+                        Expanded(
+                          // Ensure the text doesn't overflow
+                          child: Text(
+                            text,
+                            style: const TextStyle(
+                              fontSize: 14, // Slightly smaller font size
+                              color: Colors.black87,
+                              fontWeight: FontWeight.w500, // Add subtle weight
+                            ),
+                            maxLines: 1, // Limit to a single line
+                            overflow:
+                                TextOverflow.ellipsis, // Ellipsis for overflow
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
+                ),
               ),
             ),
-          ),
-        ),
-      ),
-    )
+          )
         : SlideTransition(
             position: animation2,
             child: InkWell(

@@ -44,7 +44,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
             'from_name': "Hajzi Team",
             'to_name': email,
             'to_email': email,
-            'reset_link': 'http://192.168.88.6:5000/user/verify/$email',
+            'reset_link': 'http://192.168.88.3:5000/user/verify/$email',
           },
         }),
       );

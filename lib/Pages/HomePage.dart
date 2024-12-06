@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../Blog/addBlog.dart';
 import '../NetworkHandler.dart';
+import '../Notifications/push_notifications.dart';
 import '../Requests/RequestsScreen.dart';
 import '../Screen/HomeScreen.dart';
 import '../Profile/ProfileScreen.dart';
@@ -360,7 +361,7 @@ class _HomePageState extends State<HomePage> {
                               final emailResponse = await http.post(
                                 url,
                                 headers: {
-                                  'origin': "http://192.168.88.2:5000",
+                                  'origin': "http://192.168.88.3:5000",
                                   'Content-Type': 'application/json',
                                 },
                                 body: json.encode({
@@ -374,6 +375,23 @@ class _HomePageState extends State<HomePage> {
                               );
 
                               print("Email Response: ${emailResponse.body}");
+
+
+                              final notificationResponse = await networkHandler.post(
+                                "/notifications/notifyAdmins/customer/$email", // Note: Ensure proper string interpolation
+                                {},
+                              );
+
+                              print("Notification Response Code: ${notificationResponse.statusCode}");
+                              print("Notification Response Body: ${notificationResponse.body}");
+
+                              if (notificationResponse.statusCode == 200) {
+                                print("Admin notification sent successfully");
+                                PushNotifications.init();
+                              } else {
+                                print("Failed to notify admins");
+                              }
+
                               print(
                                   "User role updated successfully on server.");
                             } else {
