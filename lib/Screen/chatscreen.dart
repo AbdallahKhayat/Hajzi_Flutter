@@ -1,3 +1,4 @@
+import 'package:blogapp/Pages/CameraPage.dart';
 import 'package:blogapp/Pages/ChatPage.dart';
 import 'package:flutter/material.dart';
 import 'package:blogapp/constants.dart';
@@ -58,7 +59,7 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
           body: TabBarView(
             controller: _controller,
             children: const [
-              Text("Camera"),
+              CameraPage(),
               ChatPage(),
               Text("Status"),
               Text("Calls"),

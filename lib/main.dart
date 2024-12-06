@@ -1,6 +1,8 @@
 import 'package:blogapp/Blog/addBlog.dart';
 import 'package:blogapp/Notifications/push_notifications.dart';
 import 'package:blogapp/Profile/MainProfile.dart';
+import 'package:blogapp/Screen/CameraScreen.dart';
+import 'package:camera/camera.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart'; // Import for kIsWeb
 import 'package:flutter/material.dart';
@@ -32,6 +34,7 @@ Future _firebaseBackgroundMessage(RemoteMessage message)async{
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+   cameras = await availableCameras();
   await _setup(); // Initialize only on supported platforms
   if (kIsWeb) {
     await Firebase.initializeApp(
