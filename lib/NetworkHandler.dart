@@ -9,8 +9,8 @@ import 'package:logger/logger.dart';
 
 class NetworkHandler{
 
-  String baseurl = "http://192.168.88.3:5000";
-  String baseurl2="http://192.168.88.3:5000/";
+  String baseurl = "https://quiet-scrubland-10088-12201191fd7c.herokuapp.com";
+  String baseurl2="https://quiet-scrubland-10088-12201191fd7c.herokuapp.com/";
  // String baseurl = "https://flutter-sign-up-production.up.railway.app";
 
   var log = Logger();
