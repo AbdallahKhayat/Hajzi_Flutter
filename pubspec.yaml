@@ -56,6 +56,10 @@ dependencies:
   firebase_auth: ^5.3.3
   cloud_firestore: ^5.5.0
   firebase_auth_platform_interface: '7.4.9'
+  emoji_picker_flutter: ^3.1.0
+  shared_preferences: ^2.3.3
+  plugin_platform_interface: ^2.1.8
+  web: ^1.1.0
 
 
 

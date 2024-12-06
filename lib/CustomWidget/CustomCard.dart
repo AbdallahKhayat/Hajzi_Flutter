@@ -14,7 +14,11 @@ class CustomCard extends StatelessWidget {
     return InkWell(
       onTap: () {
         Navigator.push(
-            context, MaterialPageRoute(builder: (context) => IndividualPage()));
+            context,
+            MaterialPageRoute(
+                builder: (context) => IndividualPage(
+                      chatModel: chatModel,
+                    )));
       },
       child: Column(
         children: [
@@ -24,23 +28,23 @@ class CustomCard extends StatelessWidget {
               builder: (context, currentColor, child) {
                 return CircleAvatar(
                   radius: 30,
+                  backgroundColor: currentColor,
                   child: Icon(
                     chatModel.icon, // Use dynamic icon from the model
                     color: Colors.white,
                     size: 37,
                   ),
-                  backgroundColor: currentColor,
                 );
               },
             ),
             title: Text(
               chatModel.name,
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             subtitle: Row(
               children: [
-                Icon(Icons.done_all),
-                SizedBox(width: 3),
+                const Icon(Icons.done_all),
+                const SizedBox(width: 3),
                 Text(
                   chatModel.currentMessage,
                   style: TextStyle(fontSize: 13),
@@ -49,8 +53,8 @@ class CustomCard extends StatelessWidget {
             ),
             trailing: Text(chatModel.time),
           ),
-          Padding(
-            padding: const EdgeInsets.only(right: 20, left: 80),
+          const Padding(
+            padding: EdgeInsets.only(right: 20, left: 80),
             child: Divider(thickness: 1),
           ),
         ],

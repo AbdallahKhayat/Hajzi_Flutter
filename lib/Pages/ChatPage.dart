@@ -56,7 +56,7 @@ class _ChatPageState extends State<ChatPage> {
         onPressed: () {
           // Action when FAB is pressed
         },
-        child: Icon(Icons.chat),
+        child: const Icon(Icons.chat),
       ),
       body: ListView.builder(
         itemCount: chats.length,
