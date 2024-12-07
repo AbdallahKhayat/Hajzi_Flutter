@@ -1,4 +1,4 @@
-import 'package:blogapp/Pages/CameraPage.dart';
+import 'package:blogapp/Screen/CameraFiles/CameraScreen.dart';
 import 'package:blogapp/Pages/ChatPage.dart';
 import 'package:flutter/material.dart';
 import 'package:blogapp/constants.dart';
@@ -12,12 +12,23 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateMixin {
   late TabController _controller;
+
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _controller = TabController(length: 4, vsync: this, initialIndex: 1);
+
+    // Navigate to camera instantly if tab index is 0 (camera tab)
+    _controller.addListener(() {
+      if (_controller.index == 0) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const CameraScreen()),
+        );
+      }
+    });
   }
+
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<Color>(
@@ -28,9 +39,9 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
             backgroundColor: appColor,
             title: const Text("Hajzi Chats", style: TextStyle(color: Colors.white)),
             actions: [
-              IconButton(icon: Icon(Icons.search), color: Colors.white, onPressed: () {}),
+              IconButton(icon: const Icon(Icons.search), color: Colors.white, onPressed: () {}),
               PopupMenuButton<String>(
-                icon: Icon(Icons.more_vert, color: Colors.white),
+                icon: const Icon(Icons.more_vert, color: Colors.white),
                 onSelected: (value) {},
                 itemBuilder: (BuildContext context) {
                   return const [
@@ -58,11 +69,11 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
           ),
           body: TabBarView(
             controller: _controller,
-            children: const [
-              CameraPage(),
-              ChatPage(),
-              Text("Status"),
-              Text("Calls"),
+            children: [
+              const SizedBox.shrink(), // Empty widget for camera tab since camera opens automatically
+              const ChatPage(),
+              const Center(child: Text("Status", style: TextStyle(fontSize: 18))),
+              const Center(child: Text("Calls", style: TextStyle(fontSize: 18))),
             ],
           ),
         );
