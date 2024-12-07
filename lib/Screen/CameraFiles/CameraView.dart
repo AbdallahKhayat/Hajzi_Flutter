@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import '../constants.dart';
+import '../../constants.dart';
 
 class CameraViewPage extends StatelessWidget {
   const CameraViewPage({super.key, required this.path});
@@ -37,17 +37,14 @@ class CameraViewPage extends StatelessWidget {
       ),
       body: Stack(
         children: [
-          // Adjust the image to occupy more vertical space
-          Align(
-            alignment: Alignment.topCenter,
+          Center(
             child: Image.file(
               File(path),
               fit: BoxFit.contain,
               width: MediaQuery.of(context).size.width,
-              height: MediaQuery.of(context).size.height * 0.8, // Occupy 80% of the screen
+              height: MediaQuery.of(context).size.height * 0.8,
             ),
           ),
-          // Caption and send section at the bottom
           Positioned(
             bottom: 0,
             child: Container(
@@ -66,7 +63,6 @@ class CameraViewPage extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
               child: Row(
                 children: [
-                  // Caption input field
                   Expanded(
                     child: TextFormField(
                       style: const TextStyle(
@@ -91,7 +87,6 @@ class CameraViewPage extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 10),
-                  // Send/Check button with appColorNotifier
                   ValueListenableBuilder<Color>(
                     valueListenable: appColorNotifier,
                     builder: (context, appColor, _) {
@@ -104,10 +99,7 @@ class CameraViewPage extends StatelessWidget {
                             color: Colors.white,
                             size: 24,
                           ),
-                          onPressed: () {
-                            // Add functionality for send action
-                          },
-                          tooltip: "Send",
+                          onPressed: () {},
                         ),
                       );
                     },
@@ -115,7 +107,7 @@ class CameraViewPage extends StatelessWidget {
                 ],
               ),
             ),
-          )
+          ),
         ],
       ),
     );

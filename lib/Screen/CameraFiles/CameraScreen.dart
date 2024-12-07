@@ -1,6 +1,8 @@
-import 'package:blogapp/Screen/CameraView.dart';
+import 'package:blogapp/Screen/CameraFiles/VideoView.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+
+import 'CameraView.dart';
 
 late List<CameraDescription> cameras;
 
@@ -14,6 +16,7 @@ class CameraScreen extends StatefulWidget {
 class _CameraScreenState extends State<CameraScreen> {
   late CameraController _cameraController;
   late Future<void> cameravalue;
+  bool isRecording = false;
 
   @override
   void initState() {
@@ -70,8 +73,38 @@ class _CameraScreenState extends State<CameraScreen> {
                         ),
                       ),
                       GestureDetector(
+                        onLongPress: () async {
+                          try {
+                            await _cameraController.startVideoRecording();
+                            setState(() {
+                              isRecording = true;
+                            });
+                          } catch (e) {
+                            print('Error starting video recording: $e');
+                          }
+                        },
+                        onLongPressUp: () async {
+                          try {
+                            XFile videoFile = await _cameraController.stopVideoRecording();
+                            setState(() {
+                              isRecording = false;
+                            });
+
+                            print('Video recorded to: ${videoFile.path}');
+
+                            // Navigate to VideoViewPage with the correct path
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (builder) => VideoViewPage(path: videoFile.path),
+                              ),
+                            );
+                          } catch (e) {
+                            print('Error stopping video recording: $e');
+                          }
+                        },
                         onTap: () {
-                          takePhoto(context);
+                          if (!isRecording) takePhoto(context);
                         },
                         child: Container(
                           width: 70,
@@ -80,10 +113,22 @@ class _CameraScreenState extends State<CameraScreen> {
                             shape: BoxShape.circle,
                             border: Border.all(color: Colors.white, width: 4),
                           ),
-                          child: const Icon(
-                            Icons.panorama_fish_eye,
-                            color: Colors.white,
-                            size: 50,
+                          child: Center(
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 200),
+                              width: 50,
+                              height: 50,
+                              decoration: BoxDecoration(
+                                color: isRecording ? Colors.red : Colors.transparent,
+                                shape: isRecording ? BoxShape.rectangle : BoxShape.circle,
+                                borderRadius: isRecording ? BorderRadius.circular(12) : null,
+                              ),
+                              child: Icon(
+                                isRecording ? Icons.stop : Icons.panorama_fish_eye,
+                                color: Colors.white,
+                                size: 30,
+                              ),
+                            ),
                           ),
                         ),
                       ),
@@ -116,10 +161,7 @@ class _CameraScreenState extends State<CameraScreen> {
 
   void takePhoto(BuildContext context) async {
     try {
-      // Take a picture and get the XFile object
-      final XFile picture = await _cameraController.takePicture();
-
-      // Navigate to the CameraViewPage with the picture path
+      XFile picture = await _cameraController.takePicture();
       Navigator.push(
         context,
         MaterialPageRoute(

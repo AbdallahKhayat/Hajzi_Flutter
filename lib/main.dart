@@ -1,7 +1,5 @@
-import 'package:blogapp/Blog/addBlog.dart';
 import 'package:blogapp/Notifications/push_notifications.dart';
-import 'package:blogapp/Profile/MainProfile.dart';
-import 'package:blogapp/Screen/CameraScreen.dart';
+import 'package:blogapp/Screen/CameraFiles/CameraScreen.dart';
 import 'package:camera/camera.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart'; // Import for kIsWeb

@@ -1,5 +1,5 @@
 
-import 'package:blogapp/Screen/CameraScreen.dart';
+import 'package:blogapp/Screen/CameraFiles/CameraScreen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
