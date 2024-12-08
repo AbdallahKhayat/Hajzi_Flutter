@@ -38,7 +38,7 @@ class _HomePageState extends State<HomePage> {
 
   String focusedDrawerItem = "All Posts"; // Tracks which drawer item is focused
   String username = "";
-  String email="";
+  String email = "";
   String? userRole;
 
   //Color appColor = Colors.teal; // Default app theme color
@@ -178,7 +178,6 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-
     // Dynamically create widgets based on userRole
     List<Widget> visibleWidgets = [
       HomeScreen(filterState: widget.filterState),
@@ -248,7 +247,7 @@ class _HomePageState extends State<HomePage> {
                         Text(
                           '$email',
                           style: const TextStyle(
-                            fontSize: 17,
+                            fontSize: 16,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                           ),
@@ -351,6 +350,8 @@ class _HomePageState extends State<HomePage> {
                               data,
                             );
                             if (response.statusCode == 200) {
+                              print("✅ User role updated successfully on the server.");
+                              await storage.write(key: "role", value: "customer");
                               // Send an email notification
                               final serviceId = 'service_lap99wb';
                               final templateId = 'template_d58o7p1';
@@ -361,7 +362,8 @@ class _HomePageState extends State<HomePage> {
                               final emailResponse = await http.post(
                                 url,
                                 headers: {
-                                  'origin': "https://hajzi-6883b1f029cf.herokuapp.com",
+                                  'origin':
+                                      "https://hajzi-6883b1f029cf.herokuapp.com",
                                   'Content-Type': 'application/json',
                                 },
                                 body: json.encode({
@@ -376,14 +378,17 @@ class _HomePageState extends State<HomePage> {
 
                               print("Email Response: ${emailResponse.body}");
 
-
-                              final notificationResponse = await networkHandler.post(
-                                "/notifications/notifyAdmins/customer/$email", // Note: Ensure proper string interpolation
+                              final notificationResponse =
+                                  await networkHandler.post(
+                                "/notifications/notifyAdmins/customer/$email",
+                                // Note: Ensure proper string interpolation
                                 {},
                               );
 
-                              print("Notification Response Code: ${notificationResponse.statusCode}");
-                              print("Notification Response Body: ${notificationResponse.body}");
+                              print(
+                                  "Notification Response Code: ${notificationResponse.statusCode}");
+                              print(
+                                  "Notification Response Body: ${notificationResponse.body}");
 
                               if (notificationResponse.statusCode == 200) {
                                 print("Admin notification sent successfully");
@@ -394,6 +399,69 @@ class _HomePageState extends State<HomePage> {
 
                               print(
                                   "User role updated successfully on server.");
+
+
+                             await showDialog(
+                                context: context,
+                                builder: (context) {
+                                  return AlertDialog(
+                                    backgroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(
+                                          10), // Rounded edges for the dialog
+                                    ),
+                                    title: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          "Congratulations!",
+                                          style: TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                        IconButton(
+                                          icon: Icon(Icons.close,
+                                              color: Colors.black),
+                                          onPressed: () {
+                                            Navigator.of(context)
+                                                .pop(); // Close the dialog
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                    content: Text(
+                                      "You have successfully upgraded to Customer.",
+                                      style: TextStyle(fontSize: 16),
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.of(context)
+                                              .pop(); // Close the dialog
+                                        },
+                                        child: Text(
+                                          "Close",
+                                          style: TextStyle(color: Colors.black),
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+
+                              // **Force app to restart HomePage**
+                              Navigator.pushAndRemoveUntil(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => HomePage(
+                                    setLocale: widget.setLocale,
+                                    filterState: 0,
+                                  ),
+                                ),
+                                    (route) => false,
+                              );
+
                             } else {
                               print(
                                   "Failed to update user role on server: Status code ${response.statusCode}");
@@ -445,7 +513,7 @@ class _HomePageState extends State<HomePage> {
                         ? AppLocalizations.of(context)!.profile
                         : currentState == 2
                             ? AppLocalizations.of(context)!.chat
-                            : userRole=="customer"&&currentState == 3
+                            : userRole == "customer" && currentState == 3
                                 ? AppLocalizations.of(context)!.myshops
                                 : AppLocalizations.of(context)!.requests,
                 // Assuming "requests" for `currentState == 2`
@@ -470,7 +538,24 @@ class _HomePageState extends State<HomePage> {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => AddBlog()),
+                        PageRouteBuilder(
+                          transitionDuration: const Duration(milliseconds: 500),
+                          pageBuilder:
+                              (context, animation, secondaryAnimation) =>
+                                  AddBlog(),
+                          transitionsBuilder:
+                              (context, animation, secondaryAnimation, child) {
+                            return SlideTransition(
+                              position: animation.drive(
+                                Tween(
+                                        begin: const Offset(0.0, 1.0),
+                                        end: Offset.zero)
+                                    .chain(CurveTween(curve: Curves.easeInOut)),
+                              ),
+                              child: child,
+                            );
+                          },
+                        ),
                       );
                     },
                     child: const Icon(Icons.add, color: Colors.white),
@@ -488,7 +573,16 @@ class _HomePageState extends State<HomePage> {
                 currentState = index;
               }),
             ),
-            body: visibleWidgets[currentState],
+            body: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              transitionBuilder: (child, animation) {
+                return FadeTransition(
+                  opacity: animation,
+                  child: child,
+                );
+              },
+              child: visibleWidgets[currentState],
+            ),
           );
         });
   }

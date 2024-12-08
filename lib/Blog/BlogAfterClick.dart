@@ -178,7 +178,7 @@ class _BlogAfterClickState extends State<BlogAfterClick> {
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 25),
+                    padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20),
                     child: Row(
                       children: [
                         IconButton(
