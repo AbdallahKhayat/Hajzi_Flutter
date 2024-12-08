@@ -44,7 +44,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
             'from_name': "Hajzi Team",
             'to_name': email,
             'to_email': email,
-            'reset_link': 'https://quiet-scrubland-10088-12201191fd7c.herokuapp.com/user/verify/$email',
+            'reset_link': 'https://hajzi-6883b1f029cf.herokuapp.com/user/verify/$email',
           },
         }),
       );

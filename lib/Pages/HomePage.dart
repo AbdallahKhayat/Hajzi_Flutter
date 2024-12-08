@@ -361,7 +361,7 @@ class _HomePageState extends State<HomePage> {
                               final emailResponse = await http.post(
                                 url,
                                 headers: {
-                                  'origin': "https://quiet-scrubland-10088-12201191fd7c.herokuapp.com",
+                                  'origin': "https://hajzi-6883b1f029cf.herokuapp.com",
                                   'Content-Type': 'application/json',
                                 },
                                 body: json.encode({
