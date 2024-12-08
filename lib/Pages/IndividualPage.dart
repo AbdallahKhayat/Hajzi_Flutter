@@ -1,6 +1,8 @@
+import 'package:blogapp/CustomWidget/OwnMessageCard.dart';
+import 'package:blogapp/CustomWidget/ReplyCard.dart';
 import 'package:blogapp/Models/ChatModel.dart';
 import 'package:flutter/material.dart';
-
+import 'package:socket_io_client/socket_io_client.dart' as IO;
 import '../constants.dart'; // Import the constants file
 
 class IndividualPage extends StatefulWidget {
@@ -13,31 +15,52 @@ class IndividualPage extends StatefulWidget {
 }
 
 class _IndividualPageState extends State<IndividualPage> {
-  // Function to create a lighter version of a color
+
+  late IO.Socket socket;
+
+  /// Function to create a lighter version of a color
   Color lightenColor(Color color, [double amount = 0.2]) {
     if (color == Colors.black) {
-      // Special case for black to return a neutral light gray
-      return Colors.grey[850]!; // Adjust light gray to your preference
+      return Colors.grey[850]!; // Special case for black
     }
     final hsl = HSLColor.fromColor(color);
     final lighterHSL = hsl.withLightness((hsl.lightness + amount).clamp(0.0, 1.0));
     return lighterHSL.toColor();
   }
+  @override
+  void initState() {
+    super.initState();
+    connect();
+  }
+
+  void connect (){
+    socket = IO.io("http://192.168.88.19:5001",<String,dynamic>{
+      "transports": ["websocket"],
+      "autoConnect":false,
+    });
+    socket.connect();
+    socket.emit("/test", "Hello World");
+    socket.onConnect((data)=> print("Connected"));
+    print(socket.connected);
+    socket.emit("/test", "Hello World");
+  }
 
   @override
   Widget build(BuildContext context) {
-    // Get screen size for responsive adjustments
     final screenWidth = MediaQuery.of(context).size.width;
 
     return ValueListenableBuilder<Color>(
       valueListenable: appColorNotifier, // Listen to appColorNotifier
-      builder: (context, currentColor, child) {
+      builder: (context, mainColor, child) {
+        final messageBubbleColor = lightenColor(mainColor, 0.2); // Slightly lighter than mainColor
+        final backgroundColor = lightenColor(mainColor, 0.4); // Much lighter than mainColor
+
         return Scaffold(
-          backgroundColor: lightenColor(currentColor, 0.2), // Lighter shade of currentColor
+          backgroundColor: backgroundColor, // Lighter shade of mainColor
           appBar: PreferredSize(
             preferredSize: Size.fromHeight(kToolbarHeight),
             child: AppBar(
-              backgroundColor: currentColor,
+              backgroundColor: mainColor, // Main color used for AppBar
               titleSpacing: 0,
               leadingWidth: screenWidth * 0.25,
               leading: InkWell(
@@ -59,7 +82,7 @@ class _IndividualPageState extends State<IndividualPage> {
                       backgroundColor: Colors.white,
                       child: Icon(
                         widget.chatModel.icon,
-                        color: currentColor,
+                        color: mainColor,
                         size: screenWidth * 0.05,
                       ),
                     ),
@@ -120,18 +143,12 @@ class _IndividualPageState extends State<IndividualPage> {
                   onSelected: (value) {},
                   itemBuilder: (BuildContext context) {
                     return const [
-                      PopupMenuItem(
-                          value: "View Contact", child: Text("View Contact")),
-                      PopupMenuItem(
-                          value: "Media, links, and docs",
-                          child: Text("Media, links, and docs")),
+                      PopupMenuItem(value: "View Contact", child: Text("View Contact")),
+                      PopupMenuItem(value: "Media, links, and docs", child: Text("Media, links, and docs")),
                       PopupMenuItem(value: "Hajzi web", child: Text("Hajzi web")),
                       PopupMenuItem(value: "Search", child: Text("Search")),
-                      PopupMenuItem(
-                          value: "Mute Notifications",
-                          child: Text("Mute Notifications")),
-                      PopupMenuItem(
-                          value: "Wall Paper", child: Text("Wall Paper")),
+                      PopupMenuItem(value: "Mute Notifications", child: Text("Mute Notifications")),
+                      PopupMenuItem(value: "Wall Paper", child: Text("Wall Paper")),
                     ];
                   },
                 ),
@@ -141,7 +158,26 @@ class _IndividualPageState extends State<IndividualPage> {
           body: Column(
             children: [
               Expanded(
-                child: ListView(), // Main chat area
+                child: ListView(
+                  shrinkWrap: true,
+                  children: [
+                    OwnMessageCard(
+                      messageColor: messageBubbleColor,
+                      textColor: Colors.black,
+                    ),
+                    ReplyCard(),
+                    OwnMessageCard(
+                      messageColor: messageBubbleColor,
+                      textColor: Colors.black,
+                    ),
+                    ReplyCard(),
+                    OwnMessageCard(
+                      messageColor: messageBubbleColor,
+                      textColor: Colors.black,
+                    ),
+                    ReplyCard(),
+                  ],
+                ),
               ),
               Row(
                 children: [
@@ -160,7 +196,7 @@ class _IndividualPageState extends State<IndividualPage> {
                           border: InputBorder.none,
                           hintText: "Type a message",
                           contentPadding: const EdgeInsets.only(
-                            left: 20, // Increased padding on the left
+                            left: 20,
                             top: 10,
                             bottom: 10,
                           ),
@@ -170,11 +206,13 @@ class _IndividualPageState extends State<IndividualPage> {
                               IconButton(
                                 onPressed: () {
                                   showModalBottomSheet(
-                                      backgroundColor: Colors.transparent,
-                                      context: context, builder: (builder)=> BottomSheet());
+                                    backgroundColor: Colors.transparent,
+                                    context: context,
+                                    builder: (builder) => BottomSheet(),
+                                  );
                                 },
                                 icon: Icon(Icons.attach_file),
-                                padding: const EdgeInsets.only(right: 0, left: 30), // Move closer to camera
+                                padding: const EdgeInsets.only(right: 0, left: 30),
                               ),
                               IconButton(
                                 onPressed: () {},
@@ -187,10 +225,9 @@ class _IndividualPageState extends State<IndividualPage> {
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.only(
-                        bottom: 8, right: 10, left: 5),
+                    padding: const EdgeInsets.only(bottom: 8, right: 10, left: 5),
                     child: CircleAvatar(
-                      backgroundColor: currentColor,
+                      backgroundColor: mainColor,
                       radius: 25,
                       child: IconButton(
                         onPressed: () {},
@@ -209,6 +246,7 @@ class _IndividualPageState extends State<IndividualPage> {
       },
     );
   }
+
   Widget BottomSheet(){
     return Container(
       height: 278,
@@ -223,12 +261,12 @@ class _IndividualPageState extends State<IndividualPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   IconCreation(Icons.insert_drive_file,Colors.indigo,"Document"),
-                SizedBox(width: 40,),
-                IconCreation(Icons.camera_alt,Colors.pink,"Camera"),
-                SizedBox(width: 40,),
-                IconCreation(Icons.insert_photo,Colors.purple,"Gallery"),
+                  SizedBox(width: 40,),
+                  IconCreation(Icons.camera_alt,Colors.pink,"Camera"),
+                  SizedBox(width: 40,),
+                  IconCreation(Icons.insert_photo,Colors.purple,"Gallery"),
 
-              ],),
+                ],),
               SizedBox(height: 25,),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
