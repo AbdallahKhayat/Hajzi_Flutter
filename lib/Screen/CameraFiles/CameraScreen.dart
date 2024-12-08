@@ -109,6 +109,18 @@ class _CameraScreenState extends State<CameraScreen> {
                 if (snapshot.connectionState == ConnectionState.done) {
                   return LayoutBuilder(
                     builder: (context, constraints) {
+                      if (!_cameraController.value.isInitialized) {
+                        return Container(
+                          color: Colors.black, // Set the black background
+                          child: const Center(
+                            child: CircularProgressIndicator(
+                             // color: Colors.white, // Optional: Set the color of the loader
+                            ),
+                          ),
+                        );
+                      }
+
+
                       final screenWidth = constraints.maxWidth;
                       final screenHeight = constraints.maxHeight;
                       final cameraAspectRatio = _cameraController.value.aspectRatio;
@@ -148,6 +160,7 @@ class _CameraScreenState extends State<CameraScreen> {
                       );
                     },
                   );
+
                 } else {
                   return const Center(
                     child: CircularProgressIndicator(),
