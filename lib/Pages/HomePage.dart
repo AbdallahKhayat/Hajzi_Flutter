@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:blogapp/Models/profileModel.dart';
 import 'package:blogapp/Screen/chatscreen.dart';
+import 'package:blogapp/Screen/usersScreen.dart';
 import 'package:blogapp/services/stripe_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -188,6 +189,7 @@ class _HomePageState extends State<HomePage> {
     if (userRole == "customer") {
       visibleWidgets.add(ShopsScreen());
     } else if (userRole == "admin") {
+      visibleWidgets.add(UsersScreen());
       visibleWidgets.add(RequestsScreen());
     }
 
@@ -213,6 +215,11 @@ class _HomePageState extends State<HomePage> {
         label: AppLocalizations.of(context)!.myshops,
       ));
     } else if (userRole == "admin") {
+      navItems.add(BottomNavigationBarItem(
+        icon: const Icon(Icons.people),
+        label: AppLocalizations.of(context)!.users,
+      ));
+
       navItems.add(BottomNavigationBarItem(
         icon: const Icon(Icons.add_business),
         label: AppLocalizations.of(context)!.requests,
@@ -350,8 +357,10 @@ class _HomePageState extends State<HomePage> {
                               data,
                             );
                             if (response.statusCode == 200) {
-                              print("✅ User role updated successfully on the server.");
-                              await storage.write(key: "role", value: "customer");
+                              print(
+                                  "✅ User role updated successfully on the server.");
+                              await storage.write(
+                                  key: "role", value: "customer");
                               // Send an email notification
                               final serviceId = 'service_lap99wb';
                               final templateId = 'template_d58o7p1';
@@ -400,8 +409,7 @@ class _HomePageState extends State<HomePage> {
                               print(
                                   "User role updated successfully on server.");
 
-
-                             await showDialog(
+                              await showDialog(
                                 context: context,
                                 builder: (context) {
                                   return AlertDialog(
@@ -459,9 +467,8 @@ class _HomePageState extends State<HomePage> {
                                     filterState: 0,
                                   ),
                                 ),
-                                    (route) => false,
+                                (route) => false,
                               );
-
                             } else {
                               print(
                                   "Failed to update user role on server: Status code ${response.statusCode}");
@@ -515,7 +522,9 @@ class _HomePageState extends State<HomePage> {
                             ? AppLocalizations.of(context)!.chat
                             : userRole == "customer" && currentState == 3
                                 ? AppLocalizations.of(context)!.myshops
-                                : AppLocalizations.of(context)!.requests,
+                                : userRole == "admin"&&currentState == 3
+                                    ? AppLocalizations.of(context)!.users
+                                    : AppLocalizations.of(context)!.requests,
                 // Assuming "requests" for `currentState == 2`
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
