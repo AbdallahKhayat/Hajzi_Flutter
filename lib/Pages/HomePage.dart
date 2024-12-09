@@ -20,6 +20,9 @@ import 'WelcomePage.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import 'package:blogapp/constants.dart';
+import 'dart:async'; // Add this import at the top
+
+
 
 class HomePage extends StatefulWidget {
   final void Function(Locale) setLocale;
@@ -42,6 +45,9 @@ class _HomePageState extends State<HomePage> {
   String email = "";
   String? userRole;
 
+  int userCount = 0; // User count
+  int requestCount = 0; // Request count
+  late Timer _timer;
   //Color appColor = Colors.teal; // Default app theme color
   String selectedLanguage = "English";
 
@@ -63,6 +69,15 @@ class _HomePageState extends State<HomePage> {
     _loadUserRole();
     checkProfile();
 
+
+
+    // Poll for updates every 10 seconds
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      fetchCounts(); // Fetch counts periodically
+    });
+
+
+
     widgets = [
       HomeScreen(filterState: widget.filterState),
       // "All Posts" corresponds to this
@@ -72,6 +87,13 @@ class _HomePageState extends State<HomePage> {
       RequestsScreen(),
     ];
   }
+
+  @override
+  void dispose() {
+    _timer.cancel(); // Cancel the timer when the widget is disposed
+    super.dispose();
+  }
+
 
   Future<void> _loadUserRole() async {
     final role = await storage.read(key: "role");
@@ -177,6 +199,29 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+
+  Future<void> fetchCounts() async {
+    try {
+      // Fetch user count
+      var userResponse = await networkHandler.get("/user/getUsers");
+      if (userResponse != null && userResponse['data'] != null) {
+        setState(() {
+          userCount = userResponse['data'].length;
+        });
+      }
+
+      // Fetch request count
+      var requestResponse = await networkHandler.get("/AddBlogApproval/requests");
+      if (requestResponse != null && requestResponse['data'] != null) {
+        setState(() {
+          requestCount = requestResponse['data'].length;
+        });
+      }
+    } catch (e) {
+      debugPrint("Error fetching counts: $e");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     // Dynamically create widgets based on userRole
@@ -215,15 +260,69 @@ class _HomePageState extends State<HomePage> {
         label: AppLocalizations.of(context)!.myshops,
       ));
     } else if (userRole == "admin") {
-      navItems.add(BottomNavigationBarItem(
-        icon: const Icon(Icons.people),
-        label: AppLocalizations.of(context)!.users,
-      ));
+      navItems.add(
+        BottomNavigationBarItem(
+          icon: Stack(
+            children: [
+              const Icon(Icons.people), // Users icon
+              if (userCount > 0)
+                Positioned(
+                  right: 2,
+                  top: 0,
+                  bottom: 7,
+                  child: Container(
+                    padding: const EdgeInsets.all(3),
+                    decoration: BoxDecoration(
+                      color: Colors.red, // Red background for the badge
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      '$userCount', // Display the user count
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          label: AppLocalizations.of(context)!.users,
+        ),
+      );
 
-      navItems.add(BottomNavigationBarItem(
-        icon: const Icon(Icons.add_business),
-        label: AppLocalizations.of(context)!.requests,
-      ));
+      navItems.add(
+        BottomNavigationBarItem(
+          icon: Stack(
+            children: [
+              const Icon(Icons.add_business), // Requests icon
+              if (requestCount > 0)
+                Positioned(
+                  right: 2,
+                  top: 0,
+                  bottom: 7,
+                  child: Container(
+                    padding: const EdgeInsets.all(3),
+                    decoration: BoxDecoration(
+                      color: Colors.red, // Red background for the badge
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      '$requestCount', // Display the request count
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          label: AppLocalizations.of(context)!.requests,
+        ),
+      );
     }
 
     // Ensure currentState does not exceed visibleWidgets length
@@ -580,6 +679,10 @@ class _HomePageState extends State<HomePage> {
               items: navItems,
               onTap: (index) => setState(() {
                 currentState = index;
+                // Refresh counts when switching to "Users" or "Requests" tab
+                if (userRole == "admin" && (currentState == 3 || currentState == 4)) {
+                  fetchCounts(); // Refresh counts for Users and Requests
+                }
               }),
             ),
             body: AnimatedSwitcher(
