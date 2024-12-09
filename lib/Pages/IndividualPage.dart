@@ -17,6 +17,7 @@ class IndividualPage extends StatefulWidget {
 class _IndividualPageState extends State<IndividualPage> {
 
   late IO.Socket socket;
+  bool sendButton = false;
 
   /// Function to create a lighter version of a color
   Color lightenColor(Color color, [double amount = 0.2]) {
@@ -34,7 +35,7 @@ class _IndividualPageState extends State<IndividualPage> {
   }
 
   void connect (){
-    socket = IO.io("http://192.168.88.19:5001",<String,dynamic>{
+    socket = IO.io("http://192.168.88.5:5001",<String,dynamic>{
       "transports": ["websocket"],
       "autoConnect":false,
     });
@@ -188,10 +189,23 @@ class _IndividualPageState extends State<IndividualPage> {
                         borderRadius: BorderRadius.circular(25),
                       ),
                       child: TextFormField(
+
                         textAlignVertical: TextAlignVertical.center,
                         keyboardType: TextInputType.multiline,
                         maxLines: 5,
                         minLines: 1,
+                        onChanged: (value){
+                          if(value.length>0){
+                            setState(() {
+                              sendButton = true;
+                            });
+                          }
+                          else {
+                            setState(() {
+                              sendButton = false;
+                            });
+                          }
+                        },
                         decoration: InputDecoration(
                           border: InputBorder.none,
                           hintText: "Type a message",
@@ -231,8 +245,8 @@ class _IndividualPageState extends State<IndividualPage> {
                       radius: 25,
                       child: IconButton(
                         onPressed: () {},
-                        icon: const Icon(
-                          Icons.mic,
+                        icon: Icon(
+                         sendButton? Icons.send : Icons.mic,
                           color: Colors.white,
                         ),
                       ),
