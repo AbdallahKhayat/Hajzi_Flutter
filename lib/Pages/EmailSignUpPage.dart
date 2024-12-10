@@ -192,6 +192,14 @@ class _EmailSignUpPageState extends State<EmailSignUpPage> {
                             await storage.write(key: "token", value: jwtToken);
                             await storage.write(key: "role", value: selectedRole);
                             await storage.write(key: "email", value: _emailController.text);
+
+                            // 🔥 Initialize Socket.io connection
+                            networkHandler.initSocketConnection();
+
+                            // 🔥 Join the socket.io chat using email
+                            networkHandler.socket!.emit('join_chat', _emailController.text);
+
+
                             // Show a success message
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(

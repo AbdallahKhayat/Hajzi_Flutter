@@ -130,6 +130,12 @@ class _EmailSignInPageState extends State<EmailSignInPage> {
                             await storage.write(key: "token", value: jwtToken);
                             await storage.write(key: "email", value: _emailController.text);
 
+                            // 🔥 Initialize Socket.io connection
+                            networkHandler.initSocketConnection();
+
+                            // 🔥 Join the socket.io chat using email
+                            networkHandler.socket!.emit('join_chat', _emailController.text);
+
                             // Store user role if available
                             if (output.containsKey('role')) {
                               await storage.write(
