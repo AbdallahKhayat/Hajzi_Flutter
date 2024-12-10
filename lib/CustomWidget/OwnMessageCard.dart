@@ -2,10 +2,18 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class OwnMessageCard extends StatelessWidget {
+  final String message; // 🔥 New - Actual message
+  final String time; // 🔥 New - Message timestamp
   final Color messageColor; // Background color for the message bubble
   final Color textColor; // Color for the text inside the message bubble
 
-  const OwnMessageCard({super.key, required this.messageColor, required this.textColor});
+  const OwnMessageCard({
+    super.key,
+    required this.message,
+    required this.time,
+    required this.messageColor,
+    required this.textColor
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -20,15 +28,15 @@ class OwnMessageCard extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          color: messageColor, // Switched: Background color is now dynamic
+          color: messageColor, // 🔥 Dynamic message color
           margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
           child: Stack(
             children: [
               Padding(
                 padding: const EdgeInsets.only(left: 10, right: 60, top: 5, bottom: 20),
                 child: Text(
-                  "Hey",
-                  style: TextStyle(fontSize: 16, color: textColor), // Dynamic text color
+                  message, // 🔥 Dynamic message text
+                  style: TextStyle(fontSize: 16, color: textColor),
                 ),
               ),
               Positioned(
@@ -37,8 +45,8 @@ class OwnMessageCard extends StatelessWidget {
                 child: Row(
                   children: [
                     Text(
-                      "20:58",
-                      style: TextStyle(fontSize: 13, color: textColor.withOpacity(0.6)), // Slightly transparent
+                      time, // 🔥 Dynamic timestamp
+                      style: TextStyle(fontSize: 13, color: textColor.withOpacity(0.6)),
                     ),
                     const SizedBox(width: 5),
                     const Icon(

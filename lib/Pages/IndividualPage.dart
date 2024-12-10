@@ -1,14 +1,22 @@
 import 'package:blogapp/CustomWidget/OwnMessageCard.dart';
 import 'package:blogapp/CustomWidget/ReplyCard.dart';
-import 'package:blogapp/Models/ChatModel.dart';
 import 'package:flutter/material.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
+import '../NetworkHandler.dart';
 import '../constants.dart'; // Import the constants file
+import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // 🔥 Add this to get the user's email
+import 'package:intl/intl.dart'; // 🔥 Make sure you import this at the top of the file
+import 'package:image_picker/image_picker.dart';
+import 'package:file_picker/file_picker.dart';
 
 class IndividualPage extends StatefulWidget {
-  const IndividualPage({super.key, required this.chatModel});
 
-  final ChatModel chatModel;
+  final String chatId; // 🔥 New parameter to receive chat ID
+  final String chatPartnerEmail; // 🔥 New parameter to receive partner email
+
+  const IndividualPage({super.key, required this.chatId, required this.chatPartnerEmail}); // 🔥 Replace chatModel with chatId and chatPartnerEmail
+
+
 
   @override
   State<IndividualPage> createState() => _IndividualPageState();
@@ -18,6 +26,42 @@ class _IndividualPageState extends State<IndividualPage> {
 
   late IO.Socket socket;
   bool sendButton = false;
+  TextEditingController _messageController = TextEditingController(); // 🔥 Add this to track input
+  List messages = []; // 🔥 Create a list to store messages
+  final FlutterSecureStorage storage = const FlutterSecureStorage(); // 🔥 Add for user email storage
+  String? loggedInUserEmail; // 🔥 Store logged-in user's email
+
+
+  String formatTime(String timestamp) {
+    try {
+      DateTime dateTime = DateTime.parse(timestamp);
+      String formattedTime = DateFormat('h:mm a').format(dateTime);
+      return formattedTime;
+    } catch (e) {
+      print('Error formatting time: $e');
+      return ''; // Return an empty string if an error occurs
+    }
+  }
+
+
+  void sendMessage(String messageContent) {
+    if (messageContent.isNotEmpty) {
+      NetworkHandler().sendMessage(widget.chatId, messageContent, loggedInUserEmail ?? 'unknown@example.com');
+      _messageController.clear();
+      setState(() {
+        sendButton = false;
+        // Add the sent message to the messages list
+        messages.add({
+          'content': messageContent,
+          'senderEmail': loggedInUserEmail,
+          'timestamp': DateTime.now().toIso8601String(), // Set current timestamp
+        });
+      });
+    }
+  }
+
+
+
 
   /// Function to create a lighter version of a color
   Color lightenColor(Color color, [double amount = 0.2]) {
@@ -28,23 +72,42 @@ class _IndividualPageState extends State<IndividualPage> {
     final lighterHSL = hsl.withLightness((hsl.lightness + amount).clamp(0.0, 1.0));
     return lighterHSL.toColor();
   }
+
   @override
   void initState() {
     super.initState();
-    connect();
+    getUserEmail();
+    NetworkHandler().initSocketConnection(); // ✅ Use existing connection from NetworkHandler
+
+    // 🔥 Join the chat room using the chatId passed to IndividualPage
+    NetworkHandler().socket!.emit('join_chat', widget.chatId);
+
+    // 🔥 Listen for incoming messages (only one listener globally)
+    NetworkHandler().socket!.on('receive_message', (data) {
+      print('New message received: $data');
+      setState(() {
+        messages.add({
+          'content': data['content'],
+          'senderEmail': data['senderEmail'],
+          'timestamp': data['timestamp'], // Include timestamp
+        });
+      });
+    });
+
   }
 
-  void connect (){
-    socket = IO.io("http://192.168.88.5:5001",<String,dynamic>{
-      "transports": ["websocket"],
-      "autoConnect":false,
-    });
-    socket.connect();
-    socket.emit("/test", "Hello World");
-    socket.onConnect((data)=> print("Connected"));
-    print(socket.connected);
-    socket.emit("/test", "Hello World");
+  Future<void> getUserEmail() async {
+    try {
+      loggedInUserEmail = await storage.read(key: "email");
+      print('Logged-in user email: $loggedInUserEmail');
+    } catch (e) {
+      print("Error getting user email: $e");
+    }
   }
+
+
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -62,6 +125,7 @@ class _IndividualPageState extends State<IndividualPage> {
             preferredSize: Size.fromHeight(kToolbarHeight),
             child: AppBar(
               backgroundColor: mainColor, // Main color used for AppBar
+
               titleSpacing: 0,
               leadingWidth: screenWidth * 0.25,
               leading: InkWell(
@@ -81,17 +145,20 @@ class _IndividualPageState extends State<IndividualPage> {
                     CircleAvatar(
                       radius: screenWidth * 0.05,
                       backgroundColor: Colors.white,
-                      child: Icon(
-                        widget.chatModel.icon,
-                        color: mainColor,
-                        size: screenWidth * 0.05,
+                      child: Text(
+                        widget.chatPartnerEmail[0].toUpperCase(), // Display first letter of email
+                        style: TextStyle(
+                          color: mainColor,
+                          fontWeight: FontWeight.bold,
+                          fontSize: screenWidth * 0.05,
+                        ),
                       ),
                     ),
                   ],
                 ),
               ),
-              title: InkWell(
-                onTap: () {},
+              title: InkWell( // 🔥 Keep only this title, as it's interactive and supports tap actions
+                onTap: () {}, // Optional: You can add functionality when tapping the title
                 child: Container(
                   margin: EdgeInsets.symmetric(horizontal: screenWidth * 0.002),
                   child: Column(
@@ -99,7 +166,7 @@ class _IndividualPageState extends State<IndividualPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        widget.chatModel.name,
+                        widget.chatPartnerEmail.split('@')[0], // Display only the email prefix
                         style: const TextStyle(
                           fontSize: 19,
                           fontWeight: FontWeight.bold,
@@ -107,20 +174,14 @@ class _IndividualPageState extends State<IndividualPage> {
                         ),
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const Text(
-                        "last seen at 12:30",
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.white70,
-                        ),
-                      ),
                     ],
                   ),
                 ),
               ),
+
               actions: [
                 IconButton(
-                  onPressed: () {},
+                  onPressed: () {}, // 🚀 To be implemented later
                   icon: Icon(
                     Icons.videocam,
                     size: screenWidth * 0.06,
@@ -128,7 +189,7 @@ class _IndividualPageState extends State<IndividualPage> {
                   ),
                 ),
                 IconButton(
-                  onPressed: () {},
+                  onPressed: () {}, // 🚀 To be implemented later
                   icon: Icon(
                     Icons.call,
                     size: screenWidth * 0.06,
@@ -141,7 +202,7 @@ class _IndividualPageState extends State<IndividualPage> {
                     color: Colors.white,
                     size: screenWidth * 0.06,
                   ),
-                  onSelected: (value) {},
+                  onSelected: (value) {}, // 🚀 To be implemented later
                   itemBuilder: (BuildContext context) {
                     return const [
                       PopupMenuItem(value: "View Contact", child: Text("View Contact")),
@@ -158,28 +219,36 @@ class _IndividualPageState extends State<IndividualPage> {
           ),
           body: Column(
             children: [
-              Expanded(
-                child: ListView(
-                  shrinkWrap: true,
-                  children: [
-                    OwnMessageCard(
-                      messageColor: messageBubbleColor,
-                      textColor: Colors.black,
-                    ),
-                    ReplyCard(),
-                    OwnMessageCard(
-                      messageColor: messageBubbleColor,
-                      textColor: Colors.black,
-                    ),
-                    ReplyCard(),
-                    OwnMessageCard(
-                      messageColor: messageBubbleColor,
-                      textColor: Colors.black,
-                    ),
-                    ReplyCard(),
-                  ],
-                ),
-              ),
+
+          Expanded(
+          child: ListView.builder(
+          itemCount: messages.length,
+            itemBuilder: (context, index) {
+              final message = messages[index];
+              bool isOwnMessage = message['senderEmail'] == loggedInUserEmail; // ✅ Check if message is from the current user
+
+              if (isOwnMessage) {
+                // 🔥 Show OwnMessageCard if the senderEmail is the same as the logged-in user email
+                return OwnMessageCard(
+                  message: message['content'],
+                  time: formatTime(message['timestamp']),
+                  messageColor: Colors.greenAccent, // Example of color customization
+                  textColor: Colors.black,
+                );
+              } else {
+                // 🔥 Show ReplyCard if the message is from the other participant
+                return ReplyCard(
+                  message: message['content'],
+                  time: formatTime(message['timestamp']),
+                  messageColor: Colors.white,
+                  textColor: Colors.black,
+                );
+              }
+            },
+          ),
+        ),
+
+
               Row(
                 children: [
                   Expanded(
@@ -189,23 +258,17 @@ class _IndividualPageState extends State<IndividualPage> {
                         borderRadius: BorderRadius.circular(25),
                       ),
                       child: TextFormField(
-
+                        controller: _messageController,
                         textAlignVertical: TextAlignVertical.center,
                         keyboardType: TextInputType.multiline,
                         maxLines: 5,
                         minLines: 1,
-                        onChanged: (value){
-                          if(value.length>0){
-                            setState(() {
-                              sendButton = true;
-                            });
-                          }
-                          else {
-                            setState(() {
-                              sendButton = false;
-                            });
-                          }
+                        onChanged: (value) {
+                          setState(() {
+                            sendButton = value.isNotEmpty;
+                          });
                         },
+                        onFieldSubmitted: sendMessage, // 🔥 Use the sendMessage method here
                         decoration: InputDecoration(
                           border: InputBorder.none,
                           hintText: "Type a message",
@@ -222,14 +285,16 @@ class _IndividualPageState extends State<IndividualPage> {
                                   showModalBottomSheet(
                                     backgroundColor: Colors.transparent,
                                     context: context,
-                                    builder: (builder) => BottomSheet(),
+                                    builder: (builder) => CustomBottomSheet(),
                                   );
                                 },
                                 icon: Icon(Icons.attach_file),
                                 padding: const EdgeInsets.only(right: 0, left: 30),
                               ),
                               IconButton(
-                                onPressed: () {},
+                                onPressed: () {
+                                  // TODO: Implement camera logic
+                                },
                                 icon: Icon(Icons.camera_alt),
                               ),
                             ],
@@ -244,16 +309,21 @@ class _IndividualPageState extends State<IndividualPage> {
                       backgroundColor: mainColor,
                       radius: 25,
                       child: IconButton(
-                        onPressed: () {},
-                        icon: Icon(
-                         sendButton? Icons.send : Icons.mic,
-                          color: Colors.white,
+                        onPressed: () {
+                          if (sendButton) sendMessage(_messageController.text.trim());
+                        },
+                        icon: AnimatedSwitcher(
+                          duration: Duration(milliseconds: 200),
+                          child: sendButton
+                              ? Icon(Icons.send, key: ValueKey('send'))
+                              : Icon(Icons.mic, key: ValueKey('mic')),
                         ),
                       ),
                     ),
                   ),
                 ],
-              ),
+              )
+
             ],
           ),
         );
@@ -261,7 +331,7 @@ class _IndividualPageState extends State<IndividualPage> {
     );
   }
 
-  Widget BottomSheet(){
+  Widget CustomBottomSheet() {
     return Container(
       height: 278,
       width: MediaQuery.of(context).size.width,
@@ -274,24 +344,54 @@ class _IndividualPageState extends State<IndividualPage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  IconCreation(Icons.insert_drive_file,Colors.indigo,"Document"),
-                  SizedBox(width: 40,),
-                  IconCreation(Icons.camera_alt,Colors.pink,"Camera"),
-                  SizedBox(width: 40,),
-                  IconCreation(Icons.insert_photo,Colors.purple,"Gallery"),
-
-                ],),
-              SizedBox(height: 25,),
+                  IconCreation(
+                      Icons.insert_drive_file,
+                      Colors.indigo,
+                      "Document",
+                      onTap: () => handleFileSelection("Document")
+                  ),
+                  SizedBox(width: MediaQuery.of(context).size.width * 0.1),
+                  IconCreation(
+                      Icons.camera_alt,
+                      Colors.pink,
+                      "Camera",
+                      onTap: () => handleFileSelection("Camera")
+                  ),
+                  SizedBox(width: MediaQuery.of(context).size.width * 0.1),
+                  IconCreation(
+                      Icons.insert_photo,
+                      Colors.purple,
+                      "Gallery",
+                      onTap: () => handleFileSelection("Gallery")
+                  ),
+                ],
+              ),
+              SizedBox(height: 25),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  IconCreation(Icons.headset,Colors.orange,"Audio"),
-                  SizedBox(width: 40,),
-                  IconCreation(Icons.location_pin,Colors.teal,"Location"),
-                  SizedBox(width: 40,),
-                  IconCreation(Icons.person,Colors.blue,"Contact"),
-
-                ],)
+                  IconCreation(
+                      Icons.headset,
+                      Colors.orange,
+                      "Audio",
+                      onTap: () => handleFileSelection("Audio")
+                  ),
+                  SizedBox(width: MediaQuery.of(context).size.width * 0.1),
+                  IconCreation(
+                      Icons.location_pin,
+                      Colors.teal,
+                      "Location",
+                      onTap: () => handleFileSelection("Location")
+                  ),
+                  SizedBox(width: MediaQuery.of(context).size.width * 0.1),
+                  IconCreation(
+                      Icons.person,
+                      Colors.blue,
+                      "Contact",
+                      onTap: () => handleFileSelection("Contact")
+                  ),
+                ],
+              ),
             ],
           ),
         ),
@@ -299,20 +399,60 @@ class _IndividualPageState extends State<IndividualPage> {
     );
   }
 
-  Widget IconCreation(IconData icon,Color color, String text){
+  Widget IconCreation(IconData icon, Color color, String text, {required Function() onTap}) {
     return InkWell(
-      onTap: () {},
+      onTap: onTap,
       child: Column(
         children: [
           CircleAvatar(
-            radius: 30,
+            radius: MediaQuery.of(context).size.width * 0.08,
             backgroundColor: color,
-            child: Icon(icon, size: 29, color: Colors.white,),
+            child: Icon(icon, size: 29, color: Colors.white),
           ),
-          SizedBox(height: 5,),
-          Text(text, style: TextStyle(fontSize: 13),),
+          SizedBox(height: 5),
+          Text(text, style: TextStyle(fontSize: 13)),
         ],
       ),
     );
   }
+
+
+
+  void handleFileSelection(String type) async {
+    if (type == "Document") {
+      FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.any);
+      if (result != null) {
+        String filePath = result.files.single.path!;
+        print("Document selected: $filePath");
+        // TODO: Send document to server
+      }
+    } else if (type == "Camera") {
+      final pickedFile = await ImagePicker().pickImage(source: ImageSource.camera);
+      if (pickedFile != null) {
+        print("Image captured: ${pickedFile.path}");
+        // TODO: Send image to server
+      }
+    } else if (type == "Gallery") {
+      final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
+      if (pickedFile != null) {
+        print("Image selected: ${pickedFile.path}");
+        // TODO: Send image to server
+      }
+    } else if (type == "Audio") {
+      FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.audio);
+      if (result != null) {
+        String filePath = result.files.single.path!;
+        print("Audio selected: $filePath");
+        // TODO: Send audio to server
+      }
+    } else if (type == "Location") {
+      print("Location button pressed");
+      // TODO: Get location using geolocator
+    } else if (type == "Contact") {
+      print("Contact button pressed");
+      // TODO: Get contacts using contacts_service
+    }
+  }
+
+
 }

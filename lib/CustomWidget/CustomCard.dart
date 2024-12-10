@@ -1,57 +1,74 @@
 import 'package:blogapp/Pages/IndividualPage.dart';
 import 'package:flutter/material.dart';
-
-import '../Models/ChatModel.dart';
 import '../constants.dart';
 
 class CustomCard extends StatelessWidget {
-  const CustomCard({super.key, required this.chatModel});
+  final Map<String, dynamic> chat; // 🔥 Accept raw chat data from backend
 
-  final ChatModel chatModel;
+  const CustomCard({super.key, required this.chat});
 
   @override
   Widget build(BuildContext context) {
+    // Extract chat data
+    final String chatPartnerEmail = chat['users']
+        .firstWhere((email) => email != 'CURRENT_USER_EMAIL_HERE'); // 🔥 Get the email of the other user
+    final String lastMessage = chat['lastMessage'] ?? 'No messages yet';
+    final String time = _formatTime(chat['lastMessageTime']);
+    final String partnerInitial = chatPartnerEmail.isNotEmpty
+        ? chatPartnerEmail[0].toUpperCase()
+        : '?'; // 🔥 Extract first letter of the chat partner's email
+
     return InkWell(
       onTap: () {
         Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => IndividualPage(
-                      chatModel: chatModel,
-                    )));
+          context,
+          MaterialPageRoute(
+            builder: (context) => IndividualPage(
+              chatId: chat['_id'], // 🔥 Pass chatId
+              chatPartnerEmail: chatPartnerEmail, // 🔥 Pass partner's email
+            ),
+          ),
+        );
       },
       child: Column(
         children: [
           ListTile(
             leading: ValueListenableBuilder<Color>(
-              valueListenable: appColorNotifier, // Correct usage
+              valueListenable: appColorNotifier,
               builder: (context, currentColor, child) {
                 return CircleAvatar(
                   radius: 30,
                   backgroundColor: currentColor,
-                  child: Icon(
-                    chatModel.icon, // Use dynamic icon from the model
-                    color: Colors.white,
-                    size: 37,
+                  child: Text(
+                    partnerInitial, // 🔥 Dynamic first letter of partner's email
+                    style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white
+                    ),
                   ),
                 );
               },
             ),
             title: Text(
-              chatModel.name,
+              chatPartnerEmail, // 🔥 Dynamic chat partner's email as the chat title
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             subtitle: Row(
               children: [
-                const Icon(Icons.done_all),
+                const Icon(Icons.done_all, color: Colors.blue, size: 18), // ✅ Read/Delivered Status
                 const SizedBox(width: 3),
-                Text(
-                  chatModel.currentMessage,
-                  style: TextStyle(fontSize: 13),
+                Expanded(
+                  child: Text(
+                    lastMessage,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontSize: 13),
+                  ),
                 ),
               ],
             ),
-            trailing: Text(chatModel.time),
+            trailing: Text(time, style: const TextStyle(fontSize: 12, color: Colors.grey)), // 🔥 Dynamic time
           ),
           const Padding(
             padding: EdgeInsets.only(right: 20, left: 80),
@@ -60,5 +77,21 @@ class CustomCard extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  /// 🔥 **Utility function to format the time from ISO string**
+  String _formatTime(String? isoTime) {
+    if (isoTime == null) return '';
+    try {
+      final DateTime dateTime = DateTime.parse(isoTime);
+      final Duration difference = DateTime.now().difference(dateTime);
+      if (difference.inDays > 0) {
+        return "${dateTime.day}/${dateTime.month}";
+      } else {
+        return "${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')}";
+      }
+    } catch (e) {
+      return ''; // Return empty string if there is an error parsing
+    }
   }
 }

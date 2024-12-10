@@ -26,47 +26,87 @@ class NetworkHandler{
   factory NetworkHandler() {
     return _instance;
   }
-  NetworkHandler._internal();
-
+  NetworkHandler._internal() {
+    // 🔥 Ensure socket connection is initialized only once
+    initSocketConnection();
+  }
+  // ✅ Function to initialize the socket connection
   // ✅ Function to initialize the socket connection
   void initSocketConnection() {
+    if (socket != null && socket!.connected) {
+      log.i('🔄 Socket already connected');
+      return;
+    }
+
+    log.i('🚀 Initializing Socket Connection...');
+
     try {
       socket = IO.io(baseurl, <String, dynamic>{
         'transports': ['websocket'],
-        'autoConnect': false,
+        'path': '/socket.io', // 🔥 Important to set path for socket.io endpoint
+        'autoConnect': true, // 🔥 Automatically connect on creation
       });
-      socket!.connect();
 
-      // Event listeners
+      // ✅ Set up event listeners
       socket!.onConnect((_) {
-        log.i("Connected to the Socket Server");
+        log.i("✅ Connected to the Socket Server");
       });
 
       socket!.onDisconnect((_) {
-        log.w("Disconnected from the Socket Server");
+        log.w("⚠️ Disconnected from the Socket Server");
       });
 
       socket!.on('receive_message', (data) {
-        log.i('Message received: $data');
+        log.i('📩 Message received: $data');
       });
+
+      // Attempt to connect the socket
+      socket!.connect();
     } catch (e) {
-      log.e("Error initializing socket: $e");
-    }
-
-
-    void sendMessage(String chatId, String messageContent) {
-      if (socket != null && socket!.connected) {
-        socket!.emit('send_message', {
-          'chatId': chatId,
-          'content': messageContent,
-        });
-        log.i('Message sent: $messageContent');
-      } else {
-        log.e('Socket is not connected');
-      }
+      log.e("❌ Error initializing socket: $e");
     }
   }
- //End changes
+  // ✅ Function to send a message
+  void sendMessage(String chatId, String messageContent, String senderEmail) {
+    if (socket != null && socket!.connected) {
+      log.i('📤 Sending message: $messageContent to Chat ID: $chatId');
+      socket!.emit('send_message', {
+        'chatId': chatId,
+        'content': messageContent,
+        'senderEmail': senderEmail, // Pass sender email as part of the message
+      });
+    } else {
+      log.e('⚠️ Socket is not connected. Message not sent.');
+    }
+  }
+
+
+
+  Future<dynamic> getWithAuth(String url, String token) async {
+    try {
+      final response = await http.get(
+        Uri.parse(baseurl + url),
+        headers: {
+          "Content-type": "application/json",
+          "Authorization": "Bearer $token", // 🔥 Attach the Bearer token
+        },
+      );
+
+      if (response.statusCode == 200) {
+        log.i("✅ API Response Success: ${response.statusCode}");
+        return json.decode(response.body);
+      } else {
+        log.e("❌ API Error: ${response.statusCode}");
+        return null;
+      }
+    } catch (e) {
+      log.e("❌ Error during getWithAuth: $e");
+      return null;
+    }
+  }
+
+
+//End changes
 
 
 
