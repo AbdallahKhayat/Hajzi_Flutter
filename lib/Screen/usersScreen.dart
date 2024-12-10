@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
-import 'package:http/http.dart' as http;
 import '../NetworkHandler.dart';
 
 class UsersScreen extends StatefulWidget {
@@ -23,10 +22,10 @@ class _UsersScreenState extends State<UsersScreen> {
   // Function to fetch users using NetworkHandler
   Future<void> fetchUsers() async {
     try {
-      var response = await networkHandler.get("/user/getUsers"); // Use your get method
+      var response = await networkHandler.get("/user/getUsers");
       if (response != null && response['data'] != null) {
         setState(() {
-          users = response['data'];
+          users = response['data']; // Refresh the users list from the server
         });
       } else {
         debugPrint("No users found: ${response['msg']}");
@@ -36,20 +35,35 @@ class _UsersScreenState extends State<UsersScreen> {
     }
   }
 
-  // Function to handle Ban button
-  Future<void> banUser(String email) async {
+  // Function to handle Ban/Unban button
+  Future<void> toggleBanStatus(String email) async {
     try {
-      var response = await networkHandler.get("/user/ban/$email"); // Assuming a ban endpoint
-      if (response['Status'] == true) {
+      var response = await networkHandler.patch("/user/ban/$email", {});
+      var responseData = json.decode(response.body);
+
+      if (response != null && responseData['Status'] == true) {
+        setState(() {
+          int userIndex = users.indexWhere((user) => user['email'] == email);
+          if (userIndex != -1) {
+            // Update the user's isBanned value locally from the server's response
+            users[userIndex]['isBanned'] = responseData['isBanned'];
+          }
+        });
+
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("User banned successfully!")),
+          SnackBar(content: Text(responseData['message'] ?? "User status updated successfully!")),
         );
-        fetchUsers(); // Refresh user list
       } else {
-        debugPrint("Failed to ban user: ${response['msg']}");
+        debugPrint("Failed to ban/unban user: ${responseData['message']}");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(responseData['message'] ?? "Failed to update user status.")),
+        );
       }
     } catch (e) {
-      debugPrint("Error banning user: $e");
+      debugPrint("Error banning/unbanning user: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("An error occurred while updating the user status.")),
+      );
     }
   }
 
@@ -72,7 +86,14 @@ class _UsersScreenState extends State<UsersScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(responseData['msg'] ?? "User role updated successfully!")),
         );
-        fetchUsers(); // Refresh user list
+
+        // Update the user's role locally in the list
+        setState(() {
+          int userIndex = users.indexWhere((user) => user['email'] == email);
+          if (userIndex != -1) {
+            users[userIndex]['role'] = newRole;
+          }
+        });
       } else {
         debugPrint("Failed to update user role: ${responseData['msg']}");
         ScaffoldMessenger.of(context).showSnackBar(
@@ -94,23 +115,24 @@ class _UsersScreenState extends State<UsersScreen> {
         title: const Text(""),
       ),
       body: users.isEmpty
-          ? const Center(child: CircularProgressIndicator()) // Show loader while fetching
+          ? const Center(child: CircularProgressIndicator())
           : ListView.builder(
         itemCount: users.length,
         itemBuilder: (context, index) {
           var user = users[index];
+          bool isBanned = user['isBanned'] == true;
           return Container(
             margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
             decoration: BoxDecoration(
-              color: Colors.white, // Card background color
-              borderRadius: BorderRadius.circular(12.0), // Rounded corners
-              border: Border.all(color: Colors.grey.shade300, width: 1), // Border color and width
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12.0),
+              border: Border.all(color: Colors.grey.shade300, width: 1),
               boxShadow: [
                 BoxShadow(
                   color: Colors.grey.shade200,
                   blurRadius: 8.0,
                   spreadRadius: 2.0,
-                  offset: const Offset(0, 4), // Shadow position
+                  offset: const Offset(0, 4),
                 ),
               ],
             ),
@@ -148,23 +170,30 @@ class _UsersScreenState extends State<UsersScreen> {
                           : Colors.green,
                     ),
                   ),
+                  const SizedBox(height: 4),
+                  Text(
+                    isBanned ? "Status: Banned" : "Status: Active",
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: isBanned ? Colors.red : Colors.green,
+                    ),
+                  ),
                   const SizedBox(height: 16),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       TextButton(
-                        onPressed: () => banUser(user['email']),
-                        child: const Text("Ban"),
+                        onPressed: () => toggleBanStatus(user['email']),
+                        child: Text(isBanned ? "Unban" : "Ban"),
                         style: TextButton.styleFrom(
-                          foregroundColor: Colors.red,
+                          foregroundColor: isBanned ? Colors.green : Colors.red,
                         ),
                       ),
                       const SizedBox(width: 10),
                       TextButton(
                         onPressed: () => toggleUserRole(user['email'], user['role']),
-                        child: Text(
-                          user['role'] == "customer" ? "Unpromote" : "Promote",
-                        ),
+                        child: Text(user['role'] == "customer" ? "Unpromote" : "Promote"),
                         style: TextButton.styleFrom(
                           foregroundColor: Colors.green,
                         ),
@@ -179,5 +208,4 @@ class _UsersScreenState extends State<UsersScreen> {
       ),
     );
   }
-
 }

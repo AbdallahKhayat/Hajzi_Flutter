@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../Blog/BlogAfterClick.dart';
@@ -34,11 +36,44 @@ class _BlogCardState extends State<BlogCard> {
     });
   }
 
+  NetworkHandler networkHandler=  NetworkHandler();
+
+
+
   @override
   void initState() {
     super.initState();
     _loadUserRole(); // Load the role when the widget is initialized
   }
+
+
+
+
+  Future<void> sendNotification({
+    required String email,
+    required String title,
+    required String body,
+  }) async {
+    try {
+      print("Sending notification to: $email");
+      final response = await widget.networkHandler.post("/notifications/send", {
+        "title": title,
+        "body": body,
+        "recipient": email,
+      });
+
+      final responseBody = json.decode(response.body);
+      if (response != null && responseBody['Status'] == true) {
+        print("Notification sent successfully: ${responseBody['message']}");
+      } else {
+        print("Failed to send notification: ${responseBody['message']}");
+      }
+    } catch (e) {
+      print("Error sending notification: $e");
+    }
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -94,48 +129,53 @@ class _BlogCardState extends State<BlogCard> {
                       ),
                     ),
                     if (userRole == "admin")
-                      Positioned(
-                        top: 5, // Spacing from the top edge
-                        right: 3,
-                        child: IconButton(
-                          onPressed: () async {
-                            try {
-                              final response =
-                                  await widget.networkHandler.delete(
-                                "/blogpost/delete/${widget.addBlogModel.id}",
-                              );
+                        Positioned(
+                          top: 5,
+                          right: 3,
+                          child: IconButton(
+                            onPressed: () async {
+                              try {
+                                final response = await widget.networkHandler.delete(
+                                  "/blogpost/delete/${widget.addBlogModel.id}",
+                                );
 
-                              print("Delete Response: $response");
+                                print("Delete Response: $response");
 
-                              if (response['Status'] == false) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
+                                if (response['Status'] == false) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
                                       content: Text(
-                                          "You don`t have permission to delete this blog")),
-                                );
-                              } else {
+                                        "You don’t have permission to delete this blog",
+                                      ),
+                                    ),
+                                  );
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text("Blog deleted successfully!"),
+                                    ),
+                                  );
+
+
+                                  widget.onDelete();
+                                }
+                              } catch (e) {
+                                print("Delete Error: $e");
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                      content:
-                                          Text("Blog deleted successfully!")),
+                                    content: Text("Something went wrong: $e"),
+                                  ),
                                 );
-                                widget.onDelete();
                               }
-                            } catch (e) {
-                              print("Delete Error: $e");
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                    content: Text("Something went wrong: $e")),
-                              );
-                            }
-                          },
-                          icon: Icon(
-                            Icons.delete,
-                            size: 90,
+                            },
+                            icon: Icon(
+                              Icons.delete,
+                              size: 90,
+                            ),
+                            color: Colors.teal.shade200,
                           ),
-                          color: Colors.teal.shade200,
                         ),
-                      ),
+
 
                     // Title Container at the bottom
                     Positioned(
@@ -243,6 +283,18 @@ class _BlogCardState extends State<BlogCard> {
                                       content:
                                           Text("Blog deleted successfully!")),
                                 );
+
+                                // Debug Email
+                                print("Blog owner email: ${widget.addBlogModel.email}");
+                                print("Attempting to send notification...");
+                                // Send notification to the blog owner
+                                await sendNotification(
+                                  email: widget.addBlogModel.email!,
+                                  title: "Blog Deleted",
+                                  body:
+                                  "Your blog with title '${widget.addBlogModel.title}' has been deleted by the admin.",
+                                );
+
                                 widget.onDelete();
                               }
                             } catch (e) {

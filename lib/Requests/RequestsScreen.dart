@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:blogapp/Models/addBlogApproval.dart';
@@ -88,6 +90,19 @@ class _RequestsScreenState extends State<RequestsScreen> {
     );
 
     if (response.statusCode == 200) {
+
+      // Send notification after status update
+      final blog = blogRequests.firstWhere((request) => request.id == blogId);
+      final customerEmail = blog.email; // Assuming username is the customer's email
+
+      // Send notification to the customer
+      await sendNotification(
+        email: customerEmail!,
+        title: "Blog Status Updated",
+        body: "Your blog with title: ${blog.title} has been $status by the admin.",
+      );
+
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text("Blog status updated to $status"),
@@ -112,6 +127,24 @@ class _RequestsScreenState extends State<RequestsScreen> {
     });
   }
 
+  Future<void> sendNotification({
+    required String email,
+    required String title,
+    required String body,
+  }) async {
+    try {
+      final response = await networkHandler.post("/notifications/send", {
+        "title": title,
+        "body": body,
+        "recipient": email, // Send to customer's email
+      });
+      final responseBody = json.decode(response.body);
+
+      print("Notification Sent: ${responseBody['message']}");
+    } catch (error) {
+      print("Error sending notification: $error");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

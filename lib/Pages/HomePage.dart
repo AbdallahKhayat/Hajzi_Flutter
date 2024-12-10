@@ -15,6 +15,7 @@ import '../Screen/HomeScreen.dart';
 import '../Profile/ProfileScreen.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+import '../Screen/notificationScreen.dart';
 import '../Screen/shopsscreen.dart';
 import 'WelcomePage.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -48,6 +49,7 @@ class _HomePageState extends State<HomePage> {
   int userCount = 0; // User count
   int requestCount = 0; // Request count
   late Timer _timer;
+  int notificationsCount = 0;
   //Color appColor = Colors.teal; // Default app theme color
   String selectedLanguage = "English";
 
@@ -72,7 +74,7 @@ class _HomePageState extends State<HomePage> {
 
 
     // Poll for updates every 10 seconds
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+    _timer = Timer.periodic(const Duration(seconds: 20), (timer) {
       fetchCounts(); // Fetch counts periodically
     });
 
@@ -217,9 +219,32 @@ class _HomePageState extends State<HomePage> {
           requestCount = requestResponse['data'].length;
         });
       }
+
+
+      try {
+        // Get email from secure storage or however you are storing it
+        String? email = await storage.read(key: "email"); // Fetch email from storage
+        if (email != null) {
+          // Fetch notification count using email
+          var notificationResponse = await networkHandler.get("/notifications/unreadCount/$email");
+          if (notificationResponse != null && notificationResponse['count'] != null) {
+            setState(() {
+              notificationsCount = notificationResponse['count'];
+            });
+          }
+        } else {
+          debugPrint("Email is not available in secure storage.");
+        }
+      } catch (e) {
+        debugPrint("Error fetching unread notification count: $e");
+      }
+
+
     } catch (e) {
       debugPrint("Error fetching counts: $e");
     }
+
+
   }
 
   @override
@@ -631,12 +656,49 @@ class _HomePageState extends State<HomePage> {
               ),
               centerTitle: true,
               actions: [
-                IconButton(
-                  icon: const Icon(Icons.notifications),
-                  color: Colors.black,
-                  onPressed: () {},
+                Stack(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.notifications),
+                      color: Colors.black,
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const NotificationScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                    if (notificationsCount > 0) // Show badge only if there are notifications
+                      Positioned(
+                        right: 6,
+                        top: 4,
+                        child: Container(
+                          padding: const EdgeInsets.all(2),
+                          decoration: BoxDecoration(
+                            color: Colors.red,
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          constraints: const BoxConstraints(
+                            minWidth: 20,
+                            minHeight: 5,
+                          ),
+                          child: Text(
+                            '$notificationsCount', // Show the notification count
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ],
+
             ),
             floatingActionButtonLocation:
                 FloatingActionButtonLocation.startFloat,
