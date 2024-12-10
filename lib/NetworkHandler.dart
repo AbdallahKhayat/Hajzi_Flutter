@@ -4,6 +4,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:logger/logger.dart';
+import 'package:socket_io_client/socket_io_client.dart' as IO; // ✅ Import Socket.io Client
+
 
 //file to handle flutter with rest server
 
@@ -16,6 +18,57 @@ class NetworkHandler{
   var log = Logger();
 
   FlutterSecureStorage storage = FlutterSecureStorage();
+  IO.Socket? socket; // ✅ Add the socket instance
+
+
+  // (start )Singleton Pattern
+  static final NetworkHandler _instance = NetworkHandler._internal();
+  factory NetworkHandler() {
+    return _instance;
+  }
+  NetworkHandler._internal();
+
+  // ✅ Function to initialize the socket connection
+  void initSocketConnection() {
+    try {
+      socket = IO.io(baseurl, <String, dynamic>{
+        'transports': ['websocket'],
+        'autoConnect': false,
+      });
+      socket!.connect();
+
+      // Event listeners
+      socket!.onConnect((_) {
+        log.i("Connected to the Socket Server");
+      });
+
+      socket!.onDisconnect((_) {
+        log.w("Disconnected from the Socket Server");
+      });
+
+      socket!.on('receive_message', (data) {
+        log.i('Message received: $data');
+      });
+    } catch (e) {
+      log.e("Error initializing socket: $e");
+    }
+
+
+    void sendMessage(String chatId, String messageContent) {
+      if (socket != null && socket!.connected) {
+        socket!.emit('send_message', {
+          'chatId': chatId,
+          'content': messageContent,
+        });
+        log.i('Message sent: $messageContent');
+      } else {
+        log.e('Socket is not connected');
+      }
+    }
+  }
+ //End changes
+
+
 
   Future<dynamic> get(String url) async {
     String? token = await storage.read(key: "token");
