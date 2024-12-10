@@ -128,6 +128,7 @@ class _EmailSignInPageState extends State<EmailSignInPage> {
 
                             // Store the JWT token in secure storage
                             await storage.write(key: "token", value: jwtToken);
+                            await storage.write(key: "email", value: _emailController.text);
 
                             // Store user role if available
                             if (output.containsKey('role')) {
