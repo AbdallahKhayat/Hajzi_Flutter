@@ -1,18 +1,20 @@
 import 'package:blogapp/Blog/BlogsChatPage.dart';
-import 'package:blogapp/Models/addBlogApproval.dart';
 import 'package:blogapp/NetworkHandler.dart';
 import 'package:flutter/material.dart';
-import '../Models/AppointmentModel.dart';
-import '../Models/addBlogModel.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:intl/intl.dart'; // For formatting the date and time
+import 'package:intl/intl.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+
+import '../Models/addBlogModel.dart';
+import '../Pages/CustomerAppointmentPage.dart';
+import '../Pages/userAppointmentPage.dart';
+
 
 class BlogAfterClick extends StatefulWidget {
   BlogAfterClick({super.key, required this.addBlogModel, required this.networkHandler});
 
   final AddBlogModel addBlogModel;
-  // final AddBlogApproval addBlogApproval;
   final NetworkHandler networkHandler;
 
   @override
@@ -22,30 +24,80 @@ class BlogAfterClick extends StatefulWidget {
 class _BlogAfterClickState extends State<BlogAfterClick> {
   late int likeCount;
   late bool isLiked;
-  late List<DateTime> availableSlots; // List of available slots for booking
-  late DateTime selectedTime; // Store the selected time slot for booking
-
+  late List<DateTime> availableSlots;
+  late DateTime selectedTime;
+  String? userRole;
+  String userName = 'Unknown User';
+  String? userEmail; // Current user's email from secure storage
+  String blogOwnerEmail = ''; // Blog owner's email from fetchBlogDetails
+  final storage = FlutterSecureStorage();
   @override
   void initState() {
     super.initState();
     likeCount = widget.addBlogModel.like ?? 0;
     isLiked = false;
 
-    // Example available slots, in a real app this would come from a backend
     availableSlots = _getAvailableSlots();
-    selectedTime = DateTime.now(); // Default to current time
+    selectedTime = DateTime.now();
+    fetchBlogDetails();
+    _loadUserRole();
+    _loadEmailRole();
+    _loadUserName();
   }
 
-  // Fetch available slots dynamically (could come from a backend API)
+  // Simulate fetching available slots from the backend
   List<DateTime> _getAvailableSlots() {
     return [
-      DateTime.now().add(Duration(hours: 2)),
-      DateTime.now().add(Duration(hours: 3)),
-      DateTime.now().add(Duration(hours: 4)),
+      DateTime.now().add(const Duration(hours: 2)),
+      DateTime.now().add(const Duration(hours: 3)),
+      DateTime.now().add(const Duration(hours: 4)),
     ];
   }
 
-  // Handle Like functionality
+  // Load the role of the current user
+  Future<void> _loadUserRole() async {
+    final role = await storage.read(key: "role");
+    setState(() {
+      userRole = role;
+    });
+  }
+
+  // Load the email of the current user
+  Future<void> _loadEmailRole() async {
+    final email = await storage.read(key: "email");
+    setState(() {
+      userEmail = email;
+    });
+  }
+
+
+  // Load the name of the current user
+  Future<void> _loadUserName() async {
+    try {
+      final response = await widget.networkHandler.get("/user/getUserName");
+      setState(() {
+        userName = response['username'] ?? 'Unknown User';
+      });
+    } catch (error) {
+      debugPrint("Error loading user name: $error");
+    }
+  }
+
+  // Fetch the blog details (like blogOwnerEmail)
+  Future<void> fetchBlogDetails() async {
+    try {
+      final response = await widget.networkHandler.get("/blogpost/getBlogDetails/${widget.addBlogModel.id}");
+      if (response != null && response['authorName'] != null) {
+        setState(() {
+          blogOwnerEmail = response['authorName'];
+        });
+      }
+    } catch (e) {
+      debugPrint("Error fetching blog details: $e");
+    }
+  }
+
+
   Future<void> _handleLike() async {
     setState(() {
       isLiked = !isLiked;
@@ -61,72 +113,40 @@ class _BlogAfterClickState extends State<BlogAfterClick> {
     print("Response body: ${response.body}");
   }
 
-  // Handle booking appointment
-  Future<void> _bookAppointment(DateTime time) async {
-    AppointmentModel appointment = AppointmentModel(
-      userId: "userId", // Replace with actual user data
-      userName: "userName", // Replace with actual user name
-      dateTime: time,
-      blogOwnerId: widget.addBlogModel.id!,
-    );
-
-    Map<String, dynamic> data = {
-      "userId": appointment.userId,
-      "userName": appointment.userName,
-      "dateTime": appointment.dateTime.toIso8601String(),
-      "blogOwnerId": appointment.blogOwnerId,
-      "isConfirmed": false,
-    };
-
-    final response = await widget.networkHandler.post("/appointments/book", data);
-    if (response.statusCode == 200) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Appointment booked successfully!')));
+  void _navigateToAppointmentPage() {
+    if (userRole == 'customer' && userEmail == blogOwnerEmail) {
+      // If user is a customer and the current user is the owner of the blog, go to CustomerAppointmentPage
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => CustomerAppointmentPage(
+            networkHandler: widget.networkHandler,
+            blogId: widget.addBlogModel.id!,
+          ),
+        ),
+      );
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to book appointment!')));
+      // Otherwise, go to UserAppointmentPage
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => UserAppointmentPage(
+            networkHandler: widget.networkHandler,
+            blogId: widget.addBlogModel.id!,
+            userName: userEmail!,
+          ),
+        ),
+      );
     }
   }
 
-  // Show available time slots in a dialog
-  void _showBookingDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text("Select an Available Time Slot"),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: availableSlots.map((slot) {
-              return ListTile(
-                title: Text(DateFormat('hh:mm a').format(slot)),
-                onTap: () {
-                  setState(() {
-                    selectedTime = slot;
-                  });
-                  Navigator.pop(context);
-                },
-              );
-            }).toList(),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                _bookAppointment(selectedTime);
-                Navigator.pop(context);
-              },
-              child: Text("Book Appointment"),
-            ),
-          ],
-        );
-      },
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () {
             Navigator.pop(context);
           },
@@ -134,7 +154,7 @@ class _BlogAfterClickState extends State<BlogAfterClick> {
       ),
       body: ListView(
         children: [
-          // Blog Content Section with Slideshow
+          // Image slideshow
           Container(
             height: 379,
             width: MediaQuery.of(context).size.width,
@@ -145,14 +165,14 @@ class _BlogAfterClickState extends State<BlogAfterClick> {
                   Container(
                     height: 230,
                     width: MediaQuery.of(context).size.width,
-                    child:CarouselSlider(
+                    child: CarouselSlider(
                       items: widget.networkHandler
                           .getImages(widget.addBlogModel.coverImages ?? [])
                           .map((image) {
                         return Container(
                           decoration: BoxDecoration(
                             image: DecorationImage(
-                              image: image, // Use the NetworkImage object directly
+                              image: image,
                               fit: BoxFit.fill,
                             ),
                           ),
@@ -171,7 +191,7 @@ class _BlogAfterClickState extends State<BlogAfterClick> {
                     padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10),
                     child: Text(
                       widget.addBlogModel.title!,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
@@ -204,13 +224,12 @@ class _BlogAfterClickState extends State<BlogAfterClick> {
                         const Icon(Icons.share, size: 20),
                         Spacer(flex: 1),
                         IconButton(
-                          icon: FaIcon(FontAwesomeIcons.commentDots, size: 20, color: Colors.black),
+                          icon: const FaIcon(FontAwesomeIcons.commentDots, size: 20, color: Colors.black),
                           onPressed: () {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) =>
-                                    BlogsChatPage(blogId: widget.addBlogModel.id!),
+                                builder: (context) => BlogsChatPage(blogId: widget.addBlogModel.id!),
                               ),
                             );
                           },
@@ -223,8 +242,8 @@ class _BlogAfterClickState extends State<BlogAfterClick> {
             ),
           ),
 
-          // Blog Body Content Section
-          SizedBox(height: 10),
+          // Blog Body Section
+          const SizedBox(height: 10),
           Container(
             width: MediaQuery.of(context).size.width,
             child: Card(
@@ -236,11 +255,11 @@ class _BlogAfterClickState extends State<BlogAfterClick> {
             ),
           ),
 
-          // Book Appointment Section
-          SizedBox(height: 20),
+          // Book Appointment Button
+          const SizedBox(height: 20),
           Container(
             width: MediaQuery.of(context).size.width,
-            padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10),
             child: Card(
               elevation: 10,
               child: Padding(
@@ -248,28 +267,28 @@ class _BlogAfterClickState extends State<BlogAfterClick> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    const Text(
                       "Book an Appointment",
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    SizedBox(height: 10),
-                    Text(
-                      "Select an available time slot to book an appointment with the blog owner.",
+                    const SizedBox(height: 10),
+                    const Text(
+                      "Click the button to book an appointment or manage your appointments.",
                       style: TextStyle(fontSize: 14),
                     ),
-                    SizedBox(height: 20),
+                    const SizedBox(height: 20),
                     ElevatedButton(
-                      onPressed: _showBookingDialog,
+                      onPressed: _navigateToAppointmentPage,
                       style: ElevatedButton.styleFrom(
-                        padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                        padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: Text("Book Now"),
+                      child: const Text("Book Appointment"),
                     ),
                   ],
                 ),
@@ -281,4 +300,3 @@ class _BlogAfterClickState extends State<BlogAfterClick> {
     );
   }
 }
-
