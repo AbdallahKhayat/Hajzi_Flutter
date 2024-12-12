@@ -98,14 +98,14 @@ class _RequestsScreenState extends State<RequestsScreen> {
       // Send notification to the customer
       await sendNotification(
         email: customerEmail!,
-        title: "Blog Status Updated",
-        body: "Your blog with title: ${blog.title} has been $status by the admin.",
+        title: "Shop Status Updated",
+        body: "Your Shop with title: ${blog.title} has been $status by the admin.",
       );
 
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text("Blog status updated to $status"),
+          content: Text("Shop status updated to $status"),
           backgroundColor: status == "approved" ? Colors.green : Colors.red,
         ),
       );
@@ -116,7 +116,7 @@ class _RequestsScreenState extends State<RequestsScreen> {
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text("Failed to update blog status"),
+          content: Text("Failed to update shop status"),
           backgroundColor: Colors.red,
         ),
       );

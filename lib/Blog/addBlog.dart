@@ -31,7 +31,8 @@ class _AddBlogState extends State<AddBlog> {
   List<XFile> imageFiles = []; // Changed to a list to store multiple images
   IconData? iconPhoto = Icons.image;
   String? selectedRole = "general";
-
+  String email = "";
+  String? userRole;
   NetworkHandler networkHandler = NetworkHandler();
   final storage = FlutterSecureStorage();
 
@@ -61,6 +62,59 @@ class _AddBlogState extends State<AddBlog> {
       throw Exception("Failed to fetch blog status");
     }
   }
+
+
+  Future<void> _loadUserRole() async {
+    try {
+      final role = await storage.read(key: "role");
+      final adminEmail = await storage.read(key: "email"); // Admin email stored
+      setState(() {
+        userRole = role;
+        if (userRole == "admin") {
+          email = adminEmail ?? ""; // Ensure email is not null
+        }
+      });
+    } catch (e) {
+      print("Error loading user role: $e");
+    }
+  }
+
+
+  @override
+  void initState() {
+   _loadUserRole();
+    super.initState();
+  }
+
+  Future<void> sendNotification({
+    required String title,
+    required String body,
+  }) async {
+    try {
+      // Fetch admin emails from the backend
+      final adminResponse = await networkHandler.get("/user/getAdmins");
+
+      if (adminResponse != null && adminResponse['adminEmails'] != null) {
+        List<dynamic> adminEmails = adminResponse['adminEmails'];
+
+        for (String adminEmail in adminEmails) {
+          final response = await networkHandler.post("/notifications/send", {
+            "title": title,
+            "body": body,
+            "recipient": adminEmail, // Send to each admin's email
+          });
+
+          final responseBody = json.decode(response.body);
+          print("Notification Sent to $adminEmail: ${responseBody['message']}");
+        }
+      } else {
+        print("No admin emails found.");
+      }
+    } catch (error) {
+      print("Error sending notification: $error");
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -467,6 +521,12 @@ class _AddBlogState extends State<AddBlog> {
           if (approvalResponse.statusCode == 200 ||
               approvalResponse.statusCode == 201) {
             String blogId = json.decode(approvalResponse.body)["data"];
+
+            await sendNotification(
+              title: "New Shop Approval Request",
+              body: "${addBlogApproval.email} has applied for a shop with the title: ${addBlogApproval.title}. Please review it.",
+            );
+
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('Blog submitted for approval!')),
             );
