@@ -322,7 +322,7 @@ class _BlogCardState extends State<BlogCard> {
                         padding: const EdgeInsets.symmetric(
                             vertical: 12, horizontal: 16),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.9),
+                          color: Colors.white.withOpacity(0.7),
                           borderRadius: BorderRadius.circular(12),
                           boxShadow: [
                             BoxShadow(
