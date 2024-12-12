@@ -22,7 +22,8 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import 'package:blogapp/constants.dart';
 import 'dart:async'; // Add this import at the top
-
+import 'dart:math' as math; // Required for sine wave
+import 'package:flutter/animation.dart';
 
 
 class HomePage extends StatefulWidget {
@@ -35,7 +36,7 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin {
   final storage = FlutterSecureStorage();
   NetworkHandler networkHandler = NetworkHandler();
 
@@ -52,6 +53,8 @@ class _HomePageState extends State<HomePage> {
   int notificationsCount = 0;
   //Color appColor = Colors.teal; // Default app theme color
   String selectedLanguage = "English";
+  late AnimationController _animationController;
+  late Animation<double> _animation;
 
   Widget profilePhoto = Container(
     height: 100,
@@ -78,7 +81,29 @@ class _HomePageState extends State<HomePage> {
       fetchCounts(); // Fetch counts periodically
     });
 
+    // Initialize the animation controller
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds:400),
+      vsync: this, // Ensure your widget extends `SingleTickerProviderStateMixin`
+    );
 
+    // Define the animation curve
+    _animation = Tween<double>(begin: -0.5, end: 0.5).animate(
+
+      CurvedAnimation(
+        parent: _animationController,
+        curve: Curves.easeInOut,
+      ),
+    );
+
+    // Start animation if notificationsCount > 0
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (notificationsCount > 0) {
+        _startAnimation();
+      }
+    });
+
+    _animationController.repeat(reverse: true);
 
     widgets = [
       HomeScreen(filterState: widget.filterState),
@@ -90,9 +115,19 @@ class _HomePageState extends State<HomePage> {
     ];
   }
 
+  void _startAnimation() {
+    // Repeat the animation when there are notifications
+    _animationController.repeat(reverse: true);
+  }
+
+  void _stopAnimation() {
+    _animationController.stop();
+  }
+
   @override
   void dispose() {
     _timer.cancel(); // Cancel the timer when the widget is disposed
+    _animationController.dispose();
     super.dispose();
   }
 
@@ -230,6 +265,12 @@ class _HomePageState extends State<HomePage> {
           if (notificationResponse != null && notificationResponse['count'] != null) {
             setState(() {
               notificationsCount = notificationResponse['count'];
+              // Trigger animation based on the notification count
+              if (notificationsCount > 0) {
+                _startAnimation();
+              } else {
+                _stopAnimation();
+              }
             });
           }
         } else {
@@ -658,18 +699,31 @@ class _HomePageState extends State<HomePage> {
               actions: [
                 Stack(
                   children: [
-                    IconButton(
-                      icon: const Icon(Icons.notifications),
-                      color: Colors.black,
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const NotificationScreen(),
+                    AnimatedBuilder(
+                      animation: _animationController,
+                      builder: (context, child) {
+                        return Transform.rotate(
+                            angle: notificationsCount > 0
+                                ? 0.5 * math.sin(_animation.value * math.pi)
+                                : 0.0, // Reset to 0 when no notifications
+                         // Add a rotation effect
+                          child: IconButton(
+                            icon: const Icon(Icons.notifications),
+                            color: Colors.black,
+                            onPressed: () {
+                             // _stopAnimation();
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const NotificationScreen(),
+                                ),
+                              );
+                            },
                           ),
                         );
                       },
                     ),
+
                     if (notificationsCount > 0) // Show badge only if there are notifications
                       Positioned(
                         right: 6,
@@ -698,6 +752,7 @@ class _HomePageState extends State<HomePage> {
                   ],
                 ),
               ],
+
 
             ),
             floatingActionButtonLocation:

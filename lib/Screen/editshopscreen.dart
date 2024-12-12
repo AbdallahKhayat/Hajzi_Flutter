@@ -42,6 +42,35 @@ class _EditShopScreenState extends State<EditShopScreen> {
     existingCoverImages = widget.addBlogModel.coverImages ?? [];
   }
 
+
+  Future<void> sendNotification({
+    required String title,
+    required String body,
+  }) async {
+    try {
+      // Fetch admin emails from the backend
+      final adminResponse = await networkHandler.get("/user/getAdmins");
+
+      if (adminResponse != null && adminResponse['adminEmails'] != null) {
+        List<dynamic> adminEmails = adminResponse['adminEmails'];
+
+        for (String adminEmail in adminEmails) {
+          final response = await networkHandler.post("/notifications/send", {
+            "title": title,
+            "body": body,
+            "recipient": adminEmail, // Send to each admin's email
+          });
+
+          final responseBody = json.decode(response.body);
+          print("Notification Sent to $adminEmail: ${responseBody['message']}");
+        }
+      } else {
+        print("No admin emails found.");
+      }
+    } catch (error) {
+      print("Error sending notification: $error");
+    }
+  }
   Future<void> _submitChanges() async {
     if (_formKey.currentState!.validate()) {
       try {
@@ -94,6 +123,12 @@ class _EditShopScreenState extends State<EditShopScreen> {
           } else {
             print("Failed to notify admins");
           }
+
+
+          await sendNotification(
+            title: "Shop Modifications",
+            body: "${widget.addBlogModel.email} has modified on his shop with the title: ${widget.addBlogModel.title}...",
+          );
 
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
