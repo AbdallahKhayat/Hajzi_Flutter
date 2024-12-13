@@ -6,11 +6,13 @@ import 'package:blogapp/Screen/usersScreen.dart';
 import 'package:blogapp/services/stripe_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:http/http.dart' as http;
 import '../Blog/addBlog.dart';
 import '../NetworkHandler.dart';
 import '../Notifications/push_notifications.dart';
 import '../Requests/RequestsScreen.dart';
+import '../Screen/ChatBotScreen.dart';
 import '../Screen/HomeScreen.dart';
 import '../Profile/ProfileScreen.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -645,16 +647,23 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                         });
                       },
                     ),
-                  if (userRole == "customer")
+                //  if (userRole == "customer")
                     ListTile(
-                      leading: Icon(Icons.feedback, color: appColor),
+                      leading: Icon(FontAwesomeIcons.robot, size: 21, color: appColor),
                       title: Text(
                         AppLocalizations.of(context)!.feedback,
                         style: TextStyle(
                             fontSize: 16, fontWeight: FontWeight.w500),
                       ),
                       trailing: Icon(Icons.chevron_right, color: Colors.grey),
-                      onTap: () {},
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ChatBotScreen(userEmail: email,),
+                          ),
+                        );
+                      },
                     ),
                   Divider(thickness: 1, color: Colors.grey.shade400),
                   ListTile(
