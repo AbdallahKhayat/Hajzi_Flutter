@@ -474,6 +474,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                       Navigator.pop(context);
                     },
                   ),
+                  if(userRole!="user")
                   _drawerItem(
                     title: AppLocalizations.of(context)!.newstory,
                     icon: Icons.add,
