@@ -47,7 +47,8 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
   // Function to save chat history for the specific user to SharedPreferences
   Future<void> _saveChatHistory() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('chat_history_${widget.userEmail}', json.encode(messages));
+    await prefs.setString(
+        'chat_history_${widget.userEmail}', json.encode(messages));
   }
 
   // Function to get the welcome message
@@ -81,6 +82,20 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
 
     // Save the message history after user sends a message
     await _saveChatHistory();
+
+    // Check if the user selects option 1
+    if (userMessage.trim() == "1") {
+      setState(() {
+        messages.add({
+          "role": "assistant",
+          "content":
+              "You can book an appointment by pressing on a specific shop from Home page and press Book Appointment then choose the available times, if u need any further help, let me know 😊 "
+        });
+        isLoading = false; // Stop the loading state
+      });
+      await _saveChatHistory();
+      return;
+    }
 
     // Check if the user selects option 4
     if (userMessage.trim() == "4") {
@@ -130,6 +145,54 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
     }
   }
 
+  Future<void> _deleteChatHistory() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('chat_history_${widget.userEmail}');
+    setState(() {
+      messages.clear();
+    });
+    _sendWelcomeMessage(); // Add welcome message again
+  }
+
+  void _confirmDeleteHistory() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text(
+          "Delete Chat History",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        content:
+            const Text("Are you sure you want to delete the chat history?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context), // Cancel
+            child: const Text(
+              "Cancel",
+              style: TextStyle(
+                color: Colors.black,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context); // Close dialog
+              _deleteChatHistory(); // Delete history
+            },
+            child: const Text(
+              "Delete",
+              style: TextStyle(
+                color: Colors.red,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -141,6 +204,12 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
             fontWeight: FontWeight.bold,
           ),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.delete, color: Colors.black),
+            onPressed: _confirmDeleteHistory, // Open confirmation dialog
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -152,8 +221,9 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
                 final isUser = message["role"] == "user";
 
                 return Column(
-                  crossAxisAlignment:
-                  isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                  crossAxisAlignment: isUser
+                      ? CrossAxisAlignment.end
+                      : CrossAxisAlignment.start,
                   children: [
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -166,9 +236,8 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
                       ),
                     ),
                     Container(
-                      alignment: isUser
-                          ? Alignment.centerRight
-                          : Alignment.centerLeft,
+                      alignment:
+                          isUser ? Alignment.centerRight : Alignment.centerLeft,
                       margin: const EdgeInsets.symmetric(
                           vertical: 5, horizontal: 10),
                       padding: const EdgeInsets.all(10),
