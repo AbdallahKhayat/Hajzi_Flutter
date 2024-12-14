@@ -55,7 +55,7 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
   String _getWelcomeMessage() {
     return "Welcome to Hajzi Bot! How can I assist you today? Here are some options you can ask:\n\n"
         "1. Book an appointment\n"
-        "2. Check the availability of services\n"
+        "2. How to transfer to a Customer\n"
         "3. Get assistance with using the app\n"
         "4. Contact admin";
   }
@@ -90,6 +90,20 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
           "role": "assistant",
           "content":
               "You can book an appointment by pressing on a specific shop from Home page and press Book Appointment then choose the available times, if u need any further help, let me know 😊 "
+        });
+        isLoading = false; // Stop the loading state
+      });
+      await _saveChatHistory();
+      return;
+    }
+
+    // Check if the user selects option 1
+    if (userMessage.trim() == "2") {
+      setState(() {
+        messages.add({
+          "role": "assistant",
+          "content":
+          "You can transfer to Customer by clicking on Customer from the App's menu then it will ask for payment method, if u need any further help, let me know 😊"
         });
         isLoading = false; // Stop the loading state
       });
