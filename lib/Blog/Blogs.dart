@@ -9,7 +9,7 @@ import '../CustomWidget/BlogCard.dart';
 class Blogs extends StatefulWidget {
   final String url;
   final int flag;
-  const Blogs({super.key, required this.url,required this.flag});
+  const Blogs({super.key, required this.url, required this.flag});
 
   @override
   State<Blogs> createState() => _BlogsState();
@@ -68,10 +68,10 @@ class _BlogsState extends State<Blogs> {
         children: [
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: kIsWeb     //Web part//////////////////////
+            child: kIsWeb //Web part//////////////////////
                 ? SizedBox(
-                 width: 1300,
-                  child: TextField(
+                    width: 1300,
+                    child: TextField(
                       controller: _searchController,
                       decoration: InputDecoration(
                         labelText: 'Search Blogs',
@@ -86,28 +86,32 @@ class _BlogsState extends State<Blogs> {
                       ),
                       onChanged: (value) {
                         fetchData(
-                            searchQuery: value); // Update results based on input
+                            searchQuery:
+                                value); // Update results based on input
                       },
                     ),
-                )
-                : widget.flag==0? TextField(
-                    controller: _searchController,
-                    decoration: InputDecoration(
-                      labelText: 'Search Blogs',
-                      border: OutlineInputBorder(),
-                      suffixIcon: IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () {
-                          _searchController.clear();
-                          fetchData(); // Fetch all blogs when cleared
+                  )
+                : widget.flag == 0
+                    ? TextField(
+                        controller: _searchController,
+                        decoration: InputDecoration(
+                          labelText: 'Search Blogs',
+                          border: OutlineInputBorder(),
+                          suffixIcon: IconButton(
+                            icon: const Icon(Icons.clear),
+                            onPressed: () {
+                              _searchController.clear();
+                              fetchData(); // Fetch all blogs when cleared
+                            },
+                          ),
+                        ),
+                        onChanged: (value) {
+                          fetchData(
+                              searchQuery:
+                                  value); // Update results based on input
                         },
-                      ),
-                    ),
-                    onChanged: (value) {
-                      fetchData(
-                          searchQuery: value); // Update results based on input
-                    },
-                  ):null,
+                      )
+                    : null,
           ),
           if (_isLoading)
             const Center(child: CircularProgressIndicator())
@@ -126,11 +130,16 @@ class _BlogsState extends State<Blogs> {
               ),
             )
           else
-            ListView.builder(
+            kIsWeb
+                ? GridView.builder(
               shrinkWrap: true,
-              // Important to avoid unbounded height
-              physics: const NeverScrollableScrollPhysics(),
-              // Disable scrolling for this list
+              physics: const NeverScrollableScrollPhysics(), // No scroll for GridView
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3, // Number of columns in the grid
+                crossAxisSpacing: 16.0, // Space between columns
+                mainAxisSpacing: 16.0, // Space between rows
+                childAspectRatio: 1.2, // Width to height ratio of each item
+              ),
               itemCount: data.length,
               itemBuilder: (context, index) {
                 final blog = data[index];
@@ -154,7 +163,36 @@ class _BlogsState extends State<Blogs> {
                   ),
                 );
               },
-            ),
+            )
+                : ListView.builder(
+                    shrinkWrap: true,
+                    // Important to avoid unbounded height
+                    physics: const NeverScrollableScrollPhysics(),
+                    // Disable scrolling for this list
+                    itemCount: data.length,
+                    itemBuilder: (context, index) {
+                      final blog = data[index];
+                      return InkWell(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => BlogAfterClick(
+                                addBlogModel: blog,
+                                networkHandler: networkHandler,
+                              ),
+                            ),
+                          );
+                        },
+                        child: BlogCard(
+                          addBlogModel: blog,
+                          networkHandler: networkHandler,
+                          onDelete: () => fetchData(),
+                          flag: widget.flag,
+                        ),
+                      );
+                    },
+                  ),
         ],
       ),
     );

@@ -92,135 +92,155 @@ class _BlogCardState extends State<BlogCard> {
       },
       child: kIsWeb //web part//////////////////////////
           ? Container(
-              height: 600,
-              width: 100,
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 300, vertical: 15),
-              child: Card(
-                elevation: 6,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
+        padding: const EdgeInsets.all(8.0),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12.0),
+          border: Border.all(color: Colors.grey.shade300, width: 1),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.shade200,
+              blurRadius: 8.0,
+              spreadRadius: 2.0,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: Stack(
+            children: [
+              // Blog Preview Image with Gradient Overlay
+              Container(
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    image: widget.networkHandler.getImageBlog(
+                        widget.addBlogModel.previewImage ?? ""),
+                    fit: BoxFit.cover,
+                  ),
                 ),
-                clipBehavior: Clip.hardEdge,
-                // Ensures content is clipped to the rounded edges
-                child: Stack(
-                  children: [
-                    // Blog Preview Image with Gradient Overlay
-                    Container(
-                      decoration: BoxDecoration(
-                        image: DecorationImage(
-                          image: widget.networkHandler.getImageBlog(
-                              widget.addBlogModel.previewImage ?? ""),
-                          // Use previewImage
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              Colors.black.withOpacity(0.4),
-                              Colors.black.withOpacity(0.1),
-                            ],
-                            begin: Alignment.bottomCenter,
-                            end: Alignment.topCenter,
-                          ),
-                        ),
-                      ),
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Colors.black.withOpacity(0.4),
+                        Colors.black.withOpacity(0.1),
+                      ],
+                      begin: Alignment.bottomCenter,
+                      end: Alignment.topCenter,
                     ),
-                    if (userRole == "admin")
-                        Positioned(
-                          top: 5,
-                          right: 3,
-                          child: IconButton(
-                            onPressed: () async {
-                              try {
-                                final response = await widget.networkHandler.delete(
-                                  "/blogpost/delete/${widget.addBlogModel.id}",
-                                );
-
-                                print("Delete Response: $response");
-
-                                if (response['Status'] == false) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        "You don’t have permission to delete this blog",
-                                      ),
-                                    ),
-                                  );
-                                } else {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text("Blog deleted successfully!"),
-                                    ),
-                                  );
-
-
-                                  widget.onDelete();
-                                }
-                              } catch (e) {
-                                print("Delete Error: $e");
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text("Something went wrong: $e"),
-                                  ),
-                                );
-                              }
-                            },
-                            icon: Icon(
-                              Icons.delete,
-                              size: 90,
-                            ),
-                            color: Colors.teal.shade200,
-                          ),
-                        ),
-
-
-                    // Title Container at the bottom
-                    Positioned(
-                      bottom: 16, // Spacing from the bottom edge
-                      left: 16,
-                      right: 16,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 12, horizontal: 16),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.9),
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
-                              blurRadius: 8,
-                              offset: Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Text(
-                          widget.addBlogModel.title ?? "Untitled Blog",
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
-                          ),
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      top: 16,
-                      left: 16,
-                      right: 16,
-                      child: IconButton(
-                        onPressed: () {},
-                        icon: Icon(Icons.edit, color: Colors.teal.shade200,size: 50,),
-                      ),
-                    )
-                    // Optional Add: Blog Details Button (can be removed)
-                  ],
+                  ),
                 ),
               ),
-            )
+
+              // Admin Controls (Delete button)
+              if (userRole == "admin")
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: IconButton(
+                    onPressed: () async {
+                      try {
+                        final response = await widget.networkHandler.delete(
+                          "/blogpost/delete/${widget.addBlogModel.id}",
+                        );
+
+                        print("Delete Response: $response");
+
+                        if (response['Status'] == false) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                "You don’t have permission to delete this blog",
+                              ),
+                            ),
+                          );
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text("Blog deleted successfully!"),
+                            ),
+                          );
+
+                          widget.onDelete();
+                        }
+                      } catch (e) {
+                        print("Delete Error: $e");
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text("Something went wrong: $e"),
+                          ),
+                        );
+                      }
+                    },
+                    icon: const Icon(
+                      Icons.delete,
+                      size: 30, // Resized to fit within the card
+                    ),
+                    color: Colors.redAccent,
+                  ),
+                ),
+
+              // Blog Title Container
+              Positioned(
+                bottom: 16, // Spacing from the bottom edge
+                left: 16,
+                right: 16,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                      vertical: 8, horizontal: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.7),
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Text(
+                    widget.addBlogModel.title ?? "Untitled Blog",
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
+                ),
+              ),
+
+              // Edit Icon at the top-left
+              if(widget.flag==1)
+                if (userRole == "customer")
+              Positioned(
+                top: 8,
+                left: 8,
+                child: IconButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => EditShopScreen(
+                          addBlogModel: widget.addBlogModel,
+                          networkHandler: widget.networkHandler,
+                        ),
+                      ),
+                    );
+                  },
+                  icon: const Icon(
+                    Icons.edit,
+                    color: Colors.teal,
+                    size: 30, // Resized to fit within the card
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      )
           : Container(
               height: 320,
               width: MediaQuery.of(context).size.width,
