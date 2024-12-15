@@ -2,6 +2,7 @@ import 'package:blogapp/Pages/IndividualPage.dart';
 import 'package:flutter/material.dart';
 import '../constants.dart';
 
+
 class CustomCard extends StatelessWidget {
   final Map<String, dynamic> chat; // 🔥 Accept raw chat data from backend
 
@@ -10,25 +11,27 @@ class CustomCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Extract chat data
-    final String chatPartnerEmail = chat['users']
-        .firstWhere((email) => email != 'CURRENT_USER_EMAIL_HERE'); // 🔥 Get the email of the other user
-    final String lastMessage = chat['lastMessage'] ?? 'No messages yet';
-    final String time = _formatTime(chat['lastMessageTime']);
-    final String partnerInitial = chatPartnerEmail.isNotEmpty
-        ? chatPartnerEmail[0].toUpperCase()
-        : '?'; // 🔥 Extract first letter of the chat partner's email
+    final String currentUserEmail = 'CURRENT_USER_EMAIL_HERE'; // Replace with actual user email
+    final chatPartner = chat['users'].firstWhere((user) => user['email'] != currentUserEmail); // Get chat partner details
+    final chatPartnerName = chatPartner['username'] ?? 'Unknown User'; // ⭐️ Extract the username from the 'chat' object
+    final chatPartnerEmail = chatPartner['email'];
+    final lastMessage = chat['lastMessage'] ?? 'No messages yet';
+    final lastMessageTime = chat['lastMessageTime'] ?? ''; // You might want to format this
 
     return InkWell(
       onTap: () {
+        // ⭐️ Change Navigation to IndividualPage
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => IndividualPage(
-              chatId: chat['_id'], // 🔥 Pass chatId
-              chatPartnerEmail: chatPartnerEmail, // 🔥 Pass partner's email
+              initialChatId: chat['_id'], // ⭐️ Pass chat ID
+              chatPartnerEmail: chatPartner['email'], // ⭐️ Pass partner's email
+              chatPartnerName: chatPartner['username'] ?? 'Unknown', // ⭐️ Pass partner's username
             ),
           ),
         );
+
       },
       child: Column(
         children: [
@@ -40,7 +43,7 @@ class CustomCard extends StatelessWidget {
                   radius: 30,
                   backgroundColor: currentColor,
                   child: Text(
-                    partnerInitial, // 🔥 Dynamic first letter of partner's email
+                    chatPartnerName.isNotEmpty ? chatPartnerName[0].toUpperCase() : 'U', // ⭐️ Use the first letter of the partner's username
                     style: const TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
@@ -51,8 +54,9 @@ class CustomCard extends StatelessWidget {
               },
             ),
             title: Text(
-              chatPartnerEmail, // 🔥 Dynamic chat partner's email as the chat title
+              chatPartnerName, // ⭐️ Use the partner's username instead of email
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+
             ),
             subtitle: Row(
               children: [
@@ -68,7 +72,10 @@ class CustomCard extends StatelessWidget {
                 ),
               ],
             ),
-            trailing: Text(time, style: const TextStyle(fontSize: 12, color: Colors.grey)), // 🔥 Dynamic time
+            trailing: Text(
+              formatTime(lastMessageTime),
+              style: const TextStyle(fontSize: 12, color: Colors.grey),
+            ),// 🔥 Dynamic time
           ),
           const Padding(
             padding: EdgeInsets.only(right: 20, left: 80),
@@ -79,8 +86,8 @@ class CustomCard extends StatelessWidget {
     );
   }
 
-  /// 🔥 **Utility function to format the time from ISO string**
-  String _formatTime(String? isoTime) {
+  // ⭐️ Utility Function for Time Formatting
+  String formatTime(String? isoTime) {
     if (isoTime == null) return '';
     try {
       final DateTime dateTime = DateTime.parse(isoTime);
@@ -91,7 +98,7 @@ class CustomCard extends StatelessWidget {
         return "${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')}";
       }
     } catch (e) {
-      return ''; // Return empty string if there is an error parsing
+      return '';
     }
   }
 }

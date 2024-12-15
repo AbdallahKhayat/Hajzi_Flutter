@@ -1,24 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:blogapp/CustomWidget/CustomCard.dart';
+import 'package:blogapp/CustomWidget/CustomCard.dart'; // 🔥 Use CustomCard
 import 'package:blogapp/NetworkHandler.dart'; // 🔥 Import NetworkHandler
 import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // 🔥 For JWT token
 
 class ChatPage extends StatefulWidget {
-  final String chatId; // 🔥 New parameter to receive chat ID
-  final String chatPartnerEmail; // 🔥 New parameter to receive partner email
+  final String chatId; // ⭐️ New parameter for chat ID
+  final String chatPartnerEmail; // ⭐️ New parameter for chat partner email
 
-  const ChatPage({super.key, required this.chatId, required this.chatPartnerEmail});
+  const ChatPage({super.key,required this.chatId,required this.chatPartnerEmail}); // 🔥 Remove chatId and chatPartnerEmail parameters
 
   @override
   State<ChatPage> createState() => _ChatPageState();
 }
 
 class _ChatPageState extends State<ChatPage> {
+
   final NetworkHandler networkHandler = NetworkHandler(); // 🔥 Initialize NetworkHandler
   final FlutterSecureStorage storage = const FlutterSecureStorage(); // 🔥 For JWT storage
 
-
-  List<dynamic> chats = []; // 🔥 No longer using static list, this will be populated from the backend
+  List<dynamic> chats = []; // 🔥 Store chats fetched from the backend
 
   @override
   void initState() {
@@ -35,7 +35,7 @@ class _ChatPageState extends State<ChatPage> {
         return;
       }
 
-      var response = await networkHandler.getWithAuth('/chat/user-chats', token); // 🔥 Fetch user chats
+      var response = await networkHandler.getWithAuth('/chat/user-chats', token);
       if (response != null && response is List) {
         setState(() {
           chats = response; // 🔥 Update chats with the backend response
@@ -51,34 +51,23 @@ class _ChatPageState extends State<ChatPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // TODO: Handle new chat creation
-        },
-        child: const Icon(Icons.chat),
+      appBar: AppBar(
+        title: const Text('Chats'),
       ),
       body: chats.isEmpty
-          ? const Center(child: CircularProgressIndicator()) // 🔥 Show a loading indicator while chats are being loaded
+          ? const Center(
+        child: Text(
+          'No chats available',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey),
+        ),
+      )
           : ListView.builder(
         itemCount: chats.length,
         itemBuilder: (context, index) {
           final chat = chats[index];
-          final String? currentUserEmail = 'CURRENT_USER_EMAIL_HERE'; // 🔥 Replace this with actual logged-in user's email
-          final chatPartner = chat['users']
-              .firstWhere((email) => email != currentUserEmail); // 🔥 Get the chat partner's email
-
-          return CustomCard(
-            chat: chat, // 🔥 Pass the raw chat data to CustomCard
-          );
+          return CustomCard(chat: chat); // ⭐️ Only pass the 'chat' object to CustomCard
         },
       ),
     );
-  }
-
-  /// 🔥 **Helper method to format time from ISO to HH:MM**
-  String formatTime(String? time) {
-    if (time == null) return '';
-    DateTime dateTime = DateTime.parse(time);
-    return "${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')}"; // Format time as HH:MM
   }
 }

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:blogapp/CustomWidget/OwnMessageCard.dart';
 import 'package:blogapp/CustomWidget/ReplyCard.dart';
 import 'package:flutter/material.dart';
@@ -11,10 +13,12 @@ import 'package:file_picker/file_picker.dart';
 
 class IndividualPage extends StatefulWidget {
 
-  final String chatId; // 🔥 New parameter to receive chat ID
+  final String initialChatId; // ✅ Rename from chatId to initialChatId
   final String chatPartnerEmail; // 🔥 New parameter to receive partner email
+  final String chatPartnerName; // ⭐️ NEW parameter for partner's username
 
-  const IndividualPage({super.key, required this.chatId, required this.chatPartnerEmail}); // 🔥 Replace chatModel with chatId and chatPartnerEmail
+
+  const IndividualPage({super.key, required this.initialChatId, required this.chatPartnerEmail,required this.chatPartnerName}); // 🔥 Replace chatModel with chatId and chatPartnerEmail
 
 
 
@@ -23,6 +27,7 @@ class IndividualPage extends StatefulWidget {
 }
 
 class _IndividualPageState extends State<IndividualPage> {
+  late String chatId;
 
   late IO.Socket socket;
   bool sendButton = false;
@@ -46,19 +51,62 @@ class _IndividualPageState extends State<IndividualPage> {
 
   void sendMessage(String messageContent) {
     if (messageContent.isNotEmpty) {
-      NetworkHandler().sendMessage(widget.chatId, messageContent, loggedInUserEmail ?? 'unknown@example.com');
+      if (chatId.isEmpty) {
+        // 🔥 Create the chat first if no chatId exists
+        NetworkHandler().post('/chat/create', {
+          'shopOwnerEmail': widget.chatPartnerEmail,
+        }).then((response) {
+          if (response != null) {
+            try {
+              // ✅ Decode the response body to JSON (make sure response.body is being used)
+              final Map<String, dynamic> responseData = json.decode(response.body);
+
+              if (responseData.containsKey('_id')) {
+                setState(() {
+                  chatId = responseData['_id']; // ✅ Update chatId with the newly created chat
+                  print("✅ Chat created with ID: $chatId");
+                });
+                // 🔥 Send the message after the chat is created
+                sendActualMessage(messageContent);
+              } else {
+                print("❌ Chat creation failed. No _id in response.");
+              }
+            } catch (e) {
+              print("❌ Error parsing chat creation response: $e");
+            }
+          } else {
+            print("❌ Failed to create chat");
+          }
+        }).catchError((error) {
+          print("❌ Error creating chat: $error");
+        });
+      } else {
+        // 🔥 Send the message directly if chatId already exists
+        sendActualMessage(messageContent);
+      }
+    }
+  }
+
+
+  void sendActualMessage(String messageContent) {
+    try {
+      NetworkHandler().sendMessage(chatId, messageContent, loggedInUserEmail ?? 'unknown@example.com');
       _messageController.clear();
       setState(() {
         sendButton = false;
-        // Add the sent message to the messages list
         messages.add({
           'content': messageContent,
           'senderEmail': loggedInUserEmail,
-          'timestamp': DateTime.now().toIso8601String(), // Set current timestamp
+          'timestamp': DateTime.now().toIso8601String(), // ✅ Add timestamp
         });
       });
+    } catch (e) {
+      print("Error sending message: $e");
     }
   }
+
+
+
 
 
 
@@ -76,11 +124,16 @@ class _IndividualPageState extends State<IndividualPage> {
   @override
   void initState() {
     super.initState();
+    chatId = widget.initialChatId; // ✅ Initialize chatId from widget property
     getUserEmail();
     NetworkHandler().initSocketConnection(); // ✅ Use existing connection from NetworkHandler
 
-    // 🔥 Join the chat room using the chatId passed to IndividualPage
-    NetworkHandler().socket!.emit('join_chat', widget.chatId);
+    // 🔥 Join the chat room using the chatId from state
+    Future.delayed(Duration(milliseconds: 500), () {
+      if (chatId.isNotEmpty) {
+        NetworkHandler().socket!.emit('join_chat', chatId); // ✅ Use state chatId
+      }
+    });
 
     // 🔥 Listen for incoming messages (only one listener globally)
     NetworkHandler().socket!.on('receive_message', (data) {
@@ -89,7 +142,7 @@ class _IndividualPageState extends State<IndividualPage> {
         messages.add({
           'content': data['content'],
           'senderEmail': data['senderEmail'],
-          'timestamp': data['timestamp'], // Include timestamp
+          'timestamp': data['timestamp'],
         });
       });
     });
@@ -146,7 +199,7 @@ class _IndividualPageState extends State<IndividualPage> {
                       radius: screenWidth * 0.05,
                       backgroundColor: Colors.white,
                       child: Text(
-                        widget.chatPartnerEmail[0].toUpperCase(), // Display first letter of email
+                        widget.chatPartnerName[0].toUpperCase(), // ⭐️ Use the first letter of chatPartnerName
                         style: TextStyle(
                           color: mainColor,
                           fontWeight: FontWeight.bold,
@@ -166,7 +219,7 @@ class _IndividualPageState extends State<IndividualPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        widget.chatPartnerEmail.split('@')[0], // Display only the email prefix
+                        widget.chatPartnerName, // ✅ Use partner's name instead of email
                         style: const TextStyle(
                           fontSize: 19,
                           fontWeight: FontWeight.bold,
@@ -222,7 +275,8 @@ class _IndividualPageState extends State<IndividualPage> {
 
           Expanded(
           child: ListView.builder(
-          itemCount: messages.length,
+            key: ValueKey(chatId), // ✅ This will force the list to rebuild when chatId changes
+            itemCount: messages.length,
             itemBuilder: (context, index) {
               final message = messages[index];
               bool isOwnMessage = message['senderEmail'] == loggedInUserEmail; // ✅ Check if message is from the current user

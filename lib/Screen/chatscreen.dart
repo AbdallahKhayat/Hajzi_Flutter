@@ -3,7 +3,9 @@ import 'package:blogapp/Pages/ChatPage.dart';
 import 'package:flutter/material.dart';
 import 'package:blogapp/constants.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // 🔥 New import for secure storage
-import 'package:blogapp/NetworkHandler.dart'; // 🔥 Import NetworkHandler
+import 'package:blogapp/NetworkHandler.dart';
+
+import '../Pages/SearchPage.dart'; // 🔥 Import NetworkHandler
 
 
 class ChatScreen extends StatefulWidget {
@@ -40,14 +42,13 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
       final messageContent = message['content'];
 
       setState(() {
-        // Find the chat with the matching chatId
         int chatIndex = chats.indexWhere((chat) => chat['_id'] == chatId);
-
         if (chatIndex != -1) {
-          // Update the lastMessage of that specific chat
+          // Update last message and timestamp in the chat list
           chats[chatIndex]['lastMessage'] = messageContent;
+          chats[chatIndex]['lastMessageTime'] = DateTime.now().toIso8601String();
         } else {
-          // If the chat doesn't exist (unlikely), you can choose to add it
+          // If it's a new chat, refresh the chats list
           fetchChats();
         }
       });
@@ -99,7 +100,21 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
             backgroundColor: appColor,
             title: const Text("Hajzi Chats", style: TextStyle(color: Colors.white)),
             actions: [
-              IconButton(icon: const Icon(Icons.search), color: Colors.white, onPressed: () {}),
+              IconButton(
+                  icon: const Icon(Icons.search),
+                  color: Colors.white,
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => SearchPage(),
+                      ),
+                    ).then((_) {
+                      fetchChats(); // 🔥 Refresh chat list when user returns from SearchPage
+                    });
+                  }
+              ),
+
               PopupMenuButton<String>(
                 icon: const Icon(Icons.more_vert, color: Colors.white),
                 onSelected: (value) {},
@@ -141,11 +156,13 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
     );
   }
 
-  // 🔥 Widget to display list of chats
   Widget buildChatsList() {
     if (chats.isEmpty) {
-      return Center(
-        child: CircularProgressIndicator(),
+      return const Center(
+        child: Text(
+          'No chats available',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey),
+        ),
       );
     }
 
@@ -155,6 +172,9 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
         final chat = chats[index];
         final chatPartner = chat['shopOwner']; // 🔥 Get shopOwner as chat partner
         final lastMessage = chat['lastMessage'] ?? 'No messages yet';
+        final chatId = chat['_id']; // ⭐️ Extract chat ID
+        final chatPartnerEmail = chat['shopOwner'] ?? 'Unknown'; // ⭐️ Extract the chat partner's email
+
 
         return ListTile(
           leading: CircleAvatar(
@@ -170,8 +190,8 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
               context,
               MaterialPageRoute(
                 builder: (context) => ChatPage(
-                  chatId: chat['_id'], // 🔥 Pass chat ID to ChatPage
-                  chatPartnerEmail: chatPartner, // 🔥 Pass partner's email
+                  chatId: chatId, // ⭐️ Pass chat ID
+                  chatPartnerEmail: chatPartnerEmail, // ⭐️ Pass partner's email
                 ),
               ),
             );
