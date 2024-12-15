@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../NetworkHandler.dart';
 
 class UserAppointmentPage extends StatefulWidget {
@@ -86,6 +87,20 @@ class _UserAppointmentPageState extends State<UserAppointmentPage> {
     }
   }
 
+  String _formatTimeWithAMPM(String time) {
+    try {
+      // Parse the time string (assumes 'HH:mm' format)
+      final DateFormat inputFormat = DateFormat('HH:mm');
+      final DateTime dateTime = inputFormat.parse(time);
+
+      // Format to 12-hour format with AM/PM
+      final DateFormat outputFormat = DateFormat('hh:mm a');
+      return outputFormat.format(dateTime);
+    } catch (e) {
+      return time; // If parsing fails, return original time
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -107,7 +122,7 @@ class _UserAppointmentPageState extends State<UserAppointmentPage> {
             margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
             child: ListTile(
               title: Text(
-                "Time: ${appointment['time']}",
+                "Time: ${_formatTimeWithAMPM(appointment['time'] ?? 'N/A')}",
                 style: TextStyle(
                   color: isBooked ? Colors.red : Colors.green,
                   fontWeight: FontWeight.bold,

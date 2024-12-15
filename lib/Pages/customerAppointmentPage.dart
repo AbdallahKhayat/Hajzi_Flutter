@@ -243,6 +243,19 @@ class _CustomerAppointmentPageState extends State<CustomerAppointmentPage> {
   }
 
 
+  String _formatTimeWithAMPM(String time) {
+    try {
+      // Parse the time string (assumes 'HH:mm' format)
+      final DateFormat inputFormat = DateFormat('HH:mm');
+      final DateTime dateTime = inputFormat.parse(time);
+
+      // Format to 12-hour format with AM/PM
+      final DateFormat outputFormat = DateFormat('hh:mm a');
+      return outputFormat.format(dateTime);
+    } catch (e) {
+      return time; // If parsing fails, return original time
+    }
+  }
 
 
   @override
@@ -367,7 +380,9 @@ class _CustomerAppointmentPageState extends State<CustomerAppointmentPage> {
                               DataCell(Text(isBooked
                                   ? appointment['userName']
                                   : "Available Slot")),
-                              DataCell(Text(appointment['time'] ?? 'N/A')),
+                              DataCell(Text(
+                                _formatTimeWithAMPM(appointment['time'] ?? 'N/A'),
+                              )),
                               DataCell(
                                   Text(appointment['duration'].toString())),
                               DataCell(
