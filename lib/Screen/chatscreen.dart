@@ -146,7 +146,7 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
             controller: _controller,
             children: [
               const SizedBox.shrink(), // Empty widget for camera tab since camera opens automatically
-              buildChatsList(), // 🔥 List of user chats
+              const ChatPage(chatId: '', chatPartnerEmail: ''), // 🔥 Replace old list with ChatPage
               const Center(child: Text("Status", style: TextStyle(fontSize: 18))),
               const Center(child: Text("Calls", style: TextStyle(fontSize: 18))),
             ],
@@ -156,50 +156,7 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
     );
   }
 
-  Widget buildChatsList() {
-    if (chats.isEmpty) {
-      return const Center(
-        child: Text(
-          'No chats available',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey),
-        ),
-      );
-    }
 
-    return ListView.builder(
-      itemCount: chats.length,
-      itemBuilder: (context, index) {
-        final chat = chats[index];
-        final chatPartner = chat['shopOwner']; // 🔥 Get shopOwner as chat partner
-        final lastMessage = chat['lastMessage'] ?? 'No messages yet';
-        final chatId = chat['_id']; // ⭐️ Extract chat ID
-        final chatPartnerEmail = chat['shopOwner'] ?? 'Unknown'; // ⭐️ Extract the chat partner's email
-
-
-        return ListTile(
-          leading: CircleAvatar(
-            backgroundColor: Colors.teal,
-            child: Text(chatPartner != null && chatPartner.isNotEmpty
-                ? chatPartner[0].toUpperCase()
-                : 'U'),
-          ),
-          title: Text(chatPartner ?? 'Unknown User'),
-          subtitle: Text(lastMessage),
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => ChatPage(
-                  chatId: chatId, // ⭐️ Pass chat ID
-                  chatPartnerEmail: chatPartnerEmail, // ⭐️ Pass partner's email
-                ),
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
 
 
 }
