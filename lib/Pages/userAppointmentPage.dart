@@ -19,6 +19,7 @@ class UserAppointmentPage extends StatefulWidget {
 
 class _UserAppointmentPageState extends State<UserAppointmentPage> {
   List<Map<String, dynamic>> appointments = [];
+  bool hasBooked = false; // Track if the user has booked an appointment
 
   @override
   void initState() {
@@ -28,16 +29,34 @@ class _UserAppointmentPageState extends State<UserAppointmentPage> {
 
   // Function to fetch available and booked appointments
   Future<void> _fetchAvailableSlots() async {
-    final response = await widget.networkHandler.get("/appointment/getAppointments/${widget.blogId}");
-    if (response != null && response['data'] != null) {
-      setState(() {
-        appointments = List<Map<String, dynamic>>.from(response['data']);
-      });
+    try {
+      final response = await widget.networkHandler.get("/appointment/getAppointments/${widget.blogId}");
+      if (response != null && response['data'] != null) {
+        setState(() {
+          appointments = List<Map<String, dynamic>>.from(response['data']);
+          hasBooked = appointments.any((appointment) =>
+          appointment['status'] == 'booked' &&
+              appointment['userName'] == widget.userName
+          ); // Check if user has already booked a slot
+        });
+      }
+    } catch (e) {
+      debugPrint("Error fetching appointments: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to fetch available slots.')),
+      );
     }
   }
 
   // Function to book an appointment
   Future<void> _bookAppointment(String time) async {
+    if (hasBooked) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('You have already booked an appointment.')),
+      );
+      return;
+    }
+
     try {
       // Send only the "HH:mm" part of the time
       final formattedTime = time.length == 5 ? time : time.substring(0, 5); // e.g., 09:30
@@ -82,6 +101,7 @@ class _UserAppointmentPageState extends State<UserAppointmentPage> {
           final appointment = appointments[index];
           final isBooked = appointment['status'] == 'booked';
           final time = appointment['time'];
+          final isBookedByUser = appointment['userName'] == widget.userName;
 
           return Card(
             margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
@@ -96,7 +116,7 @@ class _UserAppointmentPageState extends State<UserAppointmentPage> {
               subtitle: isBooked
                   ? Text("Booked by: ${appointment['userName'] ?? 'N/A'}")
                   : const Text("Available slot"),
-              trailing: isBooked
+              trailing: (hasBooked || isBooked)
                   ? const Icon(Icons.lock, color: Colors.red)
                   : ElevatedButton(
                 onPressed: () => _bookAppointment(time),
