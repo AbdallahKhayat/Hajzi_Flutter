@@ -43,67 +43,110 @@ class _IndividualPageState extends State<IndividualPage> {
       String formattedTime = DateFormat('h:mm a').format(dateTime);
       return formattedTime;
     } catch (e) {
-      print('Error formatting time: $e');
-      return ''; // Return an empty string if an error occurs
+      print('❌ Error formatting time: $e');
+      return '';
     }
   }
 
 
-  void sendMessage(String messageContent) {
-    if (messageContent.isNotEmpty) {
-      if (chatId.isEmpty) {
-        // 🔥 Create the chat first if no chatId exists
-        NetworkHandler().post('/chat/create', {
-          'shopOwnerEmail': widget.chatPartnerEmail,
-        }).then((response) {
-          if (response != null) {
-            try {
-              // ✅ Decode the response body to JSON (make sure response.body is being used)
-              final Map<String, dynamic> responseData = json.decode(response.body);
 
-              if (responseData.containsKey('_id')) {
-                setState(() {
-                  chatId = responseData['_id']; // ✅ Update chatId with the newly created chat
-                  print("✅ Chat created with ID: $chatId");
-                });
-                // 🔥 Send the message after the chat is created
-                sendActualMessage(messageContent);
-              } else {
-                print("❌ Chat creation failed. No _id in response.");
-              }
-            } catch (e) {
-              print("❌ Error parsing chat creation response: $e");
+  Future<void> sendMessage(String messageContent) async {
+    if (messageContent.isEmpty) return; // 🔥 Prevent empty message from being sent
+
+    try {
+      // ✅ **Check if chatId exists**
+      if (chatId.isEmpty) {
+        print("🛠️ Creating new chat since chatId is empty...");
+
+        final response = await NetworkHandler().post('/chat/create', {
+          'shopOwnerEmail': widget.chatPartnerEmail, // ✅ Create chat with the recipient email
+        });
+
+        if (response != null) {
+          try {
+            // ✅ Log the entire server response for debugging
+            print("📡 Full response from server: ${response.body}");
+
+            // ✅ Decode the response body to JSON
+            final Map<String, dynamic> responseData = json.decode(response.body);
+            print("📦 Decoded response data: $responseData");
+
+            // ✅ Check for _id in the response
+            final chatIdFromResponse = responseData['_id'] ?? responseData['data']?['_id'];
+
+            if (chatIdFromResponse != null) {
+              setState(() {
+                chatId = chatIdFromResponse; // ✅ Update chatId with the newly created chat
+                print("✅ Chat created successfully with ID: $chatId");
+              });
+
+              // 🔥 **Send the message after the chat is created**
+              await sendActualMessage(messageContent); // ✅ Await to ensure message is sent after chat creation
+            } else {
+              print("❌ Chat creation failed. No '_id' in response. Full response: ${response.body}");
             }
-          } else {
-            print("❌ Failed to create chat");
+          } catch (e) {
+            print("❌ Error parsing chat creation response: $e");
           }
-        }).catchError((error) {
-          print("❌ Error creating chat: $error");
+        } else {
+          print("❌ Failed to create chat. Server did not return a response.");
+        }
+      } else {
+        // 🔥 **Send the message directly if chatId already exists**
+        print("💬 Chat ID already exists: $chatId. Sending message directly...");
+        await sendActualMessage(messageContent); // ✅ Use await to ensure message is sent
+      }
+    } catch (e) {
+      print("❌ Error in sendMessage: $e");
+    }
+  }
+
+
+
+
+  Future<void> sendActualMessage(String messageContent) async {
+    if (messageContent.isEmpty) return; // 🔥 Prevent empty message from being sent
+
+    try {
+      final response = await NetworkHandler().post('/chat/send-message', {
+        'chatId': chatId, // ✅ Pass the chat ID
+        'content': messageContent, // ✅ Pass the message content
+        'receiverEmail': widget.chatPartnerEmail, // ✅ Pass receiver's email
+      });
+
+      if (response != null) {
+        _messageController.clear(); // ✅ Clear the input field after sending
+        final Map<String, dynamic> responseData = json.decode(response.body); // ✅ Decode JSON response
+
+        setState(() {
+          sendButton = false; // 🔥 Reset the send button state
+          messages.add({
+            'content': messageContent, // ✅ The actual message content
+            'senderEmail': loggedInUserEmail, // ✅ Sender's email
+            'receiverEmail': widget.chatPartnerEmail, // ✅ Receiver's email
+            'timestamp': DateTime.now().toIso8601String(), // ✅ Timestamp of when the message was sent
+          });
+
+          // ✅ Emit the message to **socket.io** to notify other users in real-time
+          NetworkHandler().socket!.emit('send_message', {
+            'chatId': chatId,
+            'content': messageContent,
+            'senderEmail': loggedInUserEmail,
+            'receiverEmail': widget.chatPartnerEmail,
+            'timestamp': DateTime.now().toIso8601String(),
+          });
+
+          print("✅ Message sent successfully. Response: $responseData");
         });
       } else {
-        // 🔥 Send the message directly if chatId already exists
-        sendActualMessage(messageContent);
+        print("❌ Error sending message: Response was null");
       }
-    }
-  }
-
-
-  void sendActualMessage(String messageContent) {
-    try {
-      NetworkHandler().sendMessage(chatId, messageContent, loggedInUserEmail ?? 'unknown@example.com');
-      _messageController.clear();
-      setState(() {
-        sendButton = false;
-        messages.add({
-          'content': messageContent,
-          'senderEmail': loggedInUserEmail,
-          'timestamp': DateTime.now().toIso8601String(), // ✅ Add timestamp
-        });
-      });
     } catch (e) {
-      print("Error sending message: $e");
+      print("❌ Error in sendActualMessage: $e");
     }
   }
+
+
 
 
 
@@ -122,32 +165,62 @@ class _IndividualPageState extends State<IndividualPage> {
   }
 
   @override
+  @override
   void initState() {
     super.initState();
     chatId = widget.initialChatId; // ✅ Initialize chatId from widget property
     getUserEmail();
     NetworkHandler().initSocketConnection(); // ✅ Use existing connection from NetworkHandler
 
-    // 🔥 Join the chat room using the chatId from state
+    // 🔥 **Fetch previous messages** from the backend for this chat
+    if (chatId.isNotEmpty) {
+      fetchMessages(); // ✅ Call this to load previous messages for the chat
+    }
+
+    // 🔥 **Join the chat room** using socket.io for real-time updates
     Future.delayed(Duration(milliseconds: 500), () {
       if (chatId.isNotEmpty) {
-        NetworkHandler().socket!.emit('join_chat', chatId); // ✅ Use state chatId
+        NetworkHandler().socket!.emit('join_chat', chatId); // ✅ Join room with chatId
       }
     });
 
-    // 🔥 Listen for incoming messages (only one listener globally)
+    // 🔥 **Listen for incoming messages** (this listener runs globally)
     NetworkHandler().socket!.on('receive_message', (data) {
-      print('New message received: $data');
+      print('🔥 New message received: $data');
       setState(() {
         messages.add({
-          'content': data['content'],
-          'senderEmail': data['senderEmail'],
-          'timestamp': data['timestamp'],
+          'content': data['content'], // ✅ Store message content
+          'sender': data['sender'],   // ✅ Store sender email
+          'receiver': data['receiver'], // ✅ Store receiver email
+          'timestamp': data['timestamp'], // ✅ Store message timestamp
         });
       });
     });
-
   }
+
+  Future<void> fetchMessages() async {
+    try {
+      // 🔥 Get previous messages for this chat
+      final response = await NetworkHandler().get('/chat/messages/$chatId'); // ✅ Call API to get messages
+      if (response != null && response is List) {
+        setState(() {
+          messages = response.map((message) => {
+            'content': message['content'], // ✅ Message content
+            'sender': message['sender'],   // ✅ Sender's email
+            'receiver': message['receiver'], // ✅ Receiver's email
+            'timestamp': message['timestamp'], // ✅ Timestamp
+          }).toList(); // ✅ Store in the messages array
+        });
+        print('✅ Previous messages loaded successfully.');
+      } else {
+        print('❌ Failed to load messages. Response was null.');
+      }
+    } catch (e) {
+      print('❌ Error in fetchMessages: $e');
+    }
+  }
+
+
 
   Future<void> getUserEmail() async {
     try {
@@ -275,31 +348,36 @@ class _IndividualPageState extends State<IndividualPage> {
 
           Expanded(
           child: ListView.builder(
-            key: ValueKey(chatId), // ✅ This will force the list to rebuild when chatId changes
-            itemCount: messages.length,
-            itemBuilder: (context, index) {
-              final message = messages[index];
-              bool isOwnMessage = message['senderEmail'] == loggedInUserEmail; // ✅ Check if message is from the current user
+          key: ValueKey(chatId), // ✅ Forces the list to rebuild when chatId changes
+          itemCount: messages.length,
+          reverse: true, // ✅ Makes the ListView scroll from bottom to top
+          itemBuilder: (context, index) {
+            final message = messages[index];
+            final bool isOwnMessage = message['senderEmail'] == loggedInUserEmail; // ✅ Check if message is from the current user
 
-              if (isOwnMessage) {
-                // 🔥 Show OwnMessageCard if the senderEmail is the same as the logged-in user email
-                return OwnMessageCard(
-                  message: message['content'],
-                  time: formatTime(message['timestamp']),
-                  messageColor: Colors.greenAccent, // Example of color customization
-                  textColor: Colors.black,
-                );
-              } else {
-                // 🔥 Show ReplyCard if the message is from the other participant
-                return ReplyCard(
-                  message: message['content'],
-                  time: formatTime(message['timestamp']),
-                  messageColor: Colors.white,
-                  textColor: Colors.black,
-                );
-              }
-            },
-          ),
+            if (message['content'] == null || message['content'].isEmpty) {
+              return const SizedBox.shrink(); // 🔥 Skip rendering for empty messages
+            }
+
+            if (isOwnMessage) {
+              // 🔥 Show OwnMessageCard if the senderEmail matches the logged-in user's email
+              return OwnMessageCard(
+                message: message['content'],
+                time: formatTime(message['timestamp']),
+                messageColor: Colors.greenAccent, // Example of color customization
+                textColor: Colors.black,
+              );
+            } else {
+              // 🔥 Show ReplyCard if the message is from the other participant
+              return ReplyCard(
+                message: message['content'],
+                time: formatTime(message['timestamp']),
+                messageColor: Colors.white,
+                textColor: Colors.black,
+              );
+            }
+          },
+        ),
         ),
 
 

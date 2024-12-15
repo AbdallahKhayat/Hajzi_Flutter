@@ -94,19 +94,19 @@ class _SearchPageState extends State<SearchPage> {
             ),
             title: Text(customer['username']),
             subtitle: Text(customer['email']),
-            onTap: () {
-              // 🔥 When user taps on customer, navigate to chat
-              Navigator.push(
+              onTap: () {
+                // 🔥 When user taps on customer, navigate to chat
+                Navigator.push(
                   context,
-                MaterialPageRoute(
-                  builder: (context) => IndividualPage(
-                    initialChatId: '', // New chat, so no chatId yet
-                    chatPartnerEmail: customer['email'],
-                    chatPartnerName: customer['username'],
+                  MaterialPageRoute(
+                    builder: (context) => IndividualPage(
+                      initialChatId: '', // New chat, so no chatId yet
+                      chatPartnerEmail: customer['email'],
+                      chatPartnerName: customer['username'],
+                    ),
                   ),
-                ),
-              );
-            },
+                );
+              },
           );
         },
       ),

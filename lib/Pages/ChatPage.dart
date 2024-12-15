@@ -65,9 +65,21 @@ class _ChatPageState extends State<ChatPage> {
         itemCount: chats.length,
         itemBuilder: (context, index) {
           final chat = chats[index];
-          return CustomCard(chat: chat); // ⭐️ Only pass the 'chat' object to CustomCard
+          final currentUserEmail = storage.read(key: "email"); // Get current user's email
+          final chatPartner = chat['users'].firstWhere((user) => user['email'] != currentUserEmail, orElse: () => null);
+
+          if (chatPartner != null) {
+            return CustomCard(chat: {
+              ...chat,
+              'chatPartnerEmail': chatPartner['email'],
+              'chatPartnerName': chatPartner['username'],
+            });
+          } else {
+            return const SizedBox.shrink(); // Handle case where chatPartner is not found
+          }
         },
       ),
     );
   }
+
 }
