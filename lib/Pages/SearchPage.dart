@@ -59,6 +59,24 @@ class _SearchPageState extends State<SearchPage> {
     });
   }
 
+  Future<String?> fetchExistingChatId(String partnerEmail) async {
+    try {
+      final response = await NetworkHandler().get('/chat/existing?partnerEmail=$partnerEmail');
+      // Ensure `NetworkHandler().get()` returns the decoded JSON. If it returns a raw response, decode it here.
+      if (response != null && response is Map) {
+        // If the response contains '_id', it means chat exists
+        if (response['_id'] != null) {
+          return response['_id'];
+        }
+      }
+      return null; // No existing chat found
+    } catch (e) {
+      print("Error checking for existing chat: $e");
+      return null;
+    }
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -94,19 +112,21 @@ class _SearchPageState extends State<SearchPage> {
             ),
             title: Text(customer['username']),
             subtitle: Text(customer['email']),
-              onTap: () {
-                // 🔥 When user taps on customer, navigate to chat
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => IndividualPage(
-                      initialChatId: '', // New chat, so no chatId yet
-                      chatPartnerEmail: customer['email'],
-                      chatPartnerName: customer['username'],
-                    ),
+            onTap: () async {
+              final existingChatId = await fetchExistingChatId(customer['email']);
+
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => IndividualPage(
+                    initialChatId: existingChatId ?? '',
+                    chatPartnerEmail: customer['email'],
+                    chatPartnerName: customer['username'],
                   ),
-                );
-              },
+                ),
+              );
+            }
+            ,
           );
         },
       ),
