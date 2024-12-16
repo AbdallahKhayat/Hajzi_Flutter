@@ -101,6 +101,9 @@ class _IndividualPageState extends State<IndividualPage> {
       }
     } catch (e) {
       print("❌ Error in sendMessage: $e");
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Failed to send message. Please try again.'),
+      ));
     }
   }
 
@@ -108,16 +111,30 @@ class _IndividualPageState extends State<IndividualPage> {
     if (messageContent.isEmpty) return; // 🔥 Prevent empty message from being sent
 
     try {
-      // ✅ Optimistic UI update
+      // ✅ Optimistic UI update (display message before server response)
+      final timestamp = DateTime.now().toIso8601String();
+      final newMessage = {
+        'content': messageContent,
+        'senderEmail': loggedInUserEmail,
+        'receiverEmail': widget.chatPartnerEmail,
+        'timestamp': timestamp,
+      };
+
       setState(() {
-        messages.add({
-          'content': messageContent,
-          'senderEmail': loggedInUserEmail,
-          'receiverEmail': widget.chatPartnerEmail,
-          'timestamp': DateTime.now().toIso8601String(),
-        });
+        messages.add(newMessage);
       });
 
+      // ✅ Emit message to **Socket.io** instantly for real-time updates
+      print("📡 Emitting message to socket...");
+      NetworkHandler().socket!.emit('send_message', {
+        'chatId': chatId,
+        'content': messageContent,
+        'senderEmail': loggedInUserEmail,
+        'receiverEmail': widget.chatPartnerEmail,
+        'timestamp': timestamp,
+      });
+
+      // 🔥 **Send message to the server**
       final response = await NetworkHandler().post('/chat/send-message', {
         'chatId': chatId,
         'content': messageContent,
@@ -131,21 +148,17 @@ class _IndividualPageState extends State<IndividualPage> {
           sendButton = false; // 🔥 Reset the send button state
           print("✅ Message sent successfully. Response: $responseData");
         });
-
-        // ✅ Emit the message to **socket.io** for real-time message updates
-        NetworkHandler().socket!.emit('send_message', {
-          'chatId': chatId,
-          'content': messageContent,
-          'senderEmail': loggedInUserEmail,
-          'receiverEmail': widget.chatPartnerEmail,
-          'timestamp': DateTime.now().toIso8601String(),
-        });
-
       } else {
         print("❌ Error sending message: Response was null");
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Failed to send message. Please try again.'),
+        ));
       }
     } catch (e) {
       print("❌ Error in sendActualMessage: $e");
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Failed to send message. Please try again.'),
+      ));
     }
   }
 
@@ -169,38 +182,59 @@ class _IndividualPageState extends State<IndividualPage> {
   }
 
   @override
-  @override
   void initState() {
     super.initState();
-    chatId = widget.initialChatId;
+    chatId = widget.initialChatId; // ✅ Initialize chatId from widget property
     getUserEmail();
-    NetworkHandler().initSocketConnection();
+    NetworkHandler().initSocketConnection(); // ✅ Connect to socket
 
+    // 🔥 **Fetch previous messages** if chatId exists
     if (chatId.isNotEmpty) {
       fetchMessages();
+      joinChatRoom(); // ✅ Join the chat room once we have a chatId
     } else {
-      // If chatId is empty, wait for it to be created, then fetch messages
-      Future.delayed(Duration(seconds: 2), () {
-        if (chatId.isNotEmpty) fetchMessages();
-      });
+      print("🕒 Waiting for chatId to be created...");
     }
 
-    // 🔥 Listen for socket connection and join chat
+    // 🔥 **Listen for socket 'connect' event**
     NetworkHandler().socket!.on('connect', (_) {
+      print("✅ Socket connected successfully.");
       if (chatId.isNotEmpty) {
-        NetworkHandler().socket!.emit('join_chat', chatId);
+        joinChatRoom(); // ✅ Join the room only if chatId exists
       }
     });
 
-    // 🔥 Listen for incoming messages (this listener runs globally)
-    if (!NetworkHandler().socket!.hasListeners('receive_message')) {
+    // 🔥 **Listen for new incoming messages**
+    setupMessageListener();
+  }
+
+  /// 🔥 **Join the chat room once chatId is set**
+  void joinChatRoom() {
+    if (chatId.isNotEmpty) {
+      print("🔗 Joining chat room with chatId: $chatId");
+      NetworkHandler().socket!.emit('join_chat', chatId);
+    } else {
+      print("⚠️ Chat ID is empty. Cannot join chat room.");
+    }
+  }
+
+  /// 🔥 **Set up the listener for incoming messages**
+  void setupMessageListener() {
+    // ✅ Check if socket already has this listener to avoid multiple listeners
+    if (NetworkHandler().socket != null && !NetworkHandler().socket!.hasListeners('receive_message')) {
+      print("🛠️ Setting up 'receive_message' listener...");
       NetworkHandler().socket!.on('receive_message', (data) {
-        if (!messages.any((msg) => msg['timestamp'] == data['timestamp'])) {
+        print("🔥 New message received: $data");
+
+        // ✅ Check if the message already exists (avoid duplicates)
+        final bool messageAlreadyExists = messages.any((msg) => msg['timestamp'] == data['timestamp']);
+
+        if (!messageAlreadyExists) {
           setState(() {
             messages.add({
               'content': data['content'],
-              'sender': data['sender'],
-              'receiver': data['receiver'],
+              'senderEmail': data['senderEmail'],
+              'receiverEmail': data['receiverEmail'],
               'timestamp': data['timestamp'],
             });
           });
@@ -211,15 +245,21 @@ class _IndividualPageState extends State<IndividualPage> {
 
   Future<void> fetchMessages() async {
     try {
-      // 🔥 Get previous messages for this chat
-      final response = await NetworkHandler().get('/chat/messages/$chatId'); // ✅ Call API to get messages
+      if (chatId.isEmpty) {
+        print("⚠️ Chat ID is empty. Skipping fetch messages.");
+        return;
+      }
+
+      print("📡 Fetching messages for chatId: $chatId");
+      final response = await NetworkHandler().get('/chat/messages/$chatId');
+
       if (response != null && response is List) {
         setState(() {
           messages = response.map((message) => {
             'content': message['content'],
-            'senderEmail': message['senderEmail'],  // ✅ Use 'senderEmail' to track sender
-            'receiverEmail': message['receiverEmail'], // ✅ Track receiver email
-            'timestamp': message['timestamp'], // ✅ Timestamp
+            'senderEmail': message['senderEmail'],
+            'receiverEmail': message['receiverEmail'],
+            'timestamp': message['timestamp'],
           }).toList();
         });
         print('✅ Previous messages loaded successfully.');
@@ -230,7 +270,6 @@ class _IndividualPageState extends State<IndividualPage> {
       print('❌ Error in fetchMessages: $e');
     }
   }
-
 
   void updateChatId(String newChatId) {
     if (chatId != newChatId) {
