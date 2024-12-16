@@ -80,6 +80,11 @@ class _IndividualPageState extends State<IndividualPage> {
                 print("✅ Chat created successfully with ID: $chatId");
               });
 
+              // Now that we have chatId, fetch old messages, join room and set up listener
+              await fetchMessages();
+              joinChatRoom();
+              setupMessageListener();
+
               // 🔥 **Send the message after the chat is created**
               await sendActualMessage(messageContent); // ✅ Await to ensure message is sent after chat creation
             } else {
@@ -122,6 +127,11 @@ class _IndividualPageState extends State<IndividualPage> {
 
       setState(() {
         messages.add(newMessage);
+      });
+
+      // 🔥 Scroll to the bottom after the message is added
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _scrollToBottom();
       });
 
       // ✅ Emit message to **Socket.io** instantly for real-time updates
@@ -171,6 +181,7 @@ class _IndividualPageState extends State<IndividualPage> {
 
 
 
+
   /// Function to create a lighter version of a color
   Color lightenColor(Color color, [double amount = 0.2]) {
     if (color == Colors.black) {
@@ -181,34 +192,42 @@ class _IndividualPageState extends State<IndividualPage> {
     return lighterHSL.toColor();
   }
 
+
   @override
   void initState() {
     super.initState();
-    _scrollController = ScrollController(); // 🔥 Initialize ScrollController
-    chatId = widget.initialChatId; // ✅ Initialize chatId from widget property
+    _scrollController = ScrollController();
+    chatId = widget.initialChatId;
     getUserEmail();
-    NetworkHandler().initSocketConnection(); // ✅ Connect to socket
+    NetworkHandler().initSocketConnection();
 
-
-
-    // 🔥 **Fetch previous messages** if chatId exists
-    if (chatId.isNotEmpty) {
-      fetchMessages();
-      joinChatRoom(); // ✅ Join the chat room once we have a chatId
-      setupMessageListener(); // ✅ Listen for incoming messages only after joining the chat room
-    } else {
-      print("🕒 Waiting for chatId to be created...");
-    }
-
-    // 🔥 **Listen for socket 'connect' event**
+    // Socket event handlers
     NetworkHandler().socket!.on('connect', (_) {
       print("✅ Socket connected successfully.");
       if (chatId.isNotEmpty) {
-        joinChatRoom(); // ✅ Join the room only if chatId exists
-        setupMessageListener(); // 🔥 Set up the listener when the socket connects
+        // Re-join room and re-setup listener on reconnect
+        joinChatRoom();
+        setupMessageListener();
       }
     });
+
+    NetworkHandler().socket!.on('disconnect', (_) {
+      print("⚠️ Socket disconnected.");
+    });
+
+    // If we already have a chatId, fetch messages and set up the listener
+    if (chatId.isNotEmpty) {
+      fetchMessages().then((_) {
+        joinChatRoom();
+        setupMessageListener();
+      });
+    } else {
+      print("🕒 Waiting for chatId to be created...");
+    }
   }
+
+
+
 
 
 
@@ -221,6 +240,10 @@ class _IndividualPageState extends State<IndividualPage> {
       );
     }
   }
+
+
+
+
 
 
 
@@ -247,18 +270,23 @@ class _IndividualPageState extends State<IndividualPage> {
   /// 🔥 **Set up the listener for incoming messages**
   /// 🔥 **Set up the listener for incoming messages**
   /// 🔥 **Set up the listener for incoming messages**
+  /// 🔥 **Set up the listener for incoming messages**
+  /// 🔥 **Set up the listener for incoming messages**
   void setupMessageListener() {
-    if (NetworkHandler().socket != null && !NetworkHandler().socket!.hasListeners('receive_message')) {
+    if (NetworkHandler().socket != null) {
       print("🛠️ Setting up 'receive_message' listener...");
+
+      // Optional: Remove old listener to avoid duplicates
+      NetworkHandler().socket!.off('receive_message');
+
       NetworkHandler().socket!.on('receive_message', (data) {
         print("🔥 New message received: $data");
 
-        final bool messageAlreadyExists = messages.any((msg) => msg['_id'] == data['_id']); // Check by `_id`
-
+        final bool messageAlreadyExists = messages.any((msg) => msg['_id'] == data['_id']);
         if (!messageAlreadyExists) {
           setState(() {
             messages.add({
-              '_id': data['_id'], // Use _id for unique identification
+              '_id': data['_id'],
               'content': data['content'],
               'senderEmail': data['senderEmail'],
               'receiverEmail': data['receiverEmail'],
@@ -266,14 +294,22 @@ class _IndividualPageState extends State<IndividualPage> {
             });
           });
 
-          // 🔥 Scroll to the bottom when a new message arrives
-          _scrollToBottom();
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _scrollToBottom();
+          });
         } else {
           print('⚠️ Message with ID ${data['_id']} already exists. Ignoring duplicate.');
         }
       });
     }
   }
+
+
+
+
+
+
+
 
   @override
   void dispose() {
@@ -293,26 +329,42 @@ class _IndividualPageState extends State<IndividualPage> {
       print("📡 Fetching messages for chatId: $chatId");
       final response = await NetworkHandler().get('/chat/messages/$chatId');
 
+      // If NetworkHandler().get returns raw JSON string:
+      // final decoded = json.decode(response.body);
+      // if (decoded is List) {
+      //   setState(() {
+      //     messages.clear(); // clear before adding
+      //     for (var message in decoded) {
+      //       messages.add({
+      //         '_id': message['_id'],
+      //         'content': message['content'],
+      //         'senderEmail': message['senderEmail'],
+      //         'receiverEmail': message['receiverEmail'],
+      //         'timestamp': message['timestamp'],
+      //       });
+      //     }
+      //   });
+      // }
+
+      // If NetworkHandler().get already returns a decoded list:
       if (response != null && response is List) {
         setState(() {
-          response.forEach((message) {
-            // Check if message already exists to avoid duplicates
-            final bool messageAlreadyExists = messages.any((msg) => msg['_id'] == message['_id']);
-            if (!messageAlreadyExists) {
-              messages.add({
-                '_id': message['_id'], // ✅ Use _id for unique identification
-                'content': message['content'],
-                'senderEmail': message['senderEmail'],
-                'receiverEmail': message['receiverEmail'],
-                'timestamp': message['timestamp'],
-              });
-            }
-          });
+          messages.clear();
+          for (var message in response) {
+            messages.add({
+              '_id': message['_id'],
+              'content': message['content'],
+              'senderEmail': message['senderEmail'],
+              'receiverEmail': message['receiverEmail'],
+              'timestamp': message['timestamp'],
+            });
+          }
         });
         print('✅ Previous messages loaded successfully.');
       } else {
-        print('❌ Failed to load messages. Response was null.');
+        print('❌ Failed to load messages. Response: $response');
       }
+
     } catch (e) {
       print('❌ Error in fetchMessages: $e');
     }
@@ -455,34 +507,38 @@ class _IndividualPageState extends State<IndividualPage> {
           body: Column(
             children: [
 
-          Expanded(
-          child: ListView.builder(
-          controller: _scrollController, // 🔥 Attach ScrollController
-            itemCount: messages.length,
-            itemBuilder: (context, index) {
-              final message = messages[index];
-              bool isOwnMessage = message['senderEmail'] == loggedInUserEmail;
+              Expanded(
+                child: ListView.builder(
+                  controller: _scrollController, // Attach scroll controller to auto-scroll
+                  itemCount: messages.length,
+                  itemBuilder: (context, index) {
+                    final message = messages[index];
+                    bool isOwnMessage = message['senderEmail'] == loggedInUserEmail; // Check if message is from the current user
 
-              if (isOwnMessage) {
-                // 🔥 Show OwnMessageCard if the senderEmail is the same as the logged-in user email
-                return OwnMessageCard(
-                  message: message['content'],
-                  time: formatTime(message['timestamp']),
-                  messageColor: Colors.greenAccent,
-                  textColor: Colors.black,
-                );
-              } else {
-                // 🔥 Show ReplyCard if the message is from the other participant
-                return ReplyCard(
-                  message: message['content'],
-                  time: formatTime(message['timestamp']),
-                  messageColor: Colors.white,
-                  textColor: Colors.black,
-                );
-              }
-            },
-          ),
-        ),
+                    if (isOwnMessage) {
+                      return OwnMessageCard(
+                        message: message['content'],
+                        time: formatTime(message['timestamp']),
+                        messageColor: Colors.greenAccent,
+                        textColor: Colors.black,
+                      );
+                    } else {
+                      return ReplyCard(
+                        message: message['content'],
+                        time: formatTime(message['timestamp']),
+                        messageColor: Colors.white,
+                        textColor: Colors.black,
+                      );
+                    }
+                  },
+                ),
+              ),
+
+
+
+
+
+
 
 
 
