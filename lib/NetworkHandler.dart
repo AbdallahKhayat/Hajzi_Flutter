@@ -27,9 +27,11 @@ class NetworkHandler{
     return _instance;
   }
   NetworkHandler._internal() {
-    // 🔥 Ensure socket connection is initialized only once
-    initSocketConnection();
+    if (socket == null || !socket!.connected) {
+      initSocketConnection();
+    }
   }
+
   // ✅ Function to initialize the socket connection
   // ✅ Function to initialize the socket connection
   void initSocketConnection() {
@@ -43,8 +45,11 @@ class NetworkHandler{
     try {
       socket = IO.io(baseurl, <String, dynamic>{
         'transports': ['websocket'],
-        'path': '/socket.io', // 🔥 Important to set path for socket.io endpoint
-        'autoConnect': true, // 🔥 Automatically connect on creation
+        'path': '/socket.io',
+        'autoConnect': true,
+        'reconnection': true, // 🔥 Enable auto-reconnection
+        'reconnectionAttempts': 10, // 🔥 Retry connection 10 times
+        'reconnectionDelay': 2000, // 🔥 Wait 2 seconds before retrying
       });
 
       // ✅ Set up event listeners
@@ -54,6 +59,16 @@ class NetworkHandler{
 
       socket!.onDisconnect((_) {
         log.w("⚠️ Disconnected from the Socket Server");
+        log.i("🔄 Attempting to reconnect...");
+        socket!.connect(); // 🔥 Automatically attempt to reconnect
+      });
+
+      socket!.onConnectError((error) {
+        log.e("❌ Connection Error: $error");
+      });
+
+      socket!.onError((error) {
+        log.e("❌ Socket Error: $error");
       });
 
       socket!.on('receive_message', (data) {
@@ -66,6 +81,7 @@ class NetworkHandler{
       log.e("❌ Error initializing socket: $e");
     }
   }
+
   // ✅ Function to send a message
   void sendMessage(String chatId, String messageContent, String senderEmail) {
     if (socket != null && socket!.connected) {
@@ -73,12 +89,17 @@ class NetworkHandler{
       socket!.emit('send_message', {
         'chatId': chatId,
         'content': messageContent,
-        'senderEmail': senderEmail, // Pass sender email as part of the message
+        'senderEmail': senderEmail,
       });
     } else {
-      log.e('⚠️ Socket is not connected. Message not sent.');
+      log.e('⚠️ Socket is not connected. Attempting to reconnect...');
+      initSocketConnection(); // 🔥 Reconnect socket if disconnected
     }
   }
+  bool isSocketConnected() {
+    return socket != null && socket!.connected;
+  }
+
 
 
 
