@@ -39,7 +39,7 @@ class _IndividualPageState extends State<IndividualPage> {
 
   String formatTime(String timestamp) {
     try {
-      DateTime dateTime = DateTime.parse(timestamp);
+      DateTime dateTime = DateTime.parse(timestamp).toLocal();
       String formattedTime = DateFormat('h:mm a').format(dateTime);
       return formattedTime;
     } catch (e) {
@@ -47,6 +47,8 @@ class _IndividualPageState extends State<IndividualPage> {
       return '';
     }
   }
+
+
 
 
 
@@ -104,6 +106,11 @@ class _IndividualPageState extends State<IndividualPage> {
         print("💬 Chat ID already exists: $chatId. Sending message directly...");
         await sendActualMessage(messageContent); // ✅ Use await to ensure message is sent
       }
+      // Clear the text field and reset send button after sending
+      _messageController.clear();
+      setState(() {
+        sendButton = false;
+      });
     } catch (e) {
       print("❌ Error in sendMessage: $e");
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -116,18 +123,6 @@ class _IndividualPageState extends State<IndividualPage> {
     if (messageContent.isEmpty) return; // 🔥 Prevent empty message from being sent
 
     try {
-      // ✅ Optimistic UI update (display message before server response)
-      final timestamp = DateTime.now().toIso8601String();
-      final newMessage = {
-        'content': messageContent,
-        'senderEmail': loggedInUserEmail,
-        'receiverEmail': widget.chatPartnerEmail,
-        'timestamp': timestamp,
-      };
-
-      setState(() {
-        messages.add(newMessage);
-      });
 
       // 🔥 Scroll to the bottom after the message is added
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -135,6 +130,8 @@ class _IndividualPageState extends State<IndividualPage> {
       });
 
       // ✅ Emit message to **Socket.io** instantly for real-time updates
+      // Just emit the message to the socket for real-time updates
+      final timestamp = DateTime.now().toIso8601String();
       print("📡 Emitting message to socket...");
       NetworkHandler().socket!.emit('send_message', {
         'chatId': chatId,
@@ -143,6 +140,7 @@ class _IndividualPageState extends State<IndividualPage> {
         'receiverEmail': widget.chatPartnerEmail,
         'timestamp': timestamp,
       });
+
 
       // 🔥 **Send message to the server**
       final response = await NetworkHandler().post('/chat/send-message', {
@@ -276,7 +274,6 @@ class _IndividualPageState extends State<IndividualPage> {
     if (NetworkHandler().socket != null) {
       print("🛠️ Setting up 'receive_message' listener...");
 
-      // Optional: Remove old listener to avoid duplicates
       NetworkHandler().socket!.off('receive_message');
 
       NetworkHandler().socket!.on('receive_message', (data) {
@@ -284,6 +281,7 @@ class _IndividualPageState extends State<IndividualPage> {
 
         final bool messageAlreadyExists = messages.any((msg) => msg['_id'] == data['_id']);
         if (!messageAlreadyExists) {
+          // Convert timestamp to local time before formatting (in formatTime method)
           setState(() {
             messages.add({
               '_id': data['_id'],
@@ -303,6 +301,7 @@ class _IndividualPageState extends State<IndividualPage> {
       });
     }
   }
+
 
 
 
@@ -599,7 +598,7 @@ class _IndividualPageState extends State<IndividualPage> {
                   Padding(
                     padding: const EdgeInsets.only(bottom: 8, right: 10, left: 5),
                     child: CircleAvatar(
-                      backgroundColor: mainColor,
+                      backgroundColor: Colors.transparent, // Use transparent or a neutral color
                       radius: 25,
                       child: IconButton(
                         onPressed: () {
@@ -608,12 +607,14 @@ class _IndividualPageState extends State<IndividualPage> {
                         icon: AnimatedSwitcher(
                           duration: Duration(milliseconds: 200),
                           child: sendButton
-                              ? Icon(Icons.send, key: ValueKey('send'))
-                              : Icon(Icons.mic, key: ValueKey('mic')),
+                              ? Icon(Icons.send, key: ValueKey('send'), color: mainColor)
+                              : Icon(Icons.mic, key: ValueKey('mic'), color: mainColor),
                         ),
+                        splashColor: mainColor.withOpacity(0.3), // Slight splash on click
                       ),
                     ),
                   ),
+
                 ],
               )
 
