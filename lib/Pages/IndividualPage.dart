@@ -28,7 +28,7 @@ class IndividualPage extends StatefulWidget {
 
 class _IndividualPageState extends State<IndividualPage> {
   late String chatId;
-
+  late ScrollController _scrollController; // 🔥 Add ScrollController here
   late IO.Socket socket;
   bool sendButton = false;
   TextEditingController _messageController = TextEditingController(); // 🔥 Add this to track input
@@ -184,9 +184,12 @@ class _IndividualPageState extends State<IndividualPage> {
   @override
   void initState() {
     super.initState();
+    _scrollController = ScrollController(); // 🔥 Initialize ScrollController
     chatId = widget.initialChatId; // ✅ Initialize chatId from widget property
     getUserEmail();
     NetworkHandler().initSocketConnection(); // ✅ Connect to socket
+
+
 
     // 🔥 **Fetch previous messages** if chatId exists
     if (chatId.isNotEmpty) {
@@ -208,6 +211,22 @@ class _IndividualPageState extends State<IndividualPage> {
   }
 
 
+
+  void _scrollToBottom() {
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    }
+  }
+
+
+
+
+
+
   /// 🔥 **Join the chat room once chatId is set**
   /// 🔥 **Join the chat room once chatId is set**
   void joinChatRoom() {
@@ -227,29 +246,42 @@ class _IndividualPageState extends State<IndividualPage> {
 
   /// 🔥 **Set up the listener for incoming messages**
   /// 🔥 **Set up the listener for incoming messages**
+  /// 🔥 **Set up the listener for incoming messages**
   void setupMessageListener() {
     if (NetworkHandler().socket != null && !NetworkHandler().socket!.hasListeners('receive_message')) {
       print("🛠️ Setting up 'receive_message' listener...");
       NetworkHandler().socket!.on('receive_message', (data) {
         print("🔥 New message received: $data");
 
-        // ✅ Check if the message already exists (avoid duplicates)
         final bool messageAlreadyExists = messages.any((msg) => msg['_id'] == data['_id']); // Check by `_id`
 
         if (!messageAlreadyExists) {
           setState(() {
             messages.add({
-              '_id': data['_id'], // ✅ Add `_id` to uniquely identify message
+              '_id': data['_id'], // Use _id for unique identification
               'content': data['content'],
               'senderEmail': data['senderEmail'],
               'receiverEmail': data['receiverEmail'],
               'timestamp': data['timestamp'],
             });
           });
+
+          // 🔥 Scroll to the bottom when a new message arrives
+          _scrollToBottom();
+        } else {
+          print('⚠️ Message with ID ${data['_id']} already exists. Ignoring duplicate.');
         }
       });
     }
   }
+
+  @override
+  void dispose() {
+    _scrollController.dispose(); // 🔥 Don't forget to dispose
+    super.dispose();
+  }
+
+
 
   Future<void> fetchMessages() async {
     try {
@@ -268,7 +300,7 @@ class _IndividualPageState extends State<IndividualPage> {
             final bool messageAlreadyExists = messages.any((msg) => msg['_id'] == message['_id']);
             if (!messageAlreadyExists) {
               messages.add({
-                '_id': message['_id'], // ✅ Use _id for uniqueness
+                '_id': message['_id'], // ✅ Use _id for unique identification
                 'content': message['content'],
                 'senderEmail': message['senderEmail'],
                 'receiverEmail': message['receiverEmail'],
@@ -285,6 +317,7 @@ class _IndividualPageState extends State<IndividualPage> {
       print('❌ Error in fetchMessages: $e');
     }
   }
+
 
 
   void updateChatId(String newChatId) {
@@ -424,32 +457,33 @@ class _IndividualPageState extends State<IndividualPage> {
 
           Expanded(
           child: ListView.builder(
-          key: ValueKey(chatId),
-          itemCount: messages.length,
-          itemBuilder: (context, index) {
-            final message = messages[index];
-            bool isOwnMessage = message['senderEmail'] == loggedInUserEmail; // ✅ Check if message is from the current user
+          controller: _scrollController, // 🔥 Attach ScrollController
+            itemCount: messages.length,
+            itemBuilder: (context, index) {
+              final message = messages[index];
+              bool isOwnMessage = message['senderEmail'] == loggedInUserEmail;
 
-            if (isOwnMessage) {
-              // 🔥 Show OwnMessageCard if the senderEmail is the same as the logged-in user email
-              return OwnMessageCard(
-                message: message['content'],
-                time: formatTime(message['timestamp']),
-                messageColor: Colors.greenAccent,
-                textColor: Colors.black,
-              );
-            } else {
-              // 🔥 Show ReplyCard if the message is from the other participant
-              return ReplyCard(
-                message: message['content'],
-                time: formatTime(message['timestamp']),
-                messageColor: Colors.white,
-                textColor: Colors.black,
-              );
-            }
-          },
+              if (isOwnMessage) {
+                // 🔥 Show OwnMessageCard if the senderEmail is the same as the logged-in user email
+                return OwnMessageCard(
+                  message: message['content'],
+                  time: formatTime(message['timestamp']),
+                  messageColor: Colors.greenAccent,
+                  textColor: Colors.black,
+                );
+              } else {
+                // 🔥 Show ReplyCard if the message is from the other participant
+                return ReplyCard(
+                  message: message['content'],
+                  time: formatTime(message['timestamp']),
+                  messageColor: Colors.white,
+                  textColor: Colors.black,
+                );
+              }
+            },
+          ),
         ),
-        ),
+
 
 
               Row(
