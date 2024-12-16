@@ -92,18 +92,24 @@ class NetworkHandler{
         },
       );
 
+      log.i("📡 Request to: $url");
+      log.i("📦 Headers: ${response.request?.headers}");
+      log.i("📡 Full Response: ${response.body}");
+
       if (response.statusCode == 200) {
         log.i("✅ API Response Success: ${response.statusCode}");
         return json.decode(response.body);
       } else {
         log.e("❌ API Error: ${response.statusCode}");
-        return null;
+        log.e("📡 Full Response: ${response.body}");
+        throw Exception('API error: ${response.statusCode} | Body: ${response.body}');
       }
     } catch (e) {
       log.e("❌ Error during getWithAuth: $e");
-      return null;
+      return {'error': 'Error during API request: $e'};
     }
   }
+
 
 
 //End changes
