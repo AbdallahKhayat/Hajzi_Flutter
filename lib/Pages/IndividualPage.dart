@@ -172,36 +172,42 @@ class _IndividualPageState extends State<IndividualPage> {
   @override
   void initState() {
     super.initState();
-    chatId = widget.initialChatId; // ✅ Initialize chatId from widget property
+    chatId = widget.initialChatId;
     getUserEmail();
-    NetworkHandler().initSocketConnection(); // ✅ Use existing connection from NetworkHandler
+    NetworkHandler().initSocketConnection();
 
-    // 🔥 **Fetch previous messages** from the backend for this chat
     if (chatId.isNotEmpty) {
-      fetchMessages(); // ✅ Call this to load previous messages for the chat
+      fetchMessages();
+    } else {
+      // If chatId is empty, wait for it to be created, then fetch messages
+      Future.delayed(Duration(seconds: 2), () {
+        if (chatId.isNotEmpty) fetchMessages();
+      });
     }
 
-    // 🔥 **Join the chat room** using socket.io for real-time updates
-    Future.delayed(Duration(milliseconds: 500), () {
+    // 🔥 Listen for socket connection and join chat
+    NetworkHandler().socket!.on('connect', (_) {
       if (chatId.isNotEmpty) {
-        NetworkHandler().socket!.emit('join_chat', chatId); // ✅ Join room with chatId
+        NetworkHandler().socket!.emit('join_chat', chatId);
       }
     });
 
-    // 🔥 **Listen for incoming messages** (this listener runs globally)
-    NetworkHandler().socket!.on('receive_message', (data) {
-      print('🔥 New message received: $data');
-      setState(() {
-        messages.add({
-          'content': data['content'],
-          'senderEmail': data['senderEmail'],
-          'receiverEmail': data['receiverEmail'],
-          'timestamp': data['timestamp'],
-        });
+    // 🔥 Listen for incoming messages (this listener runs globally)
+    if (!NetworkHandler().socket!.hasListeners('receive_message')) {
+      NetworkHandler().socket!.on('receive_message', (data) {
+        if (!messages.any((msg) => msg['timestamp'] == data['timestamp'])) {
+          setState(() {
+            messages.add({
+              'content': data['content'],
+              'sender': data['sender'],
+              'receiver': data['receiver'],
+              'timestamp': data['timestamp'],
+            });
+          });
+        }
       });
-    });
+    }
   }
-
 
   Future<void> fetchMessages() async {
     try {
