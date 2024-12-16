@@ -192,6 +192,7 @@ class _IndividualPageState extends State<IndividualPage> {
     if (chatId.isNotEmpty) {
       fetchMessages();
       joinChatRoom(); // ✅ Join the chat room once we have a chatId
+      setupMessageListener(); // ✅ Listen for incoming messages only after joining the chat room
     } else {
       print("🕒 Waiting for chatId to be created...");
     }
@@ -201,37 +202,44 @@ class _IndividualPageState extends State<IndividualPage> {
       print("✅ Socket connected successfully.");
       if (chatId.isNotEmpty) {
         joinChatRoom(); // ✅ Join the room only if chatId exists
+        setupMessageListener(); // 🔥 Set up the listener when the socket connects
       }
     });
-
-    // 🔥 **Listen for new incoming messages**
-    setupMessageListener();
   }
 
+
+  /// 🔥 **Join the chat room once chatId is set**
   /// 🔥 **Join the chat room once chatId is set**
   void joinChatRoom() {
     if (chatId.isNotEmpty) {
-      print("🔗 Joining chat room with chatId: $chatId");
-      NetworkHandler().socket!.emit('join_chat', chatId);
+      if (NetworkHandler().socket != null && NetworkHandler().socket!.connected) {
+        print("🔗 Joining chat room with chatId: $chatId");
+        NetworkHandler().socket!.emit('join_chat', chatId);
+        setupMessageListener(); // ✅ Set up message listener once user joins the room
+      } else {
+        print("⚠️ Socket not connected yet. Cannot join chat room.");
+      }
     } else {
       print("⚠️ Chat ID is empty. Cannot join chat room.");
     }
   }
 
+
+  /// 🔥 **Set up the listener for incoming messages**
   /// 🔥 **Set up the listener for incoming messages**
   void setupMessageListener() {
-    // ✅ Check if socket already has this listener to avoid multiple listeners
     if (NetworkHandler().socket != null && !NetworkHandler().socket!.hasListeners('receive_message')) {
       print("🛠️ Setting up 'receive_message' listener...");
       NetworkHandler().socket!.on('receive_message', (data) {
         print("🔥 New message received: $data");
 
         // ✅ Check if the message already exists (avoid duplicates)
-        final bool messageAlreadyExists = messages.any((msg) => msg['timestamp'] == data['timestamp']);
+        final bool messageAlreadyExists = messages.any((msg) => msg['_id'] == data['_id']); // Check by `_id`
 
         if (!messageAlreadyExists) {
           setState(() {
             messages.add({
+              '_id': data['_id'], // ✅ Add `_id` to uniquely identify message
               'content': data['content'],
               'senderEmail': data['senderEmail'],
               'receiverEmail': data['receiverEmail'],
@@ -255,12 +263,19 @@ class _IndividualPageState extends State<IndividualPage> {
 
       if (response != null && response is List) {
         setState(() {
-          messages = response.map((message) => {
-            'content': message['content'],
-            'senderEmail': message['senderEmail'],
-            'receiverEmail': message['receiverEmail'],
-            'timestamp': message['timestamp'],
-          }).toList();
+          response.forEach((message) {
+            // Check if message already exists to avoid duplicates
+            final bool messageAlreadyExists = messages.any((msg) => msg['_id'] == message['_id']);
+            if (!messageAlreadyExists) {
+              messages.add({
+                '_id': message['_id'], // ✅ Use _id for uniqueness
+                'content': message['content'],
+                'senderEmail': message['senderEmail'],
+                'receiverEmail': message['receiverEmail'],
+                'timestamp': message['timestamp'],
+              });
+            }
+          });
         });
         print('✅ Previous messages loaded successfully.');
       } else {
@@ -270,6 +285,7 @@ class _IndividualPageState extends State<IndividualPage> {
       print('❌ Error in fetchMessages: $e');
     }
   }
+
 
   void updateChatId(String newChatId) {
     if (chatId != newChatId) {
