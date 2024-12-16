@@ -133,13 +133,13 @@ class _IndividualPageState extends State<IndividualPage> {
       // Just emit the message to the socket for real-time updates
       final timestamp = DateTime.now().toIso8601String();
       print("📡 Emitting message to socket...");
-      NetworkHandler().socket!.emit('send_message', {
-        'chatId': chatId,
-        'content': messageContent,
-        'senderEmail': loggedInUserEmail,
-        'receiverEmail': widget.chatPartnerEmail,
-        'timestamp': timestamp,
-      });
+      // NetworkHandler().socket!.emit('send_message', {
+      //   'chatId': chatId,
+      //   'content': messageContent,
+      //   'senderEmail': loggedInUserEmail,
+      //   'receiverEmail': widget.chatPartnerEmail,
+      //   'timestamp': timestamp,
+      // });
 
 
       // 🔥 **Send message to the server**
@@ -598,7 +598,7 @@ class _IndividualPageState extends State<IndividualPage> {
                   Padding(
                     padding: const EdgeInsets.only(bottom: 8, right: 10, left: 5),
                     child: CircleAvatar(
-                      backgroundColor: Colors.transparent, // Use transparent or a neutral color
+                      backgroundColor: mainColor, // Use transparent or a neutral color
                       radius: 25,
                       child: IconButton(
                         onPressed: () {
@@ -607,8 +607,8 @@ class _IndividualPageState extends State<IndividualPage> {
                         icon: AnimatedSwitcher(
                           duration: Duration(milliseconds: 200),
                           child: sendButton
-                              ? Icon(Icons.send, key: ValueKey('send'), color: mainColor)
-                              : Icon(Icons.mic, key: ValueKey('mic'), color: mainColor),
+                              ? Icon(Icons.send, key: ValueKey('send'), color: Colors.black)
+                              : Icon(Icons.mic, key: ValueKey('mic'), color: Colors.black),
                         ),
                         splashColor: mainColor.withOpacity(0.3), // Slight splash on click
                       ),
