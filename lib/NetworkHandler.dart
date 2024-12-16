@@ -71,9 +71,9 @@ class NetworkHandler{
         log.e("❌ Socket Error: $error");
       });
 
-      socket!.on('receive_message', (data) {
-        log.i('📩 Message received: $data');
-      });
+      // socket!.on('receive_message', (data) {
+      //   log.i('📩 Message received: $data');
+      // });
 
       // Attempt to connect the socket
       socket!.connect();

@@ -205,7 +205,7 @@ class _IndividualPageState extends State<IndividualPage> {
       if (chatId.isNotEmpty) {
         // Re-join room and re-setup listener on reconnect
         joinChatRoom();
-        setupMessageListener();
+        //setupMessageListener();
       }
     });
 
@@ -217,7 +217,7 @@ class _IndividualPageState extends State<IndividualPage> {
     if (chatId.isNotEmpty) {
       fetchMessages().then((_) {
         joinChatRoom();
-        setupMessageListener();
+        //setupMessageListener();
       });
     } else {
       print("🕒 Waiting for chatId to be created...");
@@ -274,7 +274,7 @@ class _IndividualPageState extends State<IndividualPage> {
     if (NetworkHandler().socket != null) {
       print("🛠️ Setting up 'receive_message' listener...");
 
-      NetworkHandler().socket!.off('receive_message');
+      //NetworkHandler().socket!.off('receive_message');
 
       NetworkHandler().socket!.on('receive_message', (data) {
         print("🔥 New message received: $data");
@@ -358,6 +358,7 @@ class _IndividualPageState extends State<IndividualPage> {
               'timestamp': message['timestamp'],
             });
           }
+          _scrollToBottom();
         });
         print('✅ Previous messages loaded successfully.');
       } else {

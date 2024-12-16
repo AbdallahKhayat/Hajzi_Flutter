@@ -2,11 +2,8 @@ import 'package:blogapp/Screen/CameraFiles/CameraScreen.dart';
 import 'package:blogapp/Pages/ChatPage.dart';
 import 'package:flutter/material.dart';
 import 'package:blogapp/constants.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // 🔥 New import for secure storage
-import 'package:blogapp/NetworkHandler.dart';
-
-import '../Pages/SearchPage.dart'; // 🔥 Import NetworkHandler
-
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import '../Pages/SearchPage.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -17,43 +14,13 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateMixin {
   late TabController _controller;
-
-  final storage = FlutterSecureStorage(); // 🔥 New secure storage instance
-  NetworkHandler networkHandler = NetworkHandler(); // 🔥 Instance of NetworkHandler
-  List<dynamic> chats = []; // 🔥 Store list of chats
-
+  // We no longer store or fetch chats here.
+  // All chat logic is in ChatPage.
 
   @override
   void initState() {
     super.initState();
     _controller = TabController(length: 4, vsync: this, initialIndex: 1);
-
-    // 🔥 Fetch the list of chats when the screen loads
-    fetchChats();
-
-    // 🔥 Initialize the socket connection for real-time chat updates
-    networkHandler.initSocketConnection();
-
-    // 🔥 Listen for new incoming messages
-    networkHandler.socket!.on('receive_message', (message) {
-      print("🔥 New message received: $message");
-
-      final chatId = message['chatId'];
-      final messageContent = message['content'];
-
-      setState(() {
-        int chatIndex = chats.indexWhere((chat) => chat['_id'] == chatId);
-        if (chatIndex != -1) {
-          // Update last message and timestamp in the chat list
-          chats[chatIndex]['lastMessage'] = messageContent;
-          chats[chatIndex]['lastMessageTime'] = DateTime.now().toIso8601String();
-        } else {
-          // If it's a new chat, refresh the chats list
-          fetchChats();
-        }
-      });
-    });
-
 
     // Navigate to camera instantly if tab index is 0 (camera tab)
     _controller.addListener(() {
@@ -66,30 +33,6 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
     });
   }
 
-  // 🔥 Function to fetch user chats from the server
-  Future<void> fetchChats() async {
-    try {
-      // 🔥 Get the token from secure storage
-      String? token = await storage.read(key: "token");
-
-      if (token != null) {
-        var response = await networkHandler.getWithAuth('/chat/user-chats', token);
-
-        if (response != null) {
-          setState(() {
-            chats = response; // 🔥 Store the list of chats in state
-          });
-          print("Chats loaded: $chats");
-        } else {
-          print("Failed to load chats.");
-        }
-      }
-    } catch (e) {
-      print("Error fetching chats: $e");
-    }
-  }
-
-
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<Color>(
@@ -101,20 +44,16 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
             title: const Text("Hajzi Chats", style: TextStyle(color: Colors.white)),
             actions: [
               IconButton(
-                  icon: const Icon(Icons.search),
-                  color: Colors.white,
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => SearchPage(),
-                      ),
-                    ).then((_) {
-                      fetchChats(); // 🔥 Refresh chat list when user returns from SearchPage
-                    });
-                  }
+                icon: const Icon(Icons.search),
+                color: Colors.white,
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const SearchPage()),
+                  );
+                  // We no longer call fetchChats() here since ChatPage handles its own data.
+                },
               ),
-
               PopupMenuButton<String>(
                 icon: const Icon(Icons.more_vert, color: Colors.white),
                 onSelected: (value) {},
@@ -145,8 +84,9 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
           body: TabBarView(
             controller: _controller,
             children: [
-              const SizedBox.shrink(), // Empty widget for camera tab since camera opens automatically
-              const ChatPage(chatId: '', chatPartnerEmail: ''), // 🔥 Replace old list with ChatPage
+              const SizedBox.shrink(),
+              // We pass no parameters to ChatPage. ChatPage handles its own fetching and socket listeners.
+               ChatPage(chatId: '', chatPartnerEmail: ''),
               const Center(child: Text("Status", style: TextStyle(fontSize: 18))),
               const Center(child: Text("Calls", style: TextStyle(fontSize: 18))),
             ],
@@ -155,8 +95,4 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
       },
     );
   }
-
-
-
-
 }

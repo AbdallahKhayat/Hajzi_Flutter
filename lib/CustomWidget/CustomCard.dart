@@ -1,21 +1,22 @@
 import 'package:blogapp/Pages/IndividualPage.dart';
 import 'package:flutter/material.dart';
 import '../constants.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // ✅ Secure Storage
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:intl/intl.dart'; // For time formatting
 
 class CustomCard extends StatelessWidget {
-  final Map<String, dynamic> chat; // 🔥 Accept raw chat data from backend
-  final FlutterSecureStorage storage = const FlutterSecureStorage(); // ✅ Add secure storage
+  final Map<String, dynamic> chat;
+  final FlutterSecureStorage storage = const FlutterSecureStorage();
 
   CustomCard({super.key, required this.chat});
 
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<String?>(
-      future: storage.read(key: "email"), // ✅ Get current user's email from secure storage
+      future: storage.read(key: "email"),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
-          return const SizedBox.shrink(); // Wait until we have email
+          return const SizedBox.shrink();
         }
 
         final String? currentUserEmail = snapshot.data;
@@ -27,18 +28,17 @@ class CustomCard extends StatelessWidget {
         final chatPartnerName = chatPartner['username'] ?? 'Unknown User';
         final chatPartnerEmail = chatPartner['email'] ?? 'Unknown';
         final lastMessage = chat['lastMessage'] ?? 'No messages yet';
-        final lastMessageTime = chat['lastMessageTime'] ?? ''; // You might want to format this
+        final lastMessageTime = chat['lastMessageTime'] ?? '';
 
         return InkWell(
           onTap: () {
-            // ⭐️ Change Navigation to IndividualPage
             Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (context) => IndividualPage(
-                  initialChatId: chat['_id'], // ✅ Pass chat ID
-                  chatPartnerEmail: chatPartnerEmail, // ✅ Pass partner's email
-                  chatPartnerName: chatPartnerName, // ✅ Pass partner's username
+                  initialChatId: chat['_id'],
+                  chatPartnerEmail: chatPartnerEmail,
+                  chatPartnerName: chatPartnerName,
                 ),
               ),
             );
@@ -55,36 +55,34 @@ class CustomCard extends StatelessWidget {
                       child: Text(
                         chatPartnerName.isNotEmpty
                             ? chatPartnerName[0].toUpperCase()
-                            : 'U', // ⭐️ Use the first letter of the partner's username
+                            : 'U',
                         style: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white
-                        ),
+                            fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
                       ),
                     );
                   },
                 ),
                 title: Text(
-                  chatPartnerName, // ⭐️ Use the partner's username instead of email
+                  chatPartnerName,
                   style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 subtitle: Row(
                   children: [
+                    // Always show double blue ticks
                     const Icon(Icons.done_all, color: Colors.blue, size: 18),
-                    const SizedBox(width: 3),
+                    const SizedBox(width: 5),
                     Expanded(
                       child: Text(
                         lastMessage,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontSize: 13),
+                        style: const TextStyle(fontSize: 14),
                       ),
                     ),
                   ],
                 ),
                 trailing: Text(
-                  formatTime(lastMessageTime),
+                  formatLocalTime(lastMessageTime),
                   style: const TextStyle(fontSize: 12, color: Colors.grey),
                 ),
               ),
@@ -99,11 +97,11 @@ class CustomCard extends StatelessWidget {
     );
   }
 
-  String formatTime(String? isoTime) {
-    if (isoTime == null) return '';
+  String formatLocalTime(String? isoTime) {
+    if (isoTime == null || isoTime.isEmpty) return '';
     try {
-      final DateTime dateTime = DateTime.parse(isoTime);
-      return "${dateTime.hour}:${dateTime.minute}";
+      final DateTime dateTime = DateTime.parse(isoTime).toLocal();
+      return DateFormat('h:mm a').format(dateTime);
     } catch (e) {
       return '';
     }
