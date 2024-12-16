@@ -274,10 +274,10 @@ class _IndividualPageState extends State<IndividualPage> {
     if (NetworkHandler().socket != null) {
       print("🛠️ Setting up 'receive_message' listener...");
 
-      //NetworkHandler().socket!.off('receive_message');
+      NetworkHandler().socket!.off('receive_message_individual'); // optional if needed once
 
-      NetworkHandler().socket!.on('receive_message', (data) {
-        print("🔥 New message received: $data");
+      NetworkHandler().socket!.on('receive_message_individual', (data) {
+        print("🔥 IndividualPage event: $data");
 
         final bool messageAlreadyExists = messages.any((msg) => msg['_id'] == data['_id']);
         if (!messageAlreadyExists) {

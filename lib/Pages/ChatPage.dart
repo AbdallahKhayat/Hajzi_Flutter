@@ -63,10 +63,10 @@ class _ChatPageState extends State<ChatPage> {
   void setupSocketListeners() {
     if (NetworkHandler().socket != null) {
       // Remove old listener to avoid duplicates
-     // NetworkHandler().socket!.off('receive_message');
+      NetworkHandler().socket!.off('receive_message_chatpage'); // optional if needed once
 
-      NetworkHandler().socket!.on('receive_message', (data) {
-        print("🔔 receive_message event in ChatPage: $data");
+      NetworkHandler().socket!.on('receive_message_chatpage', (data) {
+        print("🔔 ChatPage event: $data");
         final updatedChatId = data['chatId'];
 
         if (updatedChatId == null) {
