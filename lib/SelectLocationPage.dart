@@ -1,8 +1,9 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
-import 'package:latlong2/latlong.dart' as latLng;
+import 'package:location/location.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class SelectLocationPage extends StatefulWidget {
   const SelectLocationPage({Key? key}) : super(key: key);
@@ -12,32 +13,92 @@ class SelectLocationPage extends StatefulWidget {
 }
 
 class _SelectLocationPageState extends State<SelectLocationPage> {
-  latLng.LatLng? selectedLocation;
-  final latLng.LatLng defaultCenter = latLng.LatLng(32.22111, 35.25444);
+  LatLng? selectedLocation;
+  final LatLng defaultCenter = const LatLng(32.22111, 35.25444);
   final TextEditingController _searchController = TextEditingController();
-  final MapController _mapController = MapController();
+  GoogleMapController? _mapController;
 
   List<dynamic> searchResults = [];
   int currentIndex = 0;
+  Set<Marker> markers = {};
+  bool _isLocationConfirmed = false;
+
+  // Function to get the user's current location
+  Future<void> _goToCurrentLocation() async {
+    Location location = Location();
+
+    bool _serviceEnabled;
+    PermissionStatus _permissionGranted;
+    LocationData _locationData;
+
+    _serviceEnabled = await location.serviceEnabled();
+    if (!_serviceEnabled) {
+      _serviceEnabled = await location.requestService();
+      if (!_serviceEnabled) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Location services are disabled.')),
+        );
+        return;
+      }
+    }
+
+    _permissionGranted = await location.hasPermission();
+    if (_permissionGranted == PermissionStatus.denied) {
+      _permissionGranted = await location.requestPermission();
+      if (_permissionGranted != PermissionStatus.granted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Location permissions are denied.')),
+        );
+        return;
+      }
+    }
+
+    _locationData = await location.getLocation();
+
+    LatLng currentLatLng = LatLng(_locationData.latitude!, _locationData.longitude!);
+
+    setState(() {
+      selectedLocation = currentLatLng;
+      markers.clear();
+      markers.add(
+        Marker(
+          markerId: const MarkerId('selectedLocation'),
+          position: selectedLocation!,
+          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+        ),
+      );
+    });
+
+    _mapController?.animateCamera(
+      CameraUpdate.newLatLngZoom(currentLatLng, 14.0),
+    );
+  }
 
   Future<void> _searchShops(String query) async {
     if (query.isEmpty) return;
-    final url = Uri.parse("https://nominatim.openstreetmap.org/search?format=json&countrycodes=ps&q=$query");
+    final url = Uri.parse(
+        "https://nominatim.openstreetmap.org/search?format=json&countrycodes=ps&q=$query");
     final response = await http.get(url);
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
       if (data is List && data.isNotEmpty) {
-        searchResults = data;
-        currentIndex = 0;
+        setState(() {
+          searchResults = data;
+          currentIndex = 0;
+        });
         _showResultAtIndex(currentIndex);
       } else {
-        searchResults.clear();
+        setState(() {
+          searchResults.clear();
+        });
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('No results found in Palestine')),
         );
       }
     } else {
-      searchResults.clear();
+      setState(() {
+        searchResults.clear();
+      });
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Error fetching results')),
       );
@@ -50,125 +111,183 @@ class _SelectLocationPageState extends State<SelectLocationPage> {
     final double lat = double.tryParse(result['lat']) ?? 0.0;
     final double lon = double.tryParse(result['lon']) ?? 0.0;
     setState(() {
-      selectedLocation = latLng.LatLng(lat, lon);
+      selectedLocation = LatLng(lat, lon);
+      markers.clear();
+      markers.add(
+        Marker(
+          markerId: const MarkerId('selectedLocation'),
+          position: selectedLocation!,
+          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+        ),
+      );
     });
-    _mapController.move(selectedLocation!, 14.0);
+    _mapController?.animateCamera(
+      CameraUpdate.newLatLngZoom(selectedLocation!, 14.0),
+    );
+  }
+
+  Future<void> _openInGoogleMaps() async {
+    if (selectedLocation != null) {
+      final String googleMapsUrl =
+          'https://www.google.com/maps/search/?api=1&query=${selectedLocation!.latitude},${selectedLocation!.longitude}';
+      if (await canLaunch(googleMapsUrl)) {
+        await launch(googleMapsUrl);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not open Google Maps')),
+        );
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _mapController?.dispose();
+    _searchController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final markers = <Marker>[];
-    if (selectedLocation != null) {
-      markers.add(
-        Marker(
-          point: selectedLocation!,
-          width: 80,
-          height: 80,
-          child: const Icon(
-            Icons.location_on,
-            color: Colors.red,
-            size: 40,
-          ),
-        ),
-      );
-    }
-
     return Scaffold(
       appBar: AppBar(
         title: const Text("Select Shop Location"),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(50),
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: TextField(
-              controller: _searchController,
-              textInputAction: TextInputAction.search,
-              onSubmitted: _searchShops,
-              decoration: InputDecoration(
-                hintText: 'Search for a shop',
-                suffixIcon: IconButton(
-                  icon: const Icon(Icons.search),
-                  onPressed: () => _searchShops(_searchController.text),
-                ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-            ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.my_location),
+            onPressed: _goToCurrentLocation,
+            tooltip: 'Go to Current Location',
           ),
-        ),
+        ],
       ),
       body: Column(
         children: [
-          Expanded(
-            child: FlutterMap(
-              mapController: _mapController,
-              options: MapOptions(
-                initialCenter: defaultCenter,
-                initialZoom: 12.0,
-                onTap: (tapPosition, latLngValue) {
-                  setState(() {
-                    selectedLocation = latLngValue;
-                  });
-                },
-              ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
               children: [
-                TileLayer(
-                  urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-                  subdomains: const ['a', 'b', 'c'],
-                  userAgentPackageName: 'com.example.app',
+                Expanded(
+                  child: TextField(
+                    controller: _searchController,
+                    decoration: InputDecoration(
+                      hintText: 'Search for a location',
+                      prefixIcon: const Icon(Icons.search),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                    ),
+                    onSubmitted: _searchShops,
+                  ),
                 ),
-                MarkerLayer(
-                  markers: markers,
+                const SizedBox(width: 8),
+                ElevatedButton(
+                  onPressed: () {
+                    _searchShops(_searchController.text);
+                  },
+                  child: const Text('Search'),
                 ),
               ],
             ),
           ),
-          if (searchResults.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  ElevatedButton(
-                    onPressed: currentIndex > 0
-                        ? () {
-                      setState(() {
-                        currentIndex--;
-                      });
-                      _showResultAtIndex(currentIndex);
-                    }
-                        : null,
-                    child: const Icon(Icons.arrow_back),
+          Expanded(
+            child: Stack(
+              children: [
+                GoogleMap(
+                  initialCameraPosition: CameraPosition(
+                    target: defaultCenter,
+                    zoom: 12.0,
                   ),
-                  Text("Result ${currentIndex + 1} of ${searchResults.length}"),
-                  ElevatedButton(
-                    onPressed: currentIndex < searchResults.length - 1
-                        ? () {
-                      setState(() {
-                        currentIndex++;
-                      });
-                      _showResultAtIndex(currentIndex);
-                    }
-                        : null,
-                    child: const Icon(Icons.arrow_forward),
+                  onMapCreated: (controller) => _mapController = controller,
+                  onTap: (LatLng position) {
+                    setState(() {
+                      selectedLocation = position;
+                      markers.clear();
+                      markers.add(
+                        Marker(
+                          markerId: const MarkerId('selectedLocation'),
+                          position: position,
+                          icon: BitmapDescriptor.defaultMarkerWithHue(
+                              BitmapDescriptor.hueRed),
+                        ),
+                      );
+                    });
+                  },
+                  markers: markers,
+                  myLocationEnabled: true,
+                ),
+                if (searchResults.isNotEmpty)
+                  Positioned(
+                    top: 10,
+                    left: 10,
+                    child: Row(
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.arrow_back),
+                          onPressed: currentIndex > 0
+                              ? () {
+                            setState(() {
+                              currentIndex--;
+                            });
+                            _showResultAtIndex(currentIndex);
+                          }
+                              : null,
+                        ),
+                        Text(
+                            "Result ${currentIndex + 1} of ${searchResults.length}"),
+                        IconButton(
+                          icon: const Icon(Icons.arrow_forward),
+                          onPressed: currentIndex < searchResults.length - 1
+                              ? () {
+                            setState(() {
+                              currentIndex++;
+                            });
+                            _showResultAtIndex(currentIndex);
+                          }
+                              : null,
+                        ),
+                      ],
+                    ),
                   ),
-                ],
-              ),
+                if (selectedLocation != null)
+                  Positioned(
+                    bottom: 70,
+                    left: 0,
+                    right: 0,
+                    child: FractionallySizedBox(
+                      widthFactor: 0.6, // Adjust this to control the button width (80% of screen width)
+                      child: ElevatedButton.icon(
+                        onPressed: _openInGoogleMaps,
+                        icon: const Icon(Icons.map, color: Colors.black),
+                        label: const Text(
+                          "Open in Google Maps",
+                          style: TextStyle(color: Colors.black),
+                        ),
+                      ),
+                    ),
+                  ),
+                Positioned(
+                  bottom: 10,
+                  left: 0,
+                  right: 0,
+                  child: FractionallySizedBox(
+                    widthFactor: 0.6, // Adjust this to control the button width (80% of screen width)
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        if (_isLocationConfirmed) return;
+                        Navigator.pop(context, selectedLocation);
+                      },
+                      icon: const Icon(Icons.check, color: Colors.black),
+                      label: const Text(
+                        "Confirm Location",
+                        style: TextStyle(color: Colors.black),
+                      ),
+                    ),
+                  ),
+                ),
+
+              ],
             ),
-          if (selectedLocation != null)
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.pop(context, selectedLocation);
-                },
-                icon: const Icon(Icons.check,color: Colors.black,),
-                label: const Text("Confirm Location",style: TextStyle(
-                  color: Colors.black
-                ),),
-              ),
-            ),
+          ),
         ],
       ),
     );

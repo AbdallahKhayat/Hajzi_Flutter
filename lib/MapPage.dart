@@ -1,7 +1,5 @@
-// MapPage.dart
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart' as latLng;
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class MapPage extends StatelessWidget {
   final double lat;
@@ -11,36 +9,23 @@ class MapPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final shopLocation = latLng.LatLng(lat, lng);
-    final marker = Marker(
-      point: shopLocation,
-      width: 80,
-      height: 80,
-      child:  const Icon(
-        Icons.location_on,
-        color: Colors.red,
-        size: 40,
-      ),
+    final LatLng shopLocation = LatLng(lat, lng);
+    final Marker marker = Marker(
+      markerId: const MarkerId('shopLocation'),
+      position: shopLocation,
+      icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
     );
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Shop Location'),
       ),
-      body: FlutterMap(
-        options: MapOptions(
-          initialCenter: shopLocation,
-          initialZoom: 19.0,
+      body: GoogleMap(
+        initialCameraPosition: CameraPosition(
+          target: shopLocation,
+          zoom: 19.0,
         ),
-        children: [
-          TileLayer(
-            urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-            subdomains: const ['a', 'b', 'c'],
-            userAgentPackageName: 'com.example.app',
-          ),
-          MarkerLayer(
-            markers: [marker],
-          ),
-        ],
+        markers: {marker},
       ),
     );
   }

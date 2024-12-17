@@ -8,9 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
-import 'package:latlong2/latlong.dart';
-import 'package:latlong2/latlong.dart';
-import 'package:latlong2/latlong.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart'; // Use only this for LatLng
 
 import '../CustomWidget/OverlayCard.dart';
 import '../Models/addBlogApproval.dart';
@@ -18,8 +16,7 @@ import '../NetworkHandler.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 
 import '../Notifications/push_notifications.dart';
-import '../SelectLocationPage.dart'; // Add this package to decode JWT tokens
-
+import '../SelectLocationPage.dart'; // Ensure this uses google_maps_flutter's LatLng
 class AddBlog extends StatefulWidget {
   const AddBlog({super.key});
 
@@ -321,6 +318,7 @@ class _AddBlogState extends State<AddBlog> {
                                   selectedLng = loc.longitude;
                                 });
                               }
+
                             },
                             child: Text("Select Shop Location"),
                           ),
