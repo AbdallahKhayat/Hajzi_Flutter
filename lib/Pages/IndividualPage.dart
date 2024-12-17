@@ -217,6 +217,9 @@ class _IndividualPageState extends State<IndividualPage> {
     if (chatId.isNotEmpty) {
       fetchMessages().then((_) {
         joinChatRoom();
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _scrollToBottom();
+        });
         //setupMessageListener();
       });
     } else {
@@ -238,6 +241,7 @@ class _IndividualPageState extends State<IndividualPage> {
       );
     }
   }
+
 
 
 
