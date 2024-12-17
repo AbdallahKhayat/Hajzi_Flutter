@@ -65,7 +65,7 @@ class _ChatPageState extends State<ChatPage> {
       // Remove old listener to avoid duplicates
       NetworkHandler().socket!.off('receive_message_chatpage'); // optional if needed once
 
-      NetworkHandler().socket!.on('receive_message_chatpage', (data) async {
+      NetworkHandler().socket!.on('receive_message_chatpage', (data) {
         print("🔔 ChatPage event: $data");
         final updatedChatId = data['chatId'];
 
@@ -74,7 +74,7 @@ class _ChatPageState extends State<ChatPage> {
           return;
         }
 
-        int index = chats.indexWhere((chat) => chat['_id'] == updatedChatId);
+        final index = chats.indexWhere((chat) => chat['_id'] == updatedChatId);
         if (index != -1) {
           // Chat found, move it to top and update last message/time
           setState(() {
@@ -84,23 +84,8 @@ class _ChatPageState extends State<ChatPage> {
             chats.insert(0, updatedChat);
           });
         } else {
-          // Chat not found, refetch chats
-          await fetchChats();  // after re-fetching, try again
-
-          // Now try to find the chat again after fetch
-          index = chats.indexWhere((chat) => chat['_id'] == updatedChatId);
-          if (index != -1) {
-            setState(() {
-              final updatedChat = chats.removeAt(index);
-              updatedChat['lastMessage'] = data['content'];
-              updatedChat['lastMessageTime'] = DateTime.now().toIso8601String();
-              chats.insert(0, updatedChat);
-            });
-          } else {
-            // If still not found, it means the chat isn't being returned by the backend yet.
-            // You may consider adding a small delay or verify that create+send-message logic is correct.
-            print("❌ Still can't find the chat after refetching.");
-          }
+          // Chat not found, refetch chats (optional)
+          fetchChats();
         }
       });
 
