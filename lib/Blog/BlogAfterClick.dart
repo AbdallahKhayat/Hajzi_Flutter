@@ -2,10 +2,10 @@ import 'package:blogapp/Blog/BlogsChatPage.dart';
 import 'package:blogapp/NetworkHandler.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:intl/intl.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:latlong2/latlong.dart' as latLng; // For lat/lng
 
+import '../MapPage.dart';
 import '../Models/addBlogModel.dart';
 import '../Pages/CustomerAppointmentPage.dart';
 import '../Pages/userAppointmentPage.dart';
@@ -22,8 +22,6 @@ class BlogAfterClick extends StatefulWidget {
 }
 
 class _BlogAfterClickState extends State<BlogAfterClick> {
-  late int likeCount;
-  late bool isLiked;
   late List<DateTime> availableSlots;
   late DateTime selectedTime;
   String? userRole;
@@ -32,12 +30,12 @@ class _BlogAfterClickState extends State<BlogAfterClick> {
   String blogOwnerEmail = ''; // Blog owner's email from fetchBlogDetails
   final storage = FlutterSecureStorage();
 
+  // Example coordinates for the shop location
+  final latLng.LatLng _center = latLng.LatLng(37.42796133580664, -122.085749655962);
+
   @override
   void initState() {
     super.initState();
-    likeCount = widget.addBlogModel.like ?? 0;
-    isLiked = false;
-
     availableSlots = _getAvailableSlots();
     selectedTime = DateTime.now();
     fetchBlogDetails();
@@ -71,7 +69,6 @@ class _BlogAfterClickState extends State<BlogAfterClick> {
     });
   }
 
-
   // Load the name of the current user
   Future<void> _loadUserName() async {
     try {
@@ -97,23 +94,6 @@ class _BlogAfterClickState extends State<BlogAfterClick> {
     } catch (e) {
       debugPrint("Error fetching blog details: $e");
     }
-  }
-
-
-  Future<void> _handleLike() async {
-    setState(() {
-      isLiked = !isLiked;
-      likeCount = isLiked ? likeCount + 1 : likeCount - 1;
-    });
-
-    Map<String, dynamic> data = {
-      "like": likeCount,
-    };
-
-    final response = await widget.networkHandler.patch(
-        "/blogPost/updateLikes/${widget.addBlogModel.id}", data);
-    print("Response status: ${response.statusCode}");
-    print("Response body: ${response.body}");
   }
 
   void _navigateToAppointmentPage() {
@@ -145,6 +125,14 @@ class _BlogAfterClickState extends State<BlogAfterClick> {
     }
   }
 
+  void _openMapPage() {
+    if (widget.addBlogModel.lat != null && widget.addBlogModel.lng != null) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => MapPage(lat: widget.addBlogModel.lat!, lng: widget.addBlogModel.lng!)),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -159,7 +147,7 @@ class _BlogAfterClickState extends State<BlogAfterClick> {
       body: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
-          // Image carousel with shadow and rounded corners
+          // Image carousel
           Container(
             decoration: BoxDecoration(
               boxShadow: [
@@ -203,22 +191,19 @@ class _BlogAfterClickState extends State<BlogAfterClick> {
           ),
           const SizedBox(height: 10),
 
-          // Like, comment, share, and chat icons
+          // Action row with Find Me, Chat, and Share
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              IconButton(
-                icon: Icon(
-                  Icons.thumb_up,
-                  color: isLiked ? Colors.blue : Colors.black,
+              TextButton.icon(
+                icon: const Icon(Icons.location_on, color: Colors.black),
+                label: const Text(
+                  "Find Me",
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold,color: Colors.black),
                 ),
-                onPressed: _handleLike,
+                onPressed: _openMapPage,
               ),
-              Text(
-                "$likeCount Likes",
-                style: const TextStyle(
-                    fontSize: 14, fontWeight: FontWeight.bold),
-              ),
+
               IconButton(
                 icon: const Icon(Icons.chat_bubble, color: Colors.black),
                 onPressed: () {
@@ -235,6 +220,7 @@ class _BlogAfterClickState extends State<BlogAfterClick> {
                 "Chat",
                 style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
               ),
+
               IconButton(
                 icon: const Icon(Icons.share, color: Colors.black),
                 onPressed: () {

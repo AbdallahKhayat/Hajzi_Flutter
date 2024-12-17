@@ -8,13 +8,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:latlong2/latlong.dart';
 
 import '../CustomWidget/OverlayCard.dart';
 import '../Models/addBlogApproval.dart';
 import '../NetworkHandler.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 
-import '../Notifications/push_notifications.dart'; // Add this package to decode JWT tokens
+import '../Notifications/push_notifications.dart';
+import '../SelectLocationPage.dart'; // Add this package to decode JWT tokens
 
 class AddBlog extends StatefulWidget {
   const AddBlog({super.key});
@@ -35,6 +39,8 @@ class _AddBlogState extends State<AddBlog> {
   String? userRole;
   NetworkHandler networkHandler = NetworkHandler();
   final storage = FlutterSecureStorage();
+  double? selectedLat;
+  double? selectedLng;
 
   Future<String?> extractEmailFromToken() async {
     String? token = await storage.read(key: "token");
@@ -301,6 +307,26 @@ class _AddBlogState extends State<AddBlog> {
                           SizedBox(height: 20),
                           imagePreview(),
                           SizedBox(height: 30),
+                          SizedBox(height: 30),
+                          ElevatedButton(
+                            onPressed: () async {
+                              final chosenLocation = await Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => const SelectLocationPage()),
+                              );
+                              if (chosenLocation != null) {
+                                LatLng loc = chosenLocation;
+                                setState(() {
+                                  selectedLat = loc.latitude;
+                                  selectedLng = loc.longitude;
+                                });
+                              }
+                            },
+                            child: Text("Select Shop Location"),
+                          ),
+                          if (selectedLat != null && selectedLng != null)
+                            Text("Location Selected: $selectedLat, $selectedLng"),
+                          SizedBox(height: 30),
                           Center(
                             child: addButton(),
                           ),
@@ -469,6 +495,8 @@ class _AddBlogState extends State<AddBlog> {
             body: _bodyController.text,
             email: customerEmail,
             type: selectedRole ?? "general",
+            lat: selectedLat,
+            lng: selectedLng,
           );
 
           // Step 3: Send approval request
@@ -563,6 +591,8 @@ class _AddBlogState extends State<AddBlog> {
                 createdAt: DateTime.now(),
                 type: selectedRole ?? "general",
                 email: addBlogApproval.email,
+                lat: selectedLat,
+                lng: selectedLng,
               );
 
               var addResponse = await networkHandler.post(

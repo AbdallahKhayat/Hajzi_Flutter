@@ -14,6 +14,8 @@ AddBlogApproval _$AddBlogApprovalFromJson(Map<String, dynamic> json) =>
       email: json['email'] as String?,
       id: json['_id'] as String?,
       type: json['type'] as String?,
+      lat: (json['lat'] as num?)?.toDouble(),
+      lng: (json['lng'] as num?)?.toDouble(),
     );
 
 Map<String, dynamic> _$AddBlogApprovalToJson(AddBlogApproval instance) =>
@@ -24,4 +26,6 @@ Map<String, dynamic> _$AddBlogApprovalToJson(AddBlogApproval instance) =>
       if (instance.email case final value?) 'email': value,
       if (instance.id case final value?) '_id': value,
       if (instance.type case final value?) 'type': value,
+      if (instance.lat case final value?) 'lat': value,
+      if (instance.lng case final value?) 'lng': value,
     };

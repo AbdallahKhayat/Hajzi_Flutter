@@ -11,8 +11,10 @@ class AddBlogApproval {
   @JsonKey(name: "_id") // Assuming the backend uses '_id' as the field name
   String? id;
   String? type;
+  double? lat;
+  double? lng;
 
-  AddBlogApproval({this.title, this.body, this.username,this.email,this.id,this.type});
+  AddBlogApproval({this.title, this.body, this.username,this.email,this.id,this.type,this.lat,this.lng});
 
   factory AddBlogApproval.fromJson(Map<String, dynamic> json) => _$AddBlogApprovalFromJson(json);
 

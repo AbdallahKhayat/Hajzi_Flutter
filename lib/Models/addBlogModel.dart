@@ -20,6 +20,8 @@ class AddBlogModel {
   String? status;
   String? type;
   DateTime? createdAt;
+  double? lat;
+  double? lng;
 
   AddBlogModel({
     this.coverImages,
@@ -34,6 +36,8 @@ class AddBlogModel {
     this.status,
     this.type,
     this.createdAt,
+    this.lat,
+    this.lng,
   });
 
   factory AddBlogModel.fromJson(Map<String, dynamic> json) =>

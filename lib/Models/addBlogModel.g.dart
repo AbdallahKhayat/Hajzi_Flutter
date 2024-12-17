@@ -23,6 +23,8 @@ AddBlogModel _$AddBlogModelFromJson(Map<String, dynamic> json) => AddBlogModel(
       createdAt: json['createdAt'] == null
           ? null
           : DateTime.parse(json['createdAt'] as String),
+      lat: (json['lat'] as num?)?.toDouble(),
+      lng: (json['lng'] as num?)?.toDouble(),
     )..previewImage = json['previewImage'] as String?;
 
 Map<String, dynamic> _$AddBlogModelToJson(AddBlogModel instance) =>
@@ -41,4 +43,6 @@ Map<String, dynamic> _$AddBlogModelToJson(AddBlogModel instance) =>
       if (instance.type case final value?) 'type': value,
       if (instance.createdAt?.toIso8601String() case final value?)
         'createdAt': value,
+      if (instance.lat case final value?) 'lat': value,
+      if (instance.lng case final value?) 'lng': value,
     };
