@@ -7,7 +7,9 @@ import 'package:latlong2/latlong.dart' as latLng; // For lat/lng
 
 import '../MapPage.dart';
 import '../Models/addBlogModel.dart';
+import '../Pages/ChatPage.dart';
 import '../Pages/CustomerAppointmentPage.dart';
+import '../Pages/IndividualPage.dart';
 import '../Pages/userAppointmentPage.dart';
 
 
@@ -28,6 +30,7 @@ class _BlogAfterClickState extends State<BlogAfterClick> {
   String userName = 'Unknown User';
   String? userEmail; // Current user's email from secure storage
   String blogOwnerEmail = ''; // Blog owner's email from fetchBlogDetails
+  String blogOwnerName='';
   final storage = FlutterSecureStorage();
 
   // Example coordinates for the shop location
@@ -89,6 +92,7 @@ class _BlogAfterClickState extends State<BlogAfterClick> {
       if (response != null && response['authorName'] != null) {
         setState(() {
           blogOwnerEmail = response['authorName'];
+          blogOwnerName=response['username'];
         });
       }
     } catch (e) {
@@ -131,6 +135,23 @@ class _BlogAfterClickState extends State<BlogAfterClick> {
         context,
         MaterialPageRoute(builder: (context) => MapPage(lat: widget.addBlogModel.lat!, lng: widget.addBlogModel.lng!)),
       );
+    }
+  }
+
+  Future<String?> fetchExistingChatId(String partnerEmail) async {
+    try {
+      final response = await NetworkHandler().get('/chat/existing?partnerEmail=$partnerEmail');
+      // Ensure `NetworkHandler().get()` returns the decoded JSON. If it returns a raw response, decode it here.
+      if (response != null && response is Map) {
+        // If the response contains '_id', it means chat exists
+        if (response['_id'] != null) {
+          return response['_id'];
+        }
+      }
+      return null; // No existing chat found
+    } catch (e) {
+      print("Error checking for existing chat: $e");
+      return null;
     }
   }
 
@@ -206,12 +227,24 @@ class _BlogAfterClickState extends State<BlogAfterClick> {
 
               IconButton(
                 icon: const Icon(Icons.chat_bubble, color: Colors.black),
-                onPressed: () {
+                onPressed: () async {
+                  final existingChatId = await fetchExistingChatId(blogOwnerEmail);
+                  if (userEmail == blogOwnerEmail)
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) =>
-                          BlogsChatPage(blogId: widget.addBlogModel.id!),
+                      builder: (context) =>  ChatPage(chatId: '', chatPartnerEmail: ''),
+                    ),
+                  );
+                  if (userEmail != blogOwnerEmail)
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => IndividualPage(
+                        initialChatId: existingChatId ?? '',
+                        chatPartnerEmail: blogOwnerEmail,
+                        chatPartnerName: blogOwnerName,
+                      ),
                     ),
                   );
                 },

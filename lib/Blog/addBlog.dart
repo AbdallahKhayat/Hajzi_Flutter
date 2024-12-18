@@ -33,6 +33,7 @@ class _AddBlogState extends State<AddBlog> {
   IconData? iconPhoto = Icons.image;
   String? selectedRole = "general";
   String email = "";
+  String username="";
   String? userRole;
   NetworkHandler networkHandler = NetworkHandler();
   final storage = FlutterSecureStorage();
@@ -82,13 +83,56 @@ class _AddBlogState extends State<AddBlog> {
     }
   }
 
+  Future<void> _loadUsername() async {
+    try {
+      // Step 1: Extract email from the token
+      String? email = await extractEmailFromToken();
+      if (email == null) {
+        print("No email found in token.");
+        return; // Exit if no email is found
+      }
+
+      print("Extracted email from token: $email");
+
+      // Step 2: Make the API call to get the username by email
+      final response = await networkHandler.get("/user/searchName/$email");
+
+      print("API Response for username: $response");
+
+      // Step 3: Check if response is a String or a Map
+      var responseData;
+      if (response is String) {
+        responseData = jsonDecode(response); // Decode if it's a string
+      } else if (response is Map) {
+        responseData = response; // If it's a Map, use it directly
+      }
+
+      print("Decoded Response Data: $responseData");
+
+      // Step 4: Extract the 'username' from the response and set it in the state
+      setState(() {
+        if (responseData != null && responseData["usernames"] != null && responseData["usernames"].isNotEmpty) {
+          username = responseData["usernames"][0]; // Extract the first username from the list
+          print("Username loaded successfully: $username");
+        } else {
+          print("No username found for the given email.");
+        }
+      });
+    } catch (e) {
+      print("Error loading username: $e");
+    }
+  }
+
+
 
   @override
   void initState() {
-   _loadUserRole();
-    super.initState();
+    super.initState(); // Make sure this comes before everything
+    Future.microtask(() async {
+      await _loadUserRole();
+      await _loadUsername(); // Ensure the username is loaded before building UI
+    });
   }
-
   Future<void> sendNotification({
     required String title,
     required String body,
@@ -492,6 +536,7 @@ class _AddBlogState extends State<AddBlog> {
             title: _titleController.text,
             body: _bodyController.text,
             email: customerEmail,
+            username: username,
             type: selectedRole ?? "general",
             lat: selectedLat,
             lng: selectedLng,
@@ -589,6 +634,7 @@ class _AddBlogState extends State<AddBlog> {
                 createdAt: DateTime.now(),
                 type: selectedRole ?? "general",
                 email: addBlogApproval.email,
+                username: addBlogApproval.username,
                 lat: selectedLat,
                 lng: selectedLng,
               );
