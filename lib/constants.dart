@@ -1,4 +1,4 @@
 import 'package:flutter/material.dart';
 
-Color appColor = Colors.teal; // Default color
-ValueNotifier<Color> appColorNotifier = ValueNotifier<Color>(Colors.teal);
+Color appColor = Colors.green; // Default color
+ValueNotifier<Color> appColorNotifier = ValueNotifier<Color>(Colors.green);
