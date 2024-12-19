@@ -1,3 +1,4 @@
+import 'package:blogapp/constants.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
@@ -175,7 +176,21 @@ class _UsersScreenState extends State<UsersScreen> {
             style: const TextStyle(fontSize: 14),
           ),
         ),
-        backgroundColor: Colors.teal, // App bar color
+        flexibleSpace: ValueListenableBuilder<Color>(
+          valueListenable: appColorNotifier,
+          builder: (context, appColor, child) {
+            return Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [appColor.withOpacity(1), appColor],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+            );
+          },
+        ),
+        elevation: 0, // Optional: Remove shadow from AppBar
       ),
       body: users.isEmpty
           ? const Center(child: CircularProgressIndicator())

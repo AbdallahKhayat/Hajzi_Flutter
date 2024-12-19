@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:blogapp/Models/addBlogApproval.dart';
 import 'package:blogapp/NetworkHandler.dart';
 
+import '../constants.dart';
+
 class RequestsScreen extends StatefulWidget {
   const RequestsScreen({super.key});
 
@@ -90,18 +92,18 @@ class _RequestsScreenState extends State<RequestsScreen> {
     );
 
     if (response.statusCode == 200) {
-
       // Send notification after status update
       final blog = blogRequests.firstWhere((request) => request.id == blogId);
-      final customerEmail = blog.email; // Assuming username is the customer's email
+      final customerEmail =
+          blog.email; // Assuming username is the customer's email
 
       // Send notification to the customer
       await sendNotification(
         email: customerEmail!,
         title: "Shop Status Updated",
-        body: "Your Shop with title: ${blog.title} has been $status by the admin.",
+        body:
+            "Your Shop with title: ${blog.title} has been $status by the admin.",
       );
-
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -150,7 +152,20 @@ class _RequestsScreenState extends State<RequestsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.teal,
+        flexibleSpace: ValueListenableBuilder<Color>(
+          valueListenable: appColorNotifier,
+          builder: (context, appColor, child) {
+            return Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [appColor.withOpacity(1), appColor],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+            );
+          },
+        ),
         title: TextField(
           controller: _searchController,
           decoration: const InputDecoration(
@@ -177,10 +192,10 @@ class _RequestsScreenState extends State<RequestsScreen> {
                     final blog = filteredRequests[index];
                     return kIsWeb
                         ? Center(
-                          child: SizedBox(
-                            width: 650,
-                           // height: 200,
-                            child: Card(
+                            child: SizedBox(
+                              width: 650,
+                              // height: 200,
+                              child: Card(
                                 margin: const EdgeInsets.symmetric(
                                     horizontal: 15, vertical: 10),
                                 elevation: 3,
@@ -190,7 +205,8 @@ class _RequestsScreenState extends State<RequestsScreen> {
                                 child: Padding(
                                   padding: const EdgeInsets.all(16),
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         blog.title ?? "Untitled Blog",
@@ -229,8 +245,10 @@ class _RequestsScreenState extends State<RequestsScreen> {
                                               ),
                                             ),
                                             style: ElevatedButton.styleFrom(
-                                              padding: const EdgeInsets.symmetric(
-                                                  horizontal: 20, vertical: 12),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 20,
+                                                      vertical: 12),
                                               backgroundColor: Colors.green,
                                               shape: RoundedRectangleBorder(
                                                 borderRadius:
@@ -252,8 +270,10 @@ class _RequestsScreenState extends State<RequestsScreen> {
                                               ),
                                             ),
                                             style: ElevatedButton.styleFrom(
-                                              padding: const EdgeInsets.symmetric(
-                                                  horizontal: 20, vertical: 12),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 20,
+                                                      vertical: 12),
                                               backgroundColor: Colors.red,
                                               shape: RoundedRectangleBorder(
                                                 borderRadius:
@@ -267,8 +287,8 @@ class _RequestsScreenState extends State<RequestsScreen> {
                                   ),
                                 ),
                               ),
-                          ),
-                        )
+                            ),
+                          )
                         : Card(
                             margin: const EdgeInsets.symmetric(
                                 horizontal: 15, vertical: 10),

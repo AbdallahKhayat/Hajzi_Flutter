@@ -16,7 +16,9 @@ import '../NetworkHandler.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 
 import '../Notifications/push_notifications.dart';
-import '../SelectLocationPage.dart'; // Ensure this uses google_maps_flutter's LatLng
+import '../SelectLocationPage.dart';
+import '../constants.dart'; // Ensure this uses google_maps_flutter's LatLng
+
 class AddBlog extends StatefulWidget {
   const AddBlog({super.key});
 
@@ -33,7 +35,7 @@ class _AddBlogState extends State<AddBlog> {
   IconData? iconPhoto = Icons.image;
   String? selectedRole = "general";
   String email = "";
-  String username="";
+  String username = "";
   String? userRole;
   NetworkHandler networkHandler = NetworkHandler();
   final storage = FlutterSecureStorage();
@@ -66,7 +68,6 @@ class _AddBlogState extends State<AddBlog> {
       throw Exception("Failed to fetch blog status");
     }
   }
-
 
   Future<void> _loadUserRole() async {
     try {
@@ -111,8 +112,11 @@ class _AddBlogState extends State<AddBlog> {
 
       // Step 4: Extract the 'username' from the response and set it in the state
       setState(() {
-        if (responseData != null && responseData["usernames"] != null && responseData["usernames"].isNotEmpty) {
-          username = responseData["usernames"][0]; // Extract the first username from the list
+        if (responseData != null &&
+            responseData["usernames"] != null &&
+            responseData["usernames"].isNotEmpty) {
+          username = responseData["usernames"]
+              [0]; // Extract the first username from the list
           print("Username loaded successfully: $username");
         } else {
           print("No username found for the given email.");
@@ -123,8 +127,6 @@ class _AddBlogState extends State<AddBlog> {
     }
   }
 
-
-
   @override
   void initState() {
     super.initState(); // Make sure this comes before everything
@@ -133,6 +135,7 @@ class _AddBlogState extends State<AddBlog> {
       await _loadUsername(); // Ensure the username is loaded before building UI
     });
   }
+
   Future<void> sendNotification({
     required String title,
     required String body,
@@ -162,12 +165,24 @@ class _AddBlogState extends State<AddBlog> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.teal,
+        flexibleSpace: ValueListenableBuilder<Color>(
+          valueListenable: appColorNotifier,
+          builder: (context, appColor, child) {
+            return Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [appColor.withOpacity(1), appColor],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+            );
+          },
+        ),
         elevation: 2,
         leading: IconButton(
           icon: Icon(Icons.clear, color: Colors.black),
@@ -221,9 +236,9 @@ class _AddBlogState extends State<AddBlog> {
           child: SingleChildScrollView(
             child: kIsWeb
                 ? Center(
-                  child: SizedBox(
-                                width: 800,
-                    child: Card(
+                    child: SizedBox(
+                      width: 800,
+                      child: Card(
                         elevation: 3,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
@@ -233,13 +248,31 @@ class _AddBlogState extends State<AddBlog> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                "Post Title",
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 18,
-                                  color: Colors.teal,
-                                ),
+                              ValueListenableBuilder<Color>(
+                                valueListenable: appColorNotifier,
+                                builder: (context, appColor, child) {
+                                  return ShaderMask(
+                                    shaderCallback: (bounds) {
+                                      return LinearGradient(
+                                        colors: [
+                                          appColor.withOpacity(1),
+                                          appColor
+                                        ],
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                      ).createShader(bounds);
+                                    },
+                                    child: Text(
+                                      "Post Title",
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 18,
+                                        color: Colors
+                                            .white, // Required but overridden by the shader
+                                      ),
+                                    ),
+                                  );
+                                },
                               ),
                               SizedBox(height: 10),
                               DropdownButtonFormField<String>(
@@ -256,7 +289,8 @@ class _AddBlogState extends State<AddBlog> {
                                       value: "barbershop",
                                       child: Text("Barbershop")),
                                   DropdownMenuItem(
-                                      value: "hospital", child: Text("Hospital")),
+                                      value: "hospital",
+                                      child: Text("Hospital")),
                                 ],
                                 decoration: InputDecoration(
                                   labelText: "Select Role",
@@ -288,8 +322,8 @@ class _AddBlogState extends State<AddBlog> {
                           ),
                         ),
                       ),
-                  ),
-                )
+                    ),
+                  )
                 : Card(
                     elevation: 3,
                     shape: RoundedRectangleBorder(
@@ -300,13 +334,28 @@ class _AddBlogState extends State<AddBlog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            "Post Title",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18,
-                              color: Colors.teal,
-                            ),
+                          ValueListenableBuilder<Color>(
+                            valueListenable: appColorNotifier,
+                            builder: (context, appColor, child) {
+                              return ShaderMask(
+                                shaderCallback: (bounds) {
+                                  return LinearGradient(
+                                    colors: [appColor.withOpacity(1), appColor],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  ).createShader(bounds);
+                                },
+                                child: Text(
+                                  "Post Title",
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 18,
+                                    color: Colors
+                                        .white, // Required but overridden by the shader
+                                  ),
+                                ),
+                              );
+                            },
                           ),
                           SizedBox(height: 10),
                           DropdownButtonFormField<String>(
@@ -335,13 +384,28 @@ class _AddBlogState extends State<AddBlog> {
                           SizedBox(height: 10),
                           titleTextField(),
                           SizedBox(height: 20),
-                          Text(
-                            "Post Content",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18,
-                              color: Colors.teal,
-                            ),
+                          ValueListenableBuilder<Color>(
+                            valueListenable: appColorNotifier,
+                            builder: (context, appColor, child) {
+                              return ShaderMask(
+                                shaderCallback: (bounds) {
+                                  return LinearGradient(
+                                    colors: [appColor.withOpacity(1), appColor],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  ).createShader(bounds);
+                                },
+                                child: Text(
+                                  "Post Content",
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 18,
+                                    color: Colors
+                                        .white, // Required but overridden by the shader
+                                  ),
+                                ),
+                              );
+                            },
                           ),
                           SizedBox(height: 10),
                           bodyTextField(),
@@ -353,7 +417,9 @@ class _AddBlogState extends State<AddBlog> {
                             onPressed: () async {
                               final chosenLocation = await Navigator.push(
                                 context,
-                                MaterialPageRoute(builder: (context) => const SelectLocationPage()),
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        const SelectLocationPage()),
                               );
                               if (chosenLocation != null) {
                                 LatLng loc = chosenLocation;
@@ -362,12 +428,35 @@ class _AddBlogState extends State<AddBlog> {
                                   selectedLng = loc.longitude;
                                 });
                               }
-
                             },
-                            child: Text("Select Shop Location"),
+                            child: ValueListenableBuilder<Color>(
+                              valueListenable: appColorNotifier,
+                              builder: (context, appColor, child) {
+                                return ShaderMask(
+                                  shaderCallback: (bounds) {
+                                    return LinearGradient(
+                                      colors: [
+                                        appColor.withOpacity(1),
+                                        appColor
+                                      ],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    ).createShader(bounds);
+                                  },
+                                  child: Text(
+                                    "Select Shop Location",
+                                    style: const TextStyle(
+                                      color: Colors
+                                          .white, // Required but overridden by the shader
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
                           ),
                           if (selectedLat != null && selectedLng != null)
-                            Text("Location Selected: $selectedLat, $selectedLng"),
+                            Text(
+                                "Location Selected: $selectedLat, $selectedLng"),
                           SizedBox(height: 30),
                           Center(
                             child: addButton(),
@@ -396,31 +485,35 @@ class _AddBlogState extends State<AddBlog> {
           return null;
         },
         decoration: InputDecoration(
-          border: OutlineInputBorder(
-            borderSide: BorderSide(
-              color: Colors.teal,
+            border: OutlineInputBorder(
+              borderSide: BorderSide(
+                color: Colors.teal,
+              ),
             ),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(
-              color: Colors.orange,
-              width: 2,
+            focusedBorder: OutlineInputBorder(
+              borderSide: BorderSide(
+                color: Colors.orange,
+                width: 2,
+              ),
             ),
-          ),
-          labelText: "Add Image and Title",
-          labelStyle: TextStyle(
-            color: Colors.black,
-          ),
-          prefixIcon: IconButton(
-            icon: Icon(
-              iconPhoto,
-              color: Colors.teal,
+            labelText: "Add Image and Title",
+            labelStyle: TextStyle(
+              color: Colors.black,
             ),
-            onPressed: () {
-              takeCoverPhotos();
-            },
-          ),
-        ),
+            prefixIcon: ValueListenableBuilder<Color>(
+              valueListenable: appColorNotifier,
+              builder: (context, appColor, child) {
+                return IconButton(
+                  icon: Icon(
+                    iconPhoto, // Replace with your icon variable
+                    color: appColor, // Dynamic color
+                  ),
+                  onPressed: () {
+                    takeCoverPhotos();
+                  },
+                );
+              },
+            )),
         maxLength: 100,
         maxLines: null,
       ),
@@ -576,11 +669,13 @@ class _AddBlogState extends State<AddBlog> {
 
           // Notify admins about the new blog
           final notificationResponse = await networkHandler.post(
-            "/notifications/notifyAdmins/$customerEmail", // Note: Ensure proper string interpolation
+            "/notifications/notifyAdmins/$customerEmail",
+            // Note: Ensure proper string interpolation
             {},
           );
 
-          print("Notification Response Code: ${notificationResponse.statusCode}");
+          print(
+              "Notification Response Code: ${notificationResponse.statusCode}");
           print("Notification Response Body: ${notificationResponse.body}");
 
           if (notificationResponse.statusCode == 200) {
@@ -595,7 +690,8 @@ class _AddBlogState extends State<AddBlog> {
 
             await sendNotification(
               title: "New Shop Approval Request",
-              body: "${addBlogApproval.email} has applied for a shop with the title: ${addBlogApproval.title}. Please review it.",
+              body:
+                  "${addBlogApproval.email} has applied for a shop with the title: ${addBlogApproval.title}. Please review it.",
             );
 
             ScaffoldMessenger.of(context).showSnackBar(
@@ -641,9 +737,6 @@ class _AddBlogState extends State<AddBlog> {
 
               var addResponse = await networkHandler.post(
                   "/blogpost/Add", addBlogModel.toJson());
-
-
-
 
               if (addResponse.statusCode == 200 ||
                   addResponse.statusCode == 201) {
@@ -711,25 +804,34 @@ class _AddBlogState extends State<AddBlog> {
         }
       },
       child: Center(
-        child: Container(
-          height: 50,
-          width: 170,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10),
-            color: Colors.teal,
-          ),
-          child: Center(
-            child: Text(
-              "Add Blog",
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
+          child: ValueListenableBuilder<Color>(
+        valueListenable: appColorNotifier,
+        builder: (context, appColor, child) {
+          return Container(
+            height: 50,
+            width: 170,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              gradient: LinearGradient(
+                colors: [appColor.withOpacity(1), appColor],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
             ),
-          ),
-        ),
-      ),
+            child: Center(
+              child: Text(
+                "Add Shop",
+                style: const TextStyle(
+                  color: Colors.white,
+                  // You can change this to be dynamic if needed
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+            ),
+          );
+        },
+      )),
     );
   }
 

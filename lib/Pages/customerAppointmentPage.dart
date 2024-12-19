@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../NetworkHandler.dart';
 import 'package:intl/intl.dart';
 
+import '../constants.dart';
+
 class CustomerAppointmentPage extends StatefulWidget {
   final NetworkHandler networkHandler;
   final String blogId;
@@ -160,12 +162,13 @@ class _CustomerAppointmentPageState extends State<CustomerAppointmentPage> {
 
   Future<void> _deleteAllTimeSlots() async {
     try {
-      final response = await widget.networkHandler.delete("/appointment/deleteAll/${widget.blogId}");
+      final response = await widget.networkHandler
+          .delete("/appointment/deleteAll/${widget.blogId}");
 
       if (response['statusCode'] == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('All time slots deleted successfully!')),
-            // Immediately fetch updated slots to refresh the UI
+          // Immediately fetch updated slots to refresh the UI
         );
         await _fetchAppointments();
       } else {
@@ -176,7 +179,8 @@ class _CustomerAppointmentPageState extends State<CustomerAppointmentPage> {
     } catch (error) {
       debugPrint("Error deleting all slots: $error");
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('An error occurred while deleting time slots.')),
+        const SnackBar(
+            content: Text('An error occurred while deleting time slots.')),
       );
     }
   }
@@ -215,11 +219,13 @@ class _CustomerAppointmentPageState extends State<CustomerAppointmentPage> {
     }
   }
 
-  Future<void> _selectTime(BuildContext context, TextEditingController controller) async {
+  Future<void> _selectTime(
+      BuildContext context, TextEditingController controller) async {
     final TimeOfDay? picked = await showTimePicker(
       context: context,
       initialTime: TimeOfDay.now(),
-      helpText: 'Select Time', // Custom help text
+      helpText: 'Select Time',
+      // Custom help text
       confirmText: 'OK',
       cancelText: 'CANCEL',
     );
@@ -231,17 +237,18 @@ class _CustomerAppointmentPageState extends State<CustomerAppointmentPage> {
 
       // Format time using DateTime for 24-hour conversion
       final now = DateTime.now();
-      final DateTime selectedTime = DateTime(now.year, now.month, now.day, hour, minute);
+      final DateTime selectedTime =
+          DateTime(now.year, now.month, now.day, hour, minute);
 
       // Format as 'HH:mm' (24-hour format)
       final formattedTime = DateFormat('HH:mm').format(selectedTime);
 
       setState(() {
-        controller.text = formattedTime; // Update the TextField with 24-hour format time
+        controller.text =
+            formattedTime; // Update the TextField with 24-hour format time
       });
     }
   }
-
 
   String _formatTimeWithAMPM(String time) {
     try {
@@ -257,13 +264,28 @@ class _CustomerAppointmentPageState extends State<CustomerAppointmentPage> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Manage Appointments"),
-        backgroundColor: Colors.teal,
+        title: const Text(
+          "Manage Appointments",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        flexibleSpace: ValueListenableBuilder<Color>(
+          valueListenable: appColorNotifier,
+          builder: (context, appColor, child) {
+            return Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [appColor.withOpacity(1), appColor],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+            );
+          },
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -281,23 +303,31 @@ class _CustomerAppointmentPageState extends State<CustomerAppointmentPage> {
                     controller: _timeController,
                     decoration: const InputDecoration(
                         labelText: 'Add Available Time (HH:mm)'),
-                    readOnly: true, // Prevent manual typing
-                    onTap: () => _selectTime(context, _timeController), // Call Time Picker
+                    readOnly: true,
+                    // Prevent manual typing
+                    onTap: () => _selectTime(
+                        context, _timeController), // Call Time Picker
                   ),
                 ),
                 const SizedBox(width: 10),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.teal[300],
-                  ),
-                  onPressed: _addAvailableTime,
-                  child: const Text(
-                    'Add',
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                ValueListenableBuilder<Color>(
+                  valueListenable: appColorNotifier,
+                  builder: (context, appColor, child) {
+                    return ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: appColor, // Dynamic background color
+                      ),
+                      onPressed: _addAvailableTime,
+                      child: const Text(
+                        'Add',
+                        style: TextStyle(
+                          color: Colors.black,
+                          // You can make this dynamic too if needed
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ],
             ),
@@ -312,8 +342,10 @@ class _CustomerAppointmentPageState extends State<CustomerAppointmentPage> {
                     ),
                     controller: _openingTimeController,
                     decoration: const InputDecoration(labelText: 'Opening'),
-                    readOnly: true, // Prevent manual typing
-                    onTap: () => _selectTime(context, _openingTimeController), // Call Time Picker
+                    readOnly: true,
+                    // Prevent manual typing
+                    onTap: () => _selectTime(
+                        context, _openingTimeController), // Call Time Picker
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -325,8 +357,10 @@ class _CustomerAppointmentPageState extends State<CustomerAppointmentPage> {
                     ),
                     controller: _closingTimeController,
                     decoration: InputDecoration(labelText: 'Closing'),
-                    readOnly: true, // Prevent manual typing
-                    onTap: () => _selectTime(context, _closingTimeController), // Call Time Picker
+                    readOnly: true,
+                    // Prevent manual typing
+                    onTap: () => _selectTime(
+                        context, _closingTimeController), // Call Time Picker
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -342,18 +376,24 @@ class _CustomerAppointmentPageState extends State<CustomerAppointmentPage> {
                   ),
                 ),
                 const SizedBox(width: 10),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.teal[300],
-                  ),
-                  onPressed: _addAvailableTimeSlots,
-                  child: const Text(
-                    'Add Slots',
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                ValueListenableBuilder<Color>(
+                  valueListenable: appColorNotifier,
+                  builder: (context, appColor, child) {
+                    return ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: appColor, // Dynamic background color
+                      ),
+                      onPressed: _addAvailableTimeSlots,
+                      child: const Text(
+                        'Add Slots',
+                        style: TextStyle(
+                          color: Colors.black,
+                          // You can make this dynamic too if needed
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ],
             ),
@@ -381,7 +421,8 @@ class _CustomerAppointmentPageState extends State<CustomerAppointmentPage> {
                                   ? appointment['userName']
                                   : "Available Slot")),
                               DataCell(Text(
-                                _formatTimeWithAMPM(appointment['time'] ?? 'N/A'),
+                                _formatTimeWithAMPM(
+                                    appointment['time'] ?? 'N/A'),
                               )),
                               DataCell(
                                   Text(appointment['duration'].toString())),

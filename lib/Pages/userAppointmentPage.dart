@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../NetworkHandler.dart';
+import '../constants.dart';
 
 class UserAppointmentPage extends StatefulWidget {
   final NetworkHandler networkHandler;
@@ -31,14 +32,15 @@ class _UserAppointmentPageState extends State<UserAppointmentPage> {
   // Function to fetch available and booked appointments
   Future<void> _fetchAvailableSlots() async {
     try {
-      final response = await widget.networkHandler.get("/appointment/getAppointments/${widget.blogId}");
+      final response = await widget.networkHandler
+          .get("/appointment/getAppointments/${widget.blogId}");
       if (response != null && response['data'] != null) {
         setState(() {
           appointments = List<Map<String, dynamic>>.from(response['data']);
           hasBooked = appointments.any((appointment) =>
-          appointment['status'] == 'booked' &&
-              appointment['userName'] == widget.userName
-          ); // Check if user has already booked a slot
+              appointment['status'] == 'booked' &&
+              appointment['userName'] ==
+                  widget.userName); // Check if user has already booked a slot
         });
       }
     } catch (e) {
@@ -53,14 +55,16 @@ class _UserAppointmentPageState extends State<UserAppointmentPage> {
   Future<void> _bookAppointment(String time) async {
     if (hasBooked) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('You have already booked an appointment.')),
+        const SnackBar(
+            content: Text('You have already booked an appointment.')),
       );
       return;
     }
 
     try {
       // Send only the "HH:mm" part of the time
-      final formattedTime = time.length == 5 ? time : time.substring(0, 5); // e.g., 09:30
+      final formattedTime =
+          time.length == 5 ? time : time.substring(0, 5); // e.g., 09:30
 
       final response = await widget.networkHandler.post("/appointment/book", {
         "time": formattedTime,
@@ -82,7 +86,8 @@ class _UserAppointmentPageState extends State<UserAppointmentPage> {
     } catch (error) {
       debugPrint("Error booking appointment: $error");
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('An error occurred while booking the appointment.')),
+        const SnackBar(
+            content: Text('An error occurred while booking the appointment.')),
       );
     }
   }
@@ -105,48 +110,72 @@ class _UserAppointmentPageState extends State<UserAppointmentPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Available Slots"),
-        backgroundColor: Colors.teal,
+        title: const Text(
+          "Available Slots",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        flexibleSpace: ValueListenableBuilder<Color>(
+          valueListenable: appColorNotifier,
+          builder: (context, appColor, child) {
+            return Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [appColor.withOpacity(1), appColor],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+            );
+          },
+        ),
       ),
       body: appointments.isEmpty
           ? const Center(child: Text("No available time slots."))
           : ListView.builder(
-        itemCount: appointments.length,
-        itemBuilder: (context, index) {
-          final appointment = appointments[index];
-          final isBooked = appointment['status'] == 'booked';
-          final time = appointment['time'];
-          final isBookedByUser = appointment['userName'] == widget.userName;
+              itemCount: appointments.length,
+              itemBuilder: (context, index) {
+                final appointment = appointments[index];
+                final isBooked = appointment['status'] == 'booked';
+                final time = appointment['time'];
+                final isBookedByUser =
+                    appointment['userName'] == widget.userName;
 
-          return Card(
-            margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-            child: ListTile(
-              title: Text(
-                "Time: ${_formatTimeWithAMPM(appointment['time'] ?? 'N/A')}",
-                style: TextStyle(
-                  color: isBooked ? Colors.red : Colors.green,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              subtitle: isBooked
-                  ? Text("Booked by: ${appointment['userName'] ?? 'N/A'}")
-                  : const Text("Available slot"),
-              trailing: (hasBooked || isBooked)
-                  ? const Icon(Icons.lock, color: Colors.red)
-                  : ElevatedButton(
-                onPressed: () => _bookAppointment(time),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.teal,
-                ),
-                child: const Text(
-                  "Book",
-                  style: TextStyle(color: Colors.white),
-                ),
-              ),
+                return Card(
+                  margin: const EdgeInsets.symmetric(
+                      vertical: 8.0, horizontal: 16.0),
+                  child: ListTile(
+                    title: Text(
+                      "Time: ${_formatTimeWithAMPM(appointment['time'] ?? 'N/A')}",
+                      style: TextStyle(
+                        color: isBooked ? Colors.red : Colors.green,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    subtitle: isBooked
+                        ? Text("Booked by: ${appointment['userName'] ?? 'N/A'}")
+                        : const Text("Available slot"),
+                    trailing: (hasBooked || isBooked)
+                        ? const Icon(Icons.lock, color: Colors.red)
+                        : ValueListenableBuilder<Color>(
+                            valueListenable: appColorNotifier,
+                            builder: (context, appColor, child) {
+                              return ElevatedButton(
+                                onPressed: () => _bookAppointment(time),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor:
+                                      appColor, // Dynamic background color
+                                ),
+                                child: const Text(
+                                  "Book",
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              );
+                            },
+                          ),
+                  ),
+                );
+              },
             ),
-          );
-        },
-      ),
     );
   }
 }

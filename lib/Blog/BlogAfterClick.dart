@@ -11,6 +11,7 @@ import '../Pages/ChatPage.dart';
 import '../Pages/CustomerAppointmentPage.dart';
 import '../Pages/IndividualPage.dart';
 import '../Pages/userAppointmentPage.dart';
+import '../constants.dart';
 
 
 class BlogAfterClick extends StatefulWidget {
@@ -159,7 +160,20 @@ class _BlogAfterClickState extends State<BlogAfterClick> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.teal,
+        flexibleSpace: ValueListenableBuilder<Color>(
+          valueListenable: appColorNotifier,
+          builder: (context, appColor, child) {
+            return Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [appColor.withOpacity(1), appColor],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+            );
+          },
+        ),
         title: const Text(
           "Shop Details",
           style: TextStyle(fontWeight: FontWeight.bold),
@@ -296,37 +310,58 @@ class _BlogAfterClickState extends State<BlogAfterClick> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  "Book an Appointment",
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.teal,
-                  ),
+                ValueListenableBuilder<Color>(
+                  valueListenable: appColorNotifier,
+                  builder: (context, appColor, child) {
+                    return ShaderMask(
+                      shaderCallback: (bounds) {
+                        return LinearGradient(
+                          colors: [appColor.withOpacity(1), appColor],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ).createShader(bounds);
+                      },
+                      child:const Text(
+                        "Book An Appointment",
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                          color: Colors.white, // Required but overridden by the shader
+                        ),
+                      ),
+                    );
+                  },
                 ),
+
                 const SizedBox(height: 10),
                 const Text(
                   "Click the button below to book or manage your appointments.",
                   style: TextStyle(fontSize: 14),
                 ),
                 const SizedBox(height: 15),
-                ElevatedButton.icon(
-                  onPressed: _navigateToAppointmentPage,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.teal,
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 12, horizontal: 20),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    elevation: 5,
-                  ),
-                  icon: const Icon(Icons.calendar_today, color: Colors.white),
-                  label: const Text(
-                    "Book Appointment",
-                    style: TextStyle(color: Colors.white, fontSize: 16),
-                  ),
-                ),
+                ValueListenableBuilder<Color>(
+                  valueListenable: appColorNotifier,
+                  builder: (context, appColor, child) {
+                    return ElevatedButton.icon(
+                      onPressed: _navigateToAppointmentPage,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: appColor, // Dynamic color
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 12, horizontal: 20),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 5,
+                      ),
+                      icon: const Icon(Icons.calendar_today, color: Colors.white),
+                      label: const Text(
+                        "Book Appointment",
+                        style: TextStyle(color: Colors.white, fontSize: 16),
+                      ),
+                    );
+                  },
+                )
+
               ],
             ),
           ),

@@ -520,11 +520,22 @@ class _IndividualPageState extends State<IndividualPage> {
                     bool isOwnMessage = message['senderEmail'] == loggedInUserEmail; // Check if message is from the current user
 
                     if (isOwnMessage) {
-                      return OwnMessageCard(
-                        message: message['content'],
-                        time: formatTime(message['timestamp']),
-                        messageColor: Colors.greenAccent,
-                        textColor: Colors.black,
+                      return ValueListenableBuilder<Color>(
+                        valueListenable: appColorNotifier,
+                        builder: (context, appColor, child) {
+                          // Make the color lighter
+                          Color lighterColor = appColor.withOpacity(0.5); // Makes it 50% lighter
+                          // Alternatively, use HSLColor for more control over lightness
+                          HSLColor hsl = HSLColor.fromColor(appColor);
+                          Color lighterHSLColor = hsl.withLightness((hsl.lightness + 0.3).clamp(0.0, 1.0)).toColor();
+
+                          return OwnMessageCard(
+                            message: message['content'],
+                            time: formatTime(message['timestamp']),
+                            messageColor: lighterHSLColor, // Use the lighter version of appColor
+                            textColor: Colors.black,
+                          );
+                        },
                       );
                     } else {
                       return ReplyCard(

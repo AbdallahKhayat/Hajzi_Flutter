@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
+import 'constants.dart';
+
 class MapPage extends StatelessWidget {
   final double lat;
   final double lng;
 
-  const MapPage({Key? key, required this.lat, required this.lng}) : super(key: key);
+  const MapPage({Key? key, required this.lat, required this.lng})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +21,24 @@ class MapPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Shop Location'),
+        title: const Text(
+          'Shop Location',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        flexibleSpace: ValueListenableBuilder<Color>(
+          valueListenable: appColorNotifier,
+          builder: (context, appColor, child) {
+            return Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [appColor.withOpacity(1), appColor],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+            );
+          },
+        ),
       ),
       body: GoogleMap(
         initialCameraPosition: CameraPosition(

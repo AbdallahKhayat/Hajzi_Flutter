@@ -5,6 +5,8 @@ import 'package:http/http.dart' as http;
 import 'package:location/location.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'constants.dart';
+
 class SelectLocationPage extends StatefulWidget {
   const SelectLocationPage({Key? key}) : super(key: key);
 
@@ -55,7 +57,8 @@ class _SelectLocationPageState extends State<SelectLocationPage> {
 
     _locationData = await location.getLocation();
 
-    LatLng currentLatLng = LatLng(_locationData.latitude!, _locationData.longitude!);
+    LatLng currentLatLng =
+        LatLng(_locationData.latitude!, _locationData.longitude!);
 
     setState(() {
       selectedLocation = currentLatLng;
@@ -151,10 +154,30 @@ class _SelectLocationPageState extends State<SelectLocationPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Select Shop Location"),
+        title: const Text(
+          "Select Shop Location",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        flexibleSpace: ValueListenableBuilder<Color>(
+          valueListenable: appColorNotifier,
+          builder: (context, appColor, child) {
+            return Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [appColor.withOpacity(1), appColor],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+            );
+          },
+        ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.my_location),
+            icon: const Icon(
+              Icons.my_location,
+              color: Colors.black,
+            ),
             onPressed: _goToCurrentLocation,
             tooltip: 'Go to Current Location',
           ),
@@ -180,11 +203,23 @@ class _SelectLocationPageState extends State<SelectLocationPage> {
                   ),
                 ),
                 const SizedBox(width: 8),
-                ElevatedButton(
-                  onPressed: () {
-                    _searchShops(_searchController.text);
+                ValueListenableBuilder<Color>(
+                  valueListenable: appColorNotifier,
+                  builder: (context, appColor, child) {
+                    return ElevatedButton(
+                      onPressed: () {
+                        _searchShops(_searchController.text);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: appColor, // Dynamic background color
+                      ),
+                      child: const Text(
+                        'Search',
+                        style: TextStyle(
+                            color: Colors.black, fontWeight: FontWeight.bold),
+                      ),
+                    );
                   },
-                  child: const Text('Search'),
                 ),
               ],
             ),
@@ -225,11 +260,11 @@ class _SelectLocationPageState extends State<SelectLocationPage> {
                           icon: const Icon(Icons.arrow_back),
                           onPressed: currentIndex > 0
                               ? () {
-                            setState(() {
-                              currentIndex--;
-                            });
-                            _showResultAtIndex(currentIndex);
-                          }
+                                  setState(() {
+                                    currentIndex--;
+                                  });
+                                  _showResultAtIndex(currentIndex);
+                                }
                               : null,
                         ),
                         Text(
@@ -238,11 +273,11 @@ class _SelectLocationPageState extends State<SelectLocationPage> {
                           icon: const Icon(Icons.arrow_forward),
                           onPressed: currentIndex < searchResults.length - 1
                               ? () {
-                            setState(() {
-                              currentIndex++;
-                            });
-                            _showResultAtIndex(currentIndex);
-                          }
+                                  setState(() {
+                                    currentIndex++;
+                                  });
+                                  _showResultAtIndex(currentIndex);
+                                }
                               : null,
                         ),
                       ],
@@ -254,7 +289,8 @@ class _SelectLocationPageState extends State<SelectLocationPage> {
                     left: 0,
                     right: 0,
                     child: FractionallySizedBox(
-                      widthFactor: 0.6, // Adjust this to control the button width (80% of screen width)
+                      widthFactor: 0.6,
+                      // Adjust this to control the button width (80% of screen width)
                       child: ElevatedButton.icon(
                         onPressed: _openInGoogleMaps,
                         icon: const Icon(Icons.map, color: Colors.black),
@@ -270,7 +306,8 @@ class _SelectLocationPageState extends State<SelectLocationPage> {
                   left: 0,
                   right: 0,
                   child: FractionallySizedBox(
-                    widthFactor: 0.6, // Adjust this to control the button width (80% of screen width)
+                    widthFactor: 0.6,
+                    // Adjust this to control the button width (80% of screen width)
                     child: ElevatedButton.icon(
                       onPressed: () {
                         if (_isLocationConfirmed) return;
@@ -284,7 +321,6 @@ class _SelectLocationPageState extends State<SelectLocationPage> {
                     ),
                   ),
                 ),
-
               ],
             ),
           ),
