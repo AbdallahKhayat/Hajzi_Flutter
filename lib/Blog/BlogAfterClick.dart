@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:latlong2/latlong.dart' as latLng; // For lat/lng
-
+import 'package:share_plus/share_plus.dart'; // Import the Share package
 import '../MapPage.dart';
 import '../Models/addBlogModel.dart';
 import '../Pages/ChatPage.dart';
@@ -155,7 +155,13 @@ class _BlogAfterClickState extends State<BlogAfterClick> {
       return null;
     }
   }
-
+  void _shareBlogDetails() {
+    final String blogDetails = "🛒 Check out this amazing Shop!\n\n"
+        "Title: ${widget.addBlogModel.title}\n"
+        "Description: ${widget.addBlogModel.body}\n\n"
+        "View it here 📍: https://www.google.com/maps/search/?api=1&query=${widget.addBlogModel.lat},${widget.addBlogModel.lng}";
+    Share.share(blogDetails);
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -271,6 +277,7 @@ class _BlogAfterClickState extends State<BlogAfterClick> {
               IconButton(
                 icon: const Icon(Icons.share, color: Colors.black),
                 onPressed: () {
+                  _shareBlogDetails();
                   // Add share functionality here
                 },
               ),
