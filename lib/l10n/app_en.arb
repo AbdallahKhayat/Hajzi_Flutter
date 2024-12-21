@@ -24,6 +24,13 @@
   "chat" : "Chat",
 
   "myshops": "MyShops",
-  "users": "Users"
+  "users": "Users",
+
+
+  "chooseMode": "Choose Interaction Mode",
+  "aiMode": "Chat with AI",
+  "predefinedMode": "Use Hajzi Questions"
+
+
 
 }

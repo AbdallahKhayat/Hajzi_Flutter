@@ -8,6 +8,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../Blog/addBlog.dart';
 import '../NetworkHandler.dart';
 import '../Notifications/push_notifications.dart';
@@ -658,11 +659,58 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                       ),
                       trailing: Icon(Icons.chevron_right, color: Colors.grey),
                       onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => ChatBotScreen(userEmail: email,),
-                          ),
+                        showDialog(
+                          context: context,
+                          builder: (context) {
+                            return AlertDialog(
+                              title: Text(AppLocalizations.of(context)!.chooseMode),
+                              content: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  ListTile(
+                                    leading: Icon(Icons.chat),
+                                    title: Text(AppLocalizations.of(context)!.aiMode),
+                                    onTap: () async {
+                                      // Make the onTap callback async
+                                      final prefs = await SharedPreferences.getInstance();
+                                      await prefs.remove('chat_history_${email}'); // Clear chat history
+
+                                      Navigator.pop(context); // Close the dialog
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => ChatBotScreen(
+                                            userEmail: email,
+                                            isAIModeInitial: true,
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                  ListTile(
+                                    leading: Icon(Icons.question_answer),
+                                    title: Text(AppLocalizations.of(context)!.predefinedMode),
+                                    onTap: () async {
+                                      // Make the onTap callback async
+                                      final prefs = await SharedPreferences.getInstance();
+                                      await prefs.remove('chat_history_${email}'); // Clear chat history
+
+                                      Navigator.pop(context); // Close the dialog
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => ChatBotScreen(
+                                            userEmail: email,
+                                            isAIModeInitial: false,
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
                         );
                       },
                     ),

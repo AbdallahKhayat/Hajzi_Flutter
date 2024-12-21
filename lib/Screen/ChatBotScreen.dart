@@ -6,9 +6,10 @@ import 'package:http/http.dart' as http;
 import '../constants.dart';
 
 class ChatBotScreen extends StatefulWidget {
-  final String userEmail; // Pass the user's email to the chat screen
+  final String userEmail; // User's email
+  final bool isAIModeInitial; // Initial mode selection
 
-  ChatBotScreen({required this.userEmail});
+  ChatBotScreen({required this.userEmail, this.isAIModeInitial = false});
 
   @override
   _ChatBotScreenState createState() => _ChatBotScreenState();
@@ -19,19 +20,25 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
   List<Map<String, dynamic>> messages = []; // Chat messages
   bool isLoading = false;
 
-  final String apiKey =
-      'sk-svcacct-ySd9tYFFIP7XRYvT8brzJ6ZluXYIhyX9DR768XaSJS5HwREPXdwXKK6nd-yPdmqPrT3BlbkFJn2dTVO5KhP2LnzvB5Shrnu_KZrwoqzb0e0K5fbgSSOTtZDwxXi_goP-rCMvLsSb7AA'; // Replace with your OpenAI API Key
+  late String apiKey; // Initialize securely
+  late bool isAIMode; // Current mode
+
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
+    // TODO: Secure your API key appropriately
+    apiKey = 'sk-svcacct-ySd9tYFFIP7XRYvT8brzJ6ZluXYIhyX9DR768XaSJS5HwREPXdwXKK6nd-yPdmqPrT3BlbkFJn2dTVO5KhP2LnzvB5Shrnu_KZrwoqzb0e0K5fbgSSOTtZDwxXi_goP-rCMvLsSb7AA'; // Replace with secure method
+    isAIMode = widget.isAIModeInitial;
     _loadChatHistory();
   }
 
-  // Function to load chat history for the specific user from SharedPreferences
+  // Load chat history based on mode
   Future<void> _loadChatHistory() async {
     final prefs = await SharedPreferences.getInstance();
-    final savedMessages = prefs.getString('chat_history_${widget.userEmail}');
+    final savedMessages =
+    prefs.getString('chat_history_${widget.userEmail}');
 
     if (savedMessages != null) {
       List<dynamic> decodedMessages = json.decode(savedMessages);
@@ -40,92 +47,91 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
       });
     }
 
-    // Show welcome message only if the last message is not the welcome message
-    if (messages.isEmpty || messages.last["content"] != _getWelcomeMessage()) {
+    // Show welcome message if necessary
+    String currentWelcome =
+    isAIMode ? _getWelcomeMessageAI() : _getWelcomeMessageHajzi();
+
+    if (messages.isEmpty || messages.last["content"] != currentWelcome) {
       _sendWelcomeMessage();
+    } else {
+      _scrollToBottom();
     }
   }
 
-  // Function to save chat history for the specific user to SharedPreferences
+  // Save chat history
   Future<void> _saveChatHistory() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(
         'chat_history_${widget.userEmail}', json.encode(messages));
   }
 
-  // Function to get the welcome message
-  String _getWelcomeMessage() {
-    return "Welcome to Hajzi Bot! How can I assist you today? Here are some options you can ask:\n\n"
+  // Welcome messages
+  String _getWelcomeMessageAI() {
+    return "Welcome to Hajzi Bot! How can I assist you today?";
+  }
+
+  String _getWelcomeMessageHajzi() {
+    return "Welcome to Hajzi Bot! Please choose from the following options:\n\n"
         "1. Book an appointment\n"
-        "2. How to transfer to a Customer\n"
+        "2. Transfer to a Customer\n"
         "3. Get assistance with using the app\n"
         "4. Contact admin";
   }
 
-  // Function to handle sending a welcome message
+  // Send welcome message
   Future<void> _sendWelcomeMessage() async {
-    final String welcomeMessage = _getWelcomeMessage();
+    final String welcomeMessage = isAIMode
+        ? _getWelcomeMessageAI()
+        : _getWelcomeMessageHajzi();
 
-    // Add the assistant message to the messages list
     setState(() {
       messages.add({"role": "assistant", "content": welcomeMessage});
     });
 
-    // Save chat history after showing the welcome message
     await _saveChatHistory();
+    _scrollToBottom();
   }
 
-  // Function to handle API calls to GPT or predefined responses
+  // Handle sending messages
   Future<void> sendMessage(String userMessage) async {
     setState(() {
       isLoading = true;
       messages.add({"role": "user", "content": userMessage});
     });
 
-    // Save the message history after user sends a message
     await _saveChatHistory();
+    _scrollToBottom();
 
-    // Check if the user selects option 1
-    if (userMessage.trim() == "1") {
+    if (!isAIMode) {
+      // Handle predefined Hajzi questions
+      switch (userMessage.trim()) {
+        case "1":
+          _addAssistantMessage(
+              "You can book an appointment by pressing on a specific shop from the Home page and press Book Appointment. Then choose the available times. If you need any further help, let me know 😊");
+          break;
+        case "2":
+          _addAssistantMessage(
+              "You can transfer to Customer by clicking on Customer from the App's menu. Then it will ask for the payment method. If you need any further help, let me know 😊");
+          break;
+        case "3":
+          _addAssistantMessage(
+              "To get assistance with using the app, please visit our Help Center or contact support.");
+          break;
+        case "4":
+          _addAssistantMessage("You can contact the admin at: 0597754602");
+          break;
+        default:
+          _addAssistantMessage(
+              "Please select a valid option from the list provided.");
+      }
       setState(() {
-        messages.add({
-          "role": "assistant",
-          "content":
-              "You can book an appointment by pressing on a specific shop from Home page and press Book Appointment then choose the available times, if u need any further help, let me know 😊 "
-        });
-        isLoading = false; // Stop the loading state
+        isLoading = false;
       });
       await _saveChatHistory();
       return;
     }
 
-    // Check if the user selects option 1
-    if (userMessage.trim() == "2") {
-      setState(() {
-        messages.add({
-          "role": "assistant",
-          "content":
-          "You can transfer to Customer by clicking on Customer from the App's menu then it will ask for payment method, if u need any further help, let me know 😊"
-        });
-        isLoading = false; // Stop the loading state
-      });
-      await _saveChatHistory();
-      return;
-    }
-
-    // Check if the user selects option 4
-    if (userMessage.trim() == "4") {
-      setState(() {
-        messages.add({
-          "role": "assistant",
-          "content": "You can contact the admin at: 0597754602"
-        });
-        isLoading = false; // Stop the loading state
-      });
-      await _saveChatHistory();
-      return;
-    }
-
+    // AI Mode: OpenAI API call
     final url = Uri.parse("https://api.openai.com/v1/chat/completions");
 
     try {
@@ -137,7 +143,7 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
         },
         body: json.encode({
           "model": "gpt-3.5-turbo",
-          "messages": messages, // Send entire chat history
+          "messages": messages, // Entire chat history
         }),
       );
 
@@ -151,9 +157,13 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
         await _saveChatHistory();
       } else {
         debugPrint('Failed to fetch response: ${response.body}');
+        _addAssistantMessage(
+            "Sorry, I couldn't process your request at the moment.");
       }
     } catch (error) {
       debugPrint('Error sending message: $error');
+      _addAssistantMessage(
+          "An error occurred while trying to process your request.");
     } finally {
       setState(() {
         isLoading = false;
@@ -161,15 +171,25 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
     }
   }
 
+  // Add assistant message
+  void _addAssistantMessage(String message) {
+    setState(() {
+      messages.add({"role": "assistant", "content": message});
+    });
+    _scrollToBottom();
+  }
+
+  // Delete chat history
   Future<void> _deleteChatHistory() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('chat_history_${widget.userEmail}');
     setState(() {
       messages.clear();
     });
-    _sendWelcomeMessage(); // Add welcome message again
+    _sendWelcomeMessage(); // Reload welcome message
   }
 
+  // Confirm deletion dialog
   void _confirmDeleteHistory() {
     showDialog(
       context: context,
@@ -179,7 +199,7 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         content:
-            const Text("Are you sure you want to delete the chat history?"),
+        const Text("Are you sure you want to delete the chat history?"),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context), // Cancel
@@ -209,6 +229,40 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
     );
   }
 
+  // Auto-scroll to bottom
+  Future<void> _scrollToBottom() async {
+    await Future.delayed(Duration(milliseconds: 300));
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    }
+  }
+
+  // Handle mode switching
+  Future<void> _switchMode(bool newMode) async {
+    if (newMode != isAIMode) {
+      setState(() {
+        isAIMode = newMode;
+        isLoading = true;
+        messages.clear(); // Clear current messages
+      });
+
+      // Remove existing chat history
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('chat_history_${widget.userEmail}');
+
+      // Send the new welcome message based on the selected mode
+      await _sendWelcomeMessage();
+
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -227,16 +281,36 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
             );
           },
         ),
-        title: const Text(
-          'Hajzi Bot',
-          style: TextStyle(
+        title: Text(
+          isAIMode ? 'Hajzi Bot - AI Mode' : 'Hajzi Bot - Help Mode',
+          style: const TextStyle(
             fontWeight: FontWeight.bold,
+            fontSize: 15,
           ),
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.delete, color: Colors.black),
-            onPressed: _confirmDeleteHistory, // Open confirmation dialog
+          Row(
+            children: [
+              Icon(
+                isAIMode ? Icons.chat : Icons.question_answer,
+                color: Colors.white,
+              ),
+              Switch(
+                value: isAIMode,
+                onChanged: (value) {
+                  _switchMode(value);
+                },
+                activeColor: Colors.white,
+              ),
+              Icon(
+                isAIMode ? Icons.question_answer : Icons.chat,
+                color: Colors.white,
+              ),
+              IconButton(
+                icon: const Icon(Icons.delete, color: Colors.black),
+                onPressed: _confirmDeleteHistory, // Open confirmation dialog
+              ),
+            ],
           ),
         ],
       ),
@@ -244,6 +318,7 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
         children: [
           Expanded(
             child: ListView.builder(
+              controller: _scrollController,
               itemCount: messages.length,
               itemBuilder: (context, index) {
                 final message = messages[index];
@@ -266,7 +341,7 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
                     ),
                     Container(
                       alignment:
-                          isUser ? Alignment.centerRight : Alignment.centerLeft,
+                      isUser ? Alignment.centerRight : Alignment.centerLeft,
                       margin: const EdgeInsets.symmetric(
                           vertical: 5, horizontal: 10),
                       padding: const EdgeInsets.all(10),

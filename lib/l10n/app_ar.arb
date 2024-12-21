@@ -14,7 +14,7 @@
   "dob": "تاريخ الولادة",
 
   "myblogs": "محلاتي",
-  "searchBlogs": "Search Blogs",
+  "searchBlogs": "ابحث عن المحلات",
   "searchBlogsDescription": "Text displayed in the search bar for blogs",
 
   "requests": "طلبات",
@@ -24,5 +24,10 @@
   "hospitalPosts": "المستشفيات",
   "chat" : "محادثة",
   "myshops": "محلاتي",
-  "users": "المستخدمين"
+  "users": "المستخدمين",
+
+  "chooseMode": "اختر نوع المحادثة",
+  "aiMode": "تكلم مع AI",
+  "predefinedMode": "استخدم اسئلة تطبيق حجزي"
+
 }
