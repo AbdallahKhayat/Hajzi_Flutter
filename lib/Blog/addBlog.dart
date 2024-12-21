@@ -164,6 +164,41 @@ class _AddBlogState extends State<AddBlog> {
       print("Error sending notification: $error");
     }
   }
+  // Updated function to upload a preview image using patchImage
+  Future<void> uploadPreviewImage(String blogId, String filePath) async {
+    try {
+      String url = "/AddBlogApproval/previewImage/$blogId";
+      var response = await networkHandler.patchImage(url, filePath);
+
+      if (response.statusCode == 200) {
+        print("Preview image uploaded successfully");
+      } else {
+        print(
+            "Failed to upload preview image: ${response.statusCode}, Reason: ${await response.stream.bytesToString()}");
+      }
+    } catch (e) {
+      print("Error uploading preview image: $e");
+    }
+  }
+
+// Updated function to upload cover images using patchImage
+  Future<void> uploadCoverImages(String blogId, List<XFile> images) async {
+    for (XFile image in images) {
+      try {
+        String url = "/AddBlogApproval/coverImages/$blogId";
+        var response = await networkHandler.patchImage(url, image.path);
+
+        if (response.statusCode == 200) {
+          print("Cover image ${image.name} uploaded successfully");
+        } else {
+          print(
+              "Failed to upload cover image: ${image.name}, Reason: ${await response.stream.bytesToString()}");
+        }
+      } catch (e) {
+        print("Error uploading cover image ${image.name}: $e");
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -693,6 +728,13 @@ class _AddBlogState extends State<AddBlog> {
               body:
                   "${addBlogApproval.email} has applied for a shop with the title: ${addBlogApproval.title}. Please review it.",
             );
+
+            // Upload images
+            // Upload preview image
+            if (imageFiles.isNotEmpty) {
+              await uploadPreviewImage(blogId, imageFiles.first.path);
+              await uploadCoverImages(blogId, imageFiles.sublist(1));
+            }
 
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('Blog submitted for approval!')),

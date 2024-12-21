@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:blogapp/Models/addBlogApproval.dart';
+import 'package:blogapp/Models/addBlogModel.dart';
 import 'package:blogapp/NetworkHandler.dart';
 
 import '../constants.dart';
@@ -20,6 +21,7 @@ class _RequestsScreenState extends State<RequestsScreen> {
   NetworkHandler networkHandler = NetworkHandler();
   bool isLoading = false;
   TextEditingController _searchController = TextEditingController();
+  AddBlogModel addBlogModel = AddBlogModel();
 
   @override
   void initState() {
@@ -146,6 +148,148 @@ class _RequestsScreenState extends State<RequestsScreen> {
     } catch (error) {
       print("Error sending notification: $error");
     }
+  }
+
+  Future<List<String>> _fetchImages(String blogId) async {
+    try {
+      var response = await networkHandler.get("/AddBlogApproval/$blogId");
+
+      if (response is Map<String, dynamic> && response.containsKey("data")) {
+        final blogData = response["data"];
+
+        // Extract previewImage and coverImages
+        final previewImage = blogData["previewImage"] as String?;
+        final coverImages =
+            (blogData["coverImages"] as List?)?.cast<String>() ?? [];
+
+        // Combine previewImage and coverImages into a single list with the full URL
+        return [
+          if (previewImage != null) "${networkHandler.baseurl}/$previewImage",
+          ...coverImages.map((image) => "${networkHandler.baseurl}/$image")
+        ];
+      } else {
+        return [];
+      }
+    } catch (e) {
+      print("Error fetching images: $e");
+      return [];
+    }
+  }
+
+  Future<void> _showDetails(AddBlogApproval blog) async {
+    // Fetch all images associated with this blog request
+    List<String> images = await _fetchImages(blog.id!);
+
+    // Determine the preview image (assuming the first image is the preview)
+    String? previewImage = images.isNotEmpty ? images[0] : null;
+
+    // The rest of the images are considered cover images
+    List<String> coverImages = images.length > 1 ? images.sublist(1) : [];
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Shop Details"),
+          content: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Username
+                Row(
+                  children: [
+                    const Icon(Icons.person, color: Colors.teal),
+                    const SizedBox(width: 10),
+                    const Text(
+                      "Username: ",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    Text(blog.username ?? "N/A"),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                // Email
+                Row(
+                  children: [
+                    const Icon(Icons.email, color: Colors.teal),
+                    const SizedBox(width: 10),
+                    const Text(
+                      "Email: ",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+
+                Text(
+                  blog.email ?? "N/A",
+                  style: const TextStyle(color: Colors.black87),
+                ),
+                const SizedBox(height:20),
+                // Preview Image
+                const Text(
+                  "Preview Image:",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 10),
+                previewImage != null
+                    ? Container(
+                        width: double.infinity,
+                        height: 200,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          image: DecorationImage(
+                            image: NetworkImage(previewImage),
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      )
+                    : const Text(
+                        "No preview image uploaded.",
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                const SizedBox(height: 20),
+                // Cover Images
+                const Text(
+                  "Cover Images:",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 10),
+                coverImages.isNotEmpty
+                    ? Wrap(
+                        spacing: 10,
+                        runSpacing: 10,
+                        children: coverImages
+                            .map(
+                              (url) => Container(
+                                width: 100,
+                                height: 100,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(8),
+                                  image: DecorationImage(
+                                    image: NetworkImage(url),
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                              ),
+                            )
+                            .toList(),
+                      )
+                    : const Text(
+                        "No cover images uploaded.",
+                        style: TextStyle(color: Colors.grey),
+                      ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Close"),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -281,6 +425,29 @@ class _RequestsScreenState extends State<RequestsScreen> {
                                               ),
                                             ),
                                           ),
+
+                                          // View Details Button
+                                          ElevatedButton.icon(
+                                            onPressed: () => _showDetails(blog),
+                                            icon: const Icon(Icons.info,
+                                                color: Colors.black),
+                                            label: const Text(
+                                              "View Details",
+                                              style: TextStyle(
+                                                  color: Colors.black),
+                                            ),
+                                            style: ElevatedButton.styleFrom(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 20,
+                                                      vertical: 12),
+                                              backgroundColor: Colors.blue,
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(20),
+                                              ),
+                                            ),
+                                          ),
                                         ],
                                       ),
                                     ],
@@ -289,93 +456,118 @@ class _RequestsScreenState extends State<RequestsScreen> {
                               ),
                             ),
                           )
-                        : Card(
-                            margin: const EdgeInsets.symmetric(
-                                horizontal: 15, vertical: 10),
-                            elevation: 3,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(15),
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(16),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    blog.title ?? "Untitled Blog",
-                                    style: const TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.teal,
+                        : Stack(children: [
+                            Card(
+                              margin: const EdgeInsets.symmetric(
+                                  horizontal: 15, vertical: 10),
+                              elevation: 3,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(15),
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.all(16),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      blog.title ?? "Untitled Blog",
+                                      style: const TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.teal,
+                                      ),
                                     ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    blog.body ?? "No content available",
-                                    maxLines: 3,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      color: Colors.black87,
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      blog.body ?? "No content available",
+                                      maxLines: 3,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        color: Colors.black87,
+                                      ),
                                     ),
-                                  ),
-                                  const SizedBox(height: 12),
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      ElevatedButton.icon(
-                                        onPressed: () => updateBlogStatus(
-                                            blog.id!, "approved"),
-                                        icon: const Icon(
-                                          Icons.check,
-                                          color: Colors.black,
-                                        ),
-                                        label: const Text(
-                                          "Approve",
-                                          style: TextStyle(
+                                    const SizedBox(height: 12),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        ElevatedButton.icon(
+                                          onPressed: () => updateBlogStatus(
+                                              blog.id!, "approved"),
+                                          icon: const Icon(
+                                            Icons.check,
                                             color: Colors.black,
                                           ),
-                                        ),
-                                        style: ElevatedButton.styleFrom(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 20, vertical: 12),
-                                          backgroundColor: Colors.green,
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(20),
+                                          label: const Text(
+                                            "Approve",
+                                            style: TextStyle(
+                                              color: Colors.black,
+                                            ),
+                                          ),
+                                          style: ElevatedButton.styleFrom(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 20, vertical: 12),
+                                            backgroundColor: Colors.green,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(20),
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                      ElevatedButton.icon(
-                                        onPressed: () => updateBlogStatus(
-                                            blog.id!, "rejected"),
-                                        icon: const Icon(
-                                          Icons.cancel,
-                                          color: Colors.black,
-                                        ),
-                                        label: const Text(
-                                          "Deny",
-                                          style: TextStyle(
+                                        ElevatedButton.icon(
+                                          onPressed: () => updateBlogStatus(
+                                              blog.id!, "rejected"),
+                                          icon: const Icon(
+                                            Icons.cancel,
                                             color: Colors.black,
                                           ),
-                                        ),
-                                        style: ElevatedButton.styleFrom(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 20, vertical: 12),
-                                          backgroundColor: Colors.red,
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(20),
+                                          label: const Text(
+                                            "Deny",
+                                            style: TextStyle(
+                                              color: Colors.black,
+                                            ),
+                                          ),
+                                          style: ElevatedButton.styleFrom(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 20, vertical: 12),
+                                            backgroundColor: Colors.red,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(20),
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
+                                        // View Details Button
+                                      ],
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
-                          );
+                            Positioned(
+                              top: 15,
+                              right: 35,
+                              child: ElevatedButton.icon(
+                                onPressed: () => _showDetails(blog),
+                                icon: const Icon(Icons.info_outline,
+                                    color: Colors.white, size: 18),
+                                label: const Text(
+                                  "Details",
+                                  style: TextStyle(
+                                      color: Colors.white, fontSize: 12),
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 5),
+                                  backgroundColor: Colors.blue,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ]);
                   },
                 ),
     );
