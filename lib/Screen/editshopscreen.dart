@@ -6,6 +6,7 @@ import '../NetworkHandler.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../Notifications/push_notifications.dart';
+import '../constants.dart';
 
 class EditShopScreen extends StatefulWidget {
   final AddBlogModel addBlogModel;
@@ -194,7 +195,20 @@ class _EditShopScreenState extends State<EditShopScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.teal,
+        flexibleSpace: ValueListenableBuilder<Color>(
+          valueListenable: appColorNotifier,
+          builder: (context, appColor, child) {
+            return Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [appColor.withOpacity(1), appColor],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+            );
+          },
+        ),
         title: const Text("Edit Shop",style: TextStyle(
           fontWeight: FontWeight.bold,
         ),),
@@ -251,15 +265,19 @@ class _EditShopScreenState extends State<EditShopScreen> {
                   ? Image.network(widget.networkHandler.formater2(widget.addBlogModel.previewImage!),
                   height: 150)
                   : const Text("No preview image selected"),
-              TextButton(
-                onPressed: _pickPreviewImage,
-                child: const Text("Change Preview Image"),
-                style: const ButtonStyle(
-                  foregroundColor: MaterialStatePropertyAll<Color>(Colors.black),
-                  backgroundColor: MaterialStatePropertyAll<Color>(Colors.teal),
-
-                ),
-              ),
+            ValueListenableBuilder<Color>(
+              valueListenable: appColorNotifier,
+              builder: (context, color, child) {
+                return TextButton(
+                  onPressed: _pickPreviewImage,
+                  child: const Text("Change Preview Image"),
+                  style: ButtonStyle(
+                    foregroundColor: MaterialStateProperty.all<Color>(Colors.black),
+                    backgroundColor: MaterialStateProperty.all<Color>(color),
+                  ),
+                );
+              },
+            ),
               const SizedBox(height: 16),
               Text("Slideshow Images", style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 8),
@@ -296,15 +314,19 @@ class _EditShopScreenState extends State<EditShopScreen> {
                   ),
                 ],
               ),
-              TextButton(
-                onPressed: _pickNewCoverImages,
-                child: const Text("Add New Images"),
-                style: const ButtonStyle(
-                  foregroundColor: MaterialStatePropertyAll<Color>(Colors.black),
-                  backgroundColor: MaterialStatePropertyAll<Color>(Colors.teal),
-
-                ),
-              ),
+            ValueListenableBuilder<Color>(
+              valueListenable: appColorNotifier,
+              builder: (context, color, child) {
+                return TextButton(
+                  onPressed: _pickNewCoverImages,
+                  child: const Text("Add New Images"),
+                  style: ButtonStyle(
+                    foregroundColor: MaterialStateProperty.all<Color>(Colors.black),
+                    backgroundColor: MaterialStateProperty.all<Color>(color),
+                  ),
+                );
+              },
+            ),
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: _submitChanges,

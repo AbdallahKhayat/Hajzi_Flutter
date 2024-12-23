@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../NetworkHandler.dart';
+import '../constants.dart';
 import 'IndividualPage.dart'; // 🔥 Import your network handler
 
 class SearchPage extends StatefulWidget {
@@ -81,6 +82,20 @@ class _SearchPageState extends State<SearchPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        flexibleSpace: ValueListenableBuilder<Color>(
+          valueListenable: appColorNotifier,
+          builder: (context, appColor, child) {
+            return Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [appColor.withOpacity(1), appColor],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+            );
+          },
+        ),
         title: TextField(
           controller: searchController,
           onChanged: (value) => filterCustomers(value), // 🔥 Call filter as user types

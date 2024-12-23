@@ -3,11 +3,14 @@ import 'package:blogapp/CustomWidget/CustomCard.dart';
 import 'package:blogapp/NetworkHandler.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
+import '../constants.dart';
+
 class ChatPage extends StatefulWidget {
   final String chatId;
   final String chatPartnerEmail;
 
-  const ChatPage({super.key, required this.chatId, required this.chatPartnerEmail});
+  const ChatPage(
+      {super.key, required this.chatId, required this.chatPartnerEmail});
 
   @override
   State<ChatPage> createState() => _ChatPageState();
@@ -37,21 +40,23 @@ class _ChatPageState extends State<ChatPage> {
         return;
       }
 
-      var response = await networkHandler.getWithAuth('/chat/user-chats', token);
+      var response =
+          await networkHandler.getWithAuth('/chat/user-chats', token);
       if (response != null && response is List) {
         setState(() {
           chats = response;
         });
 
         // Join all chat rooms after fetching chats
-        if (NetworkHandler().socket != null && NetworkHandler().socket!.connected) {
+        if (NetworkHandler().socket != null &&
+            NetworkHandler().socket!.connected) {
           for (var c in chats) {
             NetworkHandler().socket!.emit('join_chat', c['_id']);
           }
         } else {
-          print("⚠️ Socket not connected yet. Will need to join later on connect event.");
+          print(
+              "⚠️ Socket not connected yet. Will need to join later on connect event.");
         }
-
       } else {
         print('Error fetching chats');
       }
@@ -63,7 +68,9 @@ class _ChatPageState extends State<ChatPage> {
   void setupSocketListeners() {
     if (NetworkHandler().socket != null) {
       // Remove old listener to avoid duplicates
-      NetworkHandler().socket!.off('receive_message_chatpage'); // optional if needed once
+      NetworkHandler()
+          .socket!
+          .off('receive_message_chatpage'); // optional if needed once
 
       NetworkHandler().socket!.on('receive_message_chatpage', (data) async {
         print("🔔 ChatPage event: $data");
@@ -85,7 +92,7 @@ class _ChatPageState extends State<ChatPage> {
           });
         } else {
           // Chat not found, refetch chats
-          await fetchChats();  // after re-fetching, try again
+          await fetchChats(); // after re-fetching, try again
 
           // Now try to find the chat again after fetch
           index = chats.indexWhere((chat) => chat['_id'] == updatedChatId);
@@ -120,42 +127,63 @@ class _ChatPageState extends State<ChatPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Chats'),
+        flexibleSpace: ValueListenableBuilder<Color>(
+          valueListenable: appColorNotifier,
+          builder: (context, appColor, child) {
+            return Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [appColor.withOpacity(1), appColor],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+            );
+          },
+        ),
+        title: const Text(
+          'Chats',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
       ),
       body: chats.isEmpty
           ? const Center(
-        child: Text(
-          'No chats available',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey),
-        ),
-      )
+              child: Text(
+                'No chats available',
+                style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey),
+              ),
+            )
           : FutureBuilder<String?>(
-        future: storage.read(key: "email"),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return const SizedBox.shrink();
-          }
-          final currentUserEmail = snapshot.data;
-          return ListView.builder(
-            itemCount: chats.length,
-            itemBuilder: (context, index) {
-              final chat = chats[index];
-              final chatPartner = (chat['users'] as List)
-                  .firstWhere((user) => user['email'] != currentUserEmail, orElse: () => null);
+              future: storage.read(key: "email"),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return const SizedBox.shrink();
+                }
+                final currentUserEmail = snapshot.data;
+                return ListView.builder(
+                  itemCount: chats.length,
+                  itemBuilder: (context, index) {
+                    final chat = chats[index];
+                    final chatPartner = (chat['users'] as List).firstWhere(
+                        (user) => user['email'] != currentUserEmail,
+                        orElse: () => null);
 
-              if (chatPartner != null) {
-                return CustomCard(chat: {
-                  ...chat,
-                  'chatPartnerEmail': chatPartner['email'],
-                  'chatPartnerName': chatPartner['username'],
-                });
-              } else {
-                return const SizedBox.shrink();
-              }
-            },
-          );
-        },
-      ),
+                    if (chatPartner != null) {
+                      return CustomCard(chat: {
+                        ...chat,
+                        'chatPartnerEmail': chatPartner['email'],
+                        'chatPartnerName': chatPartner['username'],
+                      });
+                    } else {
+                      return const SizedBox.shrink();
+                    }
+                  },
+                );
+              },
+            ),
     );
   }
 }
