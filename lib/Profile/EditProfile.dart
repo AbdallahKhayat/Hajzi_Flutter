@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:blogapp/Models/profileModel.dart';
 import 'package:blogapp/NetworkHandler.dart';
 
+import '../constants.dart';
+
 class EditProfile extends StatefulWidget {
   final ProfileModel profileModel;
 
@@ -83,7 +85,20 @@ class _EditProfileState extends State<EditProfile> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.teal,
+        flexibleSpace: ValueListenableBuilder<Color>(
+          valueListenable: appColorNotifier,
+          builder: (context, appColor, child) {
+            return Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [appColor.withOpacity(1), appColor],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+            );
+          },
+        ),
         elevation: 0,
         title: const Text(
           "Edit Profile",
@@ -173,24 +188,28 @@ class _EditProfileState extends State<EditProfile> {
                               ),
                               const SizedBox(height: 30),
                               Center(
-                                child: ElevatedButton(
-                                  onPressed: _updateProfile,
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.teal,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(20),
-                                    ),
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 40, vertical: 15),
-                                  ),
-                                  child: const Text(
-                                    "Save Changes",
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                    ),
-                                  ),
+                                child:  ValueListenableBuilder<Color>(
+                                  valueListenable: appColorNotifier,
+                                  builder: (context, color, child) {
+                                    return ElevatedButton(
+                                      onPressed: _updateProfile,
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: color,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(20),
+                                        ),
+                                        padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                                      ),
+                                      child: const Text(
+                                        "Save Changes",
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    );
+                                  },
                                 ),
                               ),
                             ],
