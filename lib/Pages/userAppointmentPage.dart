@@ -51,12 +51,41 @@ class _UserAppointmentPageState extends State<UserAppointmentPage> {
     }
   }
 
-  // Function to book an appointment
-  Future<void> _bookAppointment(String time) async {
+  // Function to show a confirmation dialog
+  Future<void> _showConfirmationDialog(String time) async {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Confirm Booking"),
+          content: Text("Are you sure you want to book an appointment at $time?"),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: const Text("Cancel",style: TextStyle(color: Colors.black),),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+                _confirmBooking(time); // Proceed with booking
+              },
+              child: const Text("Confirm",style: TextStyle(color: Colors.red),),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+// Function to handle the actual booking after confirmation
+  Future<void> _confirmBooking(String time) async {
     if (hasBooked) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-            content: Text('You have already booked an appointment.')),
+          content: Text('You have already booked an appointment.'),
+        ),
       );
       return;
     }
@@ -64,13 +93,13 @@ class _UserAppointmentPageState extends State<UserAppointmentPage> {
     try {
       // Send only the "HH:mm" part of the time
       final formattedTime =
-          time.length == 5 ? time : time.substring(0, 5); // e.g., 09:30
+      time.length == 5 ? time : time.substring(0, 5); // e.g., 09:30
 
       final response = await widget.networkHandler.post("/appointment/book", {
         "time": formattedTime,
         "blogId": widget.blogId,
         "userName": widget.userName,
-        "duration": 30 // Default duration
+        "duration": 30, // Default duration
       });
 
       if (response.statusCode == 200) {
@@ -90,6 +119,11 @@ class _UserAppointmentPageState extends State<UserAppointmentPage> {
             content: Text('An error occurred while booking the appointment.')),
       );
     }
+  }
+
+  // Function to book an appointment
+  Future<void> _bookAppointment(String time) async {
+   _showConfirmationDialog(time);
   }
 
   String _formatTimeWithAMPM(String time) {

@@ -185,13 +185,39 @@ class _CustomerAppointmentPageState extends State<CustomerAppointmentPage> {
     }
   }
 
-  // Function to delete an appointment slot
-  Future<void> _deleteSlot(String time) async {
+  Future<void> _showDeleteConfirmationDialog(String time) async {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Confirm Deletion"),
+          content: Text("Are you sure you want to delete the time slot at $time?"),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: const Text("Cancel",style: TextStyle(color: Colors.black),),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+                _confirmDeleteSlot(time); // Proceed with deletion
+              },
+              child: const Text("Delete",style: TextStyle(color: Colors.red),),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // Function to handle the actual deletion after confirmation
+  Future<void> _confirmDeleteSlot(String time) async {
     try {
       final response = await widget.networkHandler
           .delete("/appointment/delete/${widget.blogId}/$time");
 
-      // If the response is already decoded as a Map, check if `response['message']` exists
       if (response != null &&
           response['message'] == "Time slot deleted successfully!") {
         setState(() {
@@ -205,9 +231,7 @@ class _CustomerAppointmentPageState extends State<CustomerAppointmentPage> {
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text(
-                  'Failed to delete the time slot! Response: ${response}')),
+          const SnackBar(content: Text('Failed to delete the time slot.')),
         );
       }
     } catch (error) {
@@ -217,6 +241,11 @@ class _CustomerAppointmentPageState extends State<CustomerAppointmentPage> {
             content: Text('An error occurred while deleting the time slot.')),
       );
     }
+  }
+
+  // Function to delete an appointment slot
+  Future<void> _deleteSlot(String time) async {
+    _showDeleteConfirmationDialog(time);
   }
 
   Future<void> _selectTime(

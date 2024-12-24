@@ -3,7 +3,15 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import '../NetworkHandler.dart';
+extension StringExtension on String
 
+{
+
+  String capitalize() {
+    if (this.isEmpty) return this;
+    return this[0].toUpperCase() + substring(1).toLowerCase();
+  }
+}
 class UsersScreen extends StatefulWidget {
   const UsersScreen({super.key});
 
@@ -67,6 +75,141 @@ class _UsersScreenState extends State<UsersScreen> {
       debugPrint("Error fetching users: $e");
     }
   }
+  Future<void> _showBanConfirmationDialog(String email, bool isBanned) async {
+    String action = isBanned ? "unban" : "ban";
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Confirm $action"),
+          content: Text("Are you sure you want to $action $email?"),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: const Text("Cancel",style: TextStyle(color: Colors.black),),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+                toggleBanStatusConfirmed(email); // Proceed with ban/unban
+              },
+              child: Text(action.capitalize(),style: const TextStyle(color: Colors.red),),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+
+  Future<void> toggleBanStatusConfirmed(String email) async {
+    try {
+      var response = await networkHandler.patch("/user/ban/$email", {});
+      var responseData = json.decode(response.body);
+
+      if (response != null && responseData['Status'] == true) {
+        setState(() {
+          int userIndex = users.indexWhere((user) => user['email'] == email);
+          if (userIndex != -1) {
+            users[userIndex]['isBanned'] = responseData['isBanned'];
+          }
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(responseData['message'] ??
+                  "User status updated successfully!")),
+        );
+      } else {
+        debugPrint("Failed to ban/unban user: ${responseData['message']}");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(
+                  responseData['message'] ?? "Failed to update user status.")),
+        );
+      }
+    } catch (e) {
+      debugPrint("Error banning/unbanning user: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text("An error occurred while updating the user status.")),
+      );
+    }
+  }
+  Future<void> _showRoleConfirmationDialog(String email, String currentRole) async {
+    String action = currentRole == "customer" ? "unpromote" : "promote";
+    String newRole = currentRole == "customer" ? "user" : "customer";
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Confirm $action"),
+          content: Text(
+              "Are you sure you want to $action $email to the role of $newRole?"),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: const Text("Cancel",style: TextStyle(color: Colors.black),),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+                toggleUserRoleConfirmed(email, currentRole); // Proceed with role change
+              },
+              child: Text(action.capitalize(),style: const TextStyle(color: Colors.red),),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+
+  Future<void> toggleUserRoleConfirmed(String email, String currentRole) async {
+    try {
+      String newRole = currentRole == "customer" ? "user" : "customer";
+      Map<String, dynamic> body = {"role": newRole};
+
+      var response =
+      await networkHandler.patch("/user/updateRole/$email", body);
+      var responseData = json.decode(response.body);
+
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(
+                  responseData['msg'] ?? "User role updated successfully!")),
+        );
+
+        setState(() {
+          int userIndex = users.indexWhere((user) => user['email'] == email);
+          if (userIndex != -1) {
+            users[userIndex]['role'] = newRole;
+          }
+        });
+      } else {
+        debugPrint("Failed to update user role: ${responseData['msg']}");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content:
+              Text(responseData['msg'] ?? "Failed to update user role.")),
+        );
+      }
+    } catch (e) {
+      debugPrint("Error updating user role: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text("An error occurred while updating the user role.")),
+      );
+    }
+  }
+
+  //////
 
   // Function to handle Ban/Unban button
   Future<void> toggleBanStatus(String email) async {
@@ -278,7 +421,7 @@ class _UsersScreenState extends State<UsersScreen> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 TextButton(
-                  onPressed: () => toggleBanStatus(user['email']),
+                  onPressed: () => _showBanConfirmationDialog(user['email'], user['isBanned']),
                   child: Text(
                     isBanned ? "Unban" : "Ban",
                     style: TextStyle(
@@ -290,7 +433,7 @@ class _UsersScreenState extends State<UsersScreen> {
                 ),
                 const SizedBox(width: 10),
                 TextButton(
-                  onPressed: () => toggleUserRole(user['email'], user['role']),
+                  onPressed: () =>  _showRoleConfirmationDialog(user['email'], user['role']),
                   child: Text(
                     user['role'] == "customer" ? "Unpromote" : "Promote",
                     style: const TextStyle(

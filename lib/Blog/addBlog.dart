@@ -650,200 +650,228 @@ class _AddBlogState extends State<AddBlog> {
     return InkWell(
       onTap: () async {
         if (_GlobalKey.currentState!.validate() && imageFiles.isNotEmpty) {
-          // Step 1: Get the email from the token
-          String? customerEmail = await extractEmailFromToken();
-          if (customerEmail == null || customerEmail.isEmpty) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Unable to retrieve customer email!')),
-            );
-            return;
-          }
-
-          // Step 2: Create AddBlogApproval object
-          AddBlogApproval addBlogApproval = AddBlogApproval(
-            title: _titleController.text,
-            body: _bodyController.text,
-            email: customerEmail,
-            username: username,
-            type: selectedRole ?? "general",
-            lat: selectedLat,
-            lng: selectedLng,
-          );
-
-          // Step 3: Send approval request
-          var approvalResponse = await networkHandler.post(
-            "/AddBlogApproval/addApproval",
-            addBlogApproval.toJson(),
-          );
-
-          // Send an email notification
-          final serviceId = 'service_lap99wb';
-          final templateId = 'template_fon03t7';
-          final userId = 'tPJQRVN9PQ2jjZ_6C';
-          final url = Uri.parse('https://api.emailjs.com/api/v1.0/email/send');
-
-          final emailResponse = await http.post(
-            url,
-            headers: {
-              'origin': "https://hajzi-6883b1f029cf.herokuapp.com",
-              'Content-Type': 'application/json',
+          // Show confirmation dialog before proceeding
+          bool? confirm = await showDialog<bool>(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: const Text("Confirm Submission"),
+                content: const Text(
+                    "Are you sure you want to submit this Shop?"),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(false), // Cancel
+                    child: const Text("Cancel",style: TextStyle(color: Colors.black),),
+                  ),
+                  ElevatedButton(
+                    onPressed: () => Navigator.of(context).pop(true), // Confirm
+                    child: const Text("Submit",style: TextStyle(color: Colors.red),),
+                  ),
+                ],
+              );
             },
-            body: json.encode({
-              'service_id': serviceId,
-              'template_id': templateId,
-              'user_id': userId,
-              'template_params': {
-                'user_title': addBlogApproval.title,
-                'user_message': addBlogApproval.body,
-                'user_name': addBlogApproval.email,
+          );
+          if (confirm == true) {
+            // Step 1: Get the email from the token
+            String? customerEmail = await extractEmailFromToken();
+            if (customerEmail == null || customerEmail.isEmpty) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Unable to retrieve customer email!')),
+              );
+              return;
+            }
+
+            // Step 2: Create AddBlogApproval object
+            AddBlogApproval addBlogApproval = AddBlogApproval(
+              title: _titleController.text,
+              body: _bodyController.text,
+              email: customerEmail,
+              username: username,
+              type: selectedRole ?? "general",
+              lat: selectedLat,
+              lng: selectedLng,
+            );
+
+            // Step 3: Send approval request
+            var approvalResponse = await networkHandler.post(
+              "/AddBlogApproval/addApproval",
+              addBlogApproval.toJson(),
+            );
+
+            // Send an email notification
+            final serviceId = 'service_lap99wb';
+            final templateId = 'template_fon03t7';
+            final userId = 'tPJQRVN9PQ2jjZ_6C';
+            final url = Uri.parse(
+                'https://api.emailjs.com/api/v1.0/email/send');
+
+            final emailResponse = await http.post(
+              url,
+              headers: {
+                'origin': "https://hajzi-6883b1f029cf.herokuapp.com",
+                'Content-Type': 'application/json',
               },
-            }),
-          );
-
-          print("Email Response: ${emailResponse.body}");
-
-          // Notify admins about the new blog
-          final notificationResponse = await networkHandler.post(
-            "/notifications/notifyAdmins/$customerEmail",
-            // Note: Ensure proper string interpolation
-            {},
-          );
-
-          print(
-              "Notification Response Code: ${notificationResponse.statusCode}");
-          print("Notification Response Body: ${notificationResponse.body}");
-
-          if (notificationResponse.statusCode == 200) {
-            print("Admin notification sent successfully");
-            PushNotifications.init();
-          } else {
-            print("Failed to notify admins");
-          }
-          if (approvalResponse.statusCode == 200 ||
-              approvalResponse.statusCode == 201) {
-            String blogId = json.decode(approvalResponse.body)["data"];
-
-            await sendNotification(
-              title: "New Shop Approval Request",
-              body:
-                  "${addBlogApproval.email} has applied for a shop with the title: ${addBlogApproval.title}. Please review it.",
+              body: json.encode({
+                'service_id': serviceId,
+                'template_id': templateId,
+                'user_id': userId,
+                'template_params': {
+                  'user_title': addBlogApproval.title,
+                  'user_message': addBlogApproval.body,
+                  'user_name': addBlogApproval.email,
+                },
+              }),
             );
 
-            // Upload images
-            // Upload preview image
-            if (imageFiles.isNotEmpty) {
-              await uploadPreviewImage(blogId, imageFiles.first.path);
-              await uploadCoverImages(blogId, imageFiles.sublist(1));
-            }
+            print("Email Response: ${emailResponse.body}");
 
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Blog submitted for approval!')),
+            // Notify admins about the new blog
+            final notificationResponse = await networkHandler.post(
+              "/notifications/notifyAdmins/$customerEmail",
+              // Note: Ensure proper string interpolation
+              {},
             );
 
-            // Step 4: Periodically check approval status
-            String status = "pending";
-            while (status == "pending") {
-              await Future.delayed(
-                  Duration(seconds: 5)); // Wait before checking
-              var statusResponse =
-                  await networkHandler.get("/AddBlogApproval/status/$blogId");
+            print(
+                "Notification Response Code: ${notificationResponse
+                    .statusCode}");
+            print("Notification Response Body: ${notificationResponse.body}");
 
-              if (statusResponse is Map<String, dynamic> &&
-                  statusResponse.containsKey("status")) {
-                status = statusResponse["status"];
-                print("Approval Status: $status");
-              } else {
-                print("Error checking approval status: $statusResponse");
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                      content: Text('Error checking approval status'),
-                      backgroundColor: Colors.red),
-                );
-                return;
-              }
+            if (notificationResponse.statusCode == 200) {
+              print("Admin notification sent successfully");
+              PushNotifications.init();
+            } else {
+              print("Failed to notify admins");
             }
+            if (approvalResponse.statusCode == 200 ||
+                approvalResponse.statusCode == 201) {
+              String blogId = json.decode(approvalResponse.body)["data"];
 
-            // Step 5: If approved, add to blogpost schema
-            if (status == "approved") {
-              AddBlogModel addBlogModel = AddBlogModel(
-                title: addBlogApproval.title,
-                body: addBlogApproval.body,
-                status: "approved",
-                createdAt: DateTime.now(),
-                type: selectedRole ?? "general",
-                email: addBlogApproval.email,
-                username: addBlogApproval.username,
-                lat: selectedLat,
-                lng: selectedLng,
+              await sendNotification(
+                title: "New Shop Approval Request",
+                body:
+                "${addBlogApproval
+                    .email} has applied for a shop with the title: ${addBlogApproval
+                    .title}. Please review it.",
               );
 
-              var addResponse = await networkHandler.post(
-                  "/blogpost/Add", addBlogModel.toJson());
+              // Upload images
+              // Upload preview image
+              if (imageFiles.isNotEmpty) {
+                await uploadPreviewImage(blogId, imageFiles.first.path);
+                await uploadCoverImages(blogId, imageFiles.sublist(1));
+              }
 
-              if (addResponse.statusCode == 200 ||
-                  addResponse.statusCode == 201) {
-                String blogId = json.decode(addResponse.body)["data"];
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Blog submitted for approval!')),
+              );
 
-                // Step 6: Upload multiple images
-                for (var image in imageFiles) {
-                  var imageResponse = await networkHandler.patchImage(
-                    "/blogpost/add/coverImages/$blogId",
-                    image.path,
-                  );
+              // Step 4: Periodically check approval status
+              String status = "pending";
+              while (status == "pending") {
+                await Future.delayed(
+                    Duration(seconds: 5)); // Wait before checking
+                var statusResponse =
+                await networkHandler.get("/AddBlogApproval/status/$blogId");
 
-                  if (imageResponse.statusCode != 200 &&
-                      imageResponse.statusCode != 201) {
-                    if (mounted)
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                            content:
-                                Text('Failed to upload image: ${image.name}'),
-                            backgroundColor: Colors.red),
-                      );
-                    return;
-                  }
-                }
-                if (mounted)
+                if (statusResponse is Map<String, dynamic> &&
+                    statusResponse.containsKey("status")) {
+                  status = statusResponse["status"];
+                  print("Approval Status: $status");
+                } else {
+                  print("Error checking approval status: $statusResponse");
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                        content:
-                            Text('Blog approved and published successfully!')),
+                        content: Text('Error checking approval status'),
+                        backgroundColor: Colors.red),
                   );
-                if (mounted) Navigator.pop(context);
+                  return;
+                }
+              }
+
+              // Step 5: If approved, add to blogpost schema
+              if (status == "approved") {
+                AddBlogModel addBlogModel = AddBlogModel(
+                  title: addBlogApproval.title,
+                  body: addBlogApproval.body,
+                  status: "approved",
+                  createdAt: DateTime.now(),
+                  type: selectedRole ?? "general",
+                  email: addBlogApproval.email,
+                  username: addBlogApproval.username,
+                  lat: selectedLat,
+                  lng: selectedLng,
+                );
+
+                var addResponse = await networkHandler.post(
+                    "/blogpost/Add", addBlogModel.toJson());
+
+                if (addResponse.statusCode == 200 ||
+                    addResponse.statusCode == 201) {
+                  String blogId = json.decode(addResponse.body)["data"];
+
+                  // Step 6: Upload multiple images
+                  for (var image in imageFiles) {
+                    var imageResponse = await networkHandler.patchImage(
+                      "/blogpost/add/coverImages/$blogId",
+                      image.path,
+                    );
+
+                    if (imageResponse.statusCode != 200 &&
+                        imageResponse.statusCode != 201) {
+                      if (mounted)
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                              content:
+                              Text('Failed to upload image: ${image.name}'),
+                              backgroundColor: Colors.red),
+                        );
+                      return;
+                    }
+                  }
+                  if (mounted)
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                          content:
+                          Text('Blog approved and published successfully!')),
+                    );
+                  if (mounted) Navigator.pop(context);
+                } else {
+                  if (mounted)
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                          content: Text(
+                              'Failed to add blog to blogpost schema'),
+                          backgroundColor: Colors.red),
+                    );
+                }
               } else {
                 if (mounted)
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                        content: Text('Failed to add blog to blogpost schema'),
-                        backgroundColor: Colors.red),
+                        content: Text('Blog was not approved by admin'),
+                        backgroundColor: Colors.orange),
                   );
               }
             } else {
               if (mounted)
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                      content: Text('Blog was not approved by admin'),
-                      backgroundColor: Colors.orange),
+                      content: Text('Blog Already Submitted'),
+                      backgroundColor: Colors.red),
                 );
             }
-          } else {
+          }} else {
             if (mounted)
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                    content: Text('Blog Already Submitted'),
-                    backgroundColor: Colors.red),
+                  content: Text(
+                      'Please fill in all fields and select at least one image'),
+                  backgroundColor: Colors.orange,
+                ),
               );
           }
-        } else {
-          if (mounted)
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                    'Please fill in all fields and select at least one image'),
-                backgroundColor: Colors.orange,
-              ),
-            );
-        }
+
       },
       child: Center(
           child: ValueListenableBuilder<Color>(
