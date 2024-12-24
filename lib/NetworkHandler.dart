@@ -403,7 +403,7 @@ class NetworkHandler{
   }
   //get the image for MainProfile
   NetworkImage getImage(String imageName){
-    String url=formater("/uploads/$imageName.jpg");// if u notice the image name in backend is the same as username
+    String url=formater("/uploads/$imageName.jpg?${DateTime.now().millisecondsSinceEpoch}"); // Append timestamp");// if u notice the image name in backend is the same as username
     return NetworkImage(url);
   }
 

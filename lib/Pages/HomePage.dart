@@ -854,6 +854,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
               items: navItems,
               onTap: (index) => setState(() {
                 currentState = index;
+                checkProfile();
                 // Refresh counts when switching to "Users" or "Requests" tab
                 if (userRole == "admin" && (currentState == 3 || currentState == 4)) {
                   fetchCounts(); // Refresh counts for Users and Requests

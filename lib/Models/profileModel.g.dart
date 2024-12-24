@@ -14,6 +14,7 @@ ProfileModel _$ProfileModelFromJson(Map<String, dynamic> json) => ProfileModel(
       json['DOB'] as String?,
       json['titleline'] as String?,
       json['about'] as String?,
+      json['img'] as String?,
     );
 
 Map<String, dynamic> _$ProfileModelToJson(ProfileModel instance) =>
@@ -25,4 +26,5 @@ Map<String, dynamic> _$ProfileModelToJson(ProfileModel instance) =>
       if (instance.DOB case final value?) 'DOB': value,
       if (instance.titleline case final value?) 'titleline': value,
       if (instance.about case final value?) 'about': value,
+      if (instance.img case final value?) 'img': value,
     };

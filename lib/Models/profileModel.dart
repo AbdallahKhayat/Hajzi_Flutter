@@ -14,8 +14,9 @@ class ProfileModel{
   String? DOB;
   String? titleline;
   String? about;
+  String? img; // Add this line
 
-  ProfileModel([this.name,this.username,this.email,this.profession,this.DOB,this.titleline,this.about]);
+  ProfileModel([this.name,this.username,this.email,this.profession,this.DOB,this.titleline,this.about,this.img]);
 
   factory ProfileModel.fromJson(Map<String, dynamic> json) => _$ProfileModelFromJson(json);
 
