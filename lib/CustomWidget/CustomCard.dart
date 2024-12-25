@@ -3,12 +3,56 @@ import 'package:flutter/material.dart';
 import '../constants.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:intl/intl.dart'; // For time formatting
+import 'package:blogapp/NetworkHandler.dart'; // Assuming you have this for API calls
 
-class CustomCard extends StatelessWidget {
+class CustomCard extends StatefulWidget {
   final Map<String, dynamic> chat;
-  final FlutterSecureStorage storage = const FlutterSecureStorage();
+  final NetworkHandler networkHandler = NetworkHandler(); // Initialize NetworkHandler
 
   CustomCard({super.key, required this.chat});
+
+  @override
+  _CustomCardState createState() => _CustomCardState();
+}
+
+class _CustomCardState extends State<CustomCard> {
+  final FlutterSecureStorage storage = const FlutterSecureStorage();
+  String? profileImageUrl;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchProfileImage();
+  }
+
+  Future<void> fetchProfileImage() async {
+    try {
+      // Assuming you have an endpoint to get profile data by email
+      String? token = await storage.read(key: "token");
+      if (token == null) {
+        print('No token found');
+        return;
+      }
+
+      String chatPartnerEmail = widget.chat['chatPartnerEmail'];
+      final response = await widget.networkHandler.getWithAuth('/profile/getDataByEmail?email=$chatPartnerEmail', token);
+
+      if (response != null && response.containsKey('data')) {
+        String? imgPath = response['data']['img'];
+        if (imgPath != null && imgPath.isNotEmpty) {
+          // Construct the full URL to the image
+          // Replace 'your-backend-url' with your actual backend URL
+          setState(() {
+            profileImageUrl = 'https://hajzi-6883b1f029cf.herokuapp.com/' + imgPath;
+          });
+        }
+      } else {
+        print('Error fetching profile data');
+      }
+    } catch (e) {
+      print('Error in fetchProfileImage: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -20,15 +64,15 @@ class CustomCard extends StatelessWidget {
         }
 
         final String? currentUserEmail = snapshot.data;
-        final chatPartner = chat['users'].firstWhere(
+        final chatPartner = widget.chat['users'].firstWhere(
                 (user) => user['email'] != currentUserEmail,
             orElse: () => {'email': 'Unknown', 'username': 'Unknown'}
         );
 
         final chatPartnerName = chatPartner['username'] ?? 'Unknown User';
         final chatPartnerEmail = chatPartner['email'] ?? 'Unknown';
-        final lastMessage = chat['lastMessage'] ?? 'No messages yet';
-        final lastMessageTime = chat['lastMessageTime'] ?? '';
+        final lastMessage = widget.chat['lastMessage'] ?? 'No messages yet';
+        final lastMessageTime = widget.chat['lastMessageTime'] ?? '';
 
         return InkWell(
           onTap: () {
@@ -36,7 +80,7 @@ class CustomCard extends StatelessWidget {
               context,
               MaterialPageRoute(
                 builder: (context) => IndividualPage(
-                  initialChatId: chat['_id'],
+                  initialChatId: widget.chat['_id'],
                   chatPartnerEmail: chatPartnerEmail,
                   chatPartnerName: chatPartnerName,
                 ),
@@ -46,7 +90,12 @@ class CustomCard extends StatelessWidget {
           child: Column(
             children: [
               ListTile(
-                leading: ValueListenableBuilder<Color>(
+                leading: profileImageUrl != null
+                    ? CircleAvatar(
+                  radius: 30,
+                  backgroundImage: NetworkImage(profileImageUrl!),
+                )
+                    : ValueListenableBuilder<Color>(
                   valueListenable: appColorNotifier,
                   builder: (context, currentColor, child) {
                     return CircleAvatar(
@@ -57,7 +106,9 @@ class CustomCard extends StatelessWidget {
                             ? chatPartnerName[0].toUpperCase()
                             : 'U',
                         style: const TextStyle(
-                            fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white),
                       ),
                     );
                   },

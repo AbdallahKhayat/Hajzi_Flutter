@@ -35,8 +35,8 @@ class _IndividualPageState extends State<IndividualPage> {
   List messages = []; // 🔥 Create a list to store messages
   final FlutterSecureStorage storage = const FlutterSecureStorage(); // 🔥 Add for user email storage
   String? loggedInUserEmail; // 🔥 Store logged-in user's email
-
-
+  String? chatPartnerImageUrl; // Add this line
+ NetworkHandler networkHandler=NetworkHandler();
   String formatTime(String timestamp) {
     try {
       DateTime dateTime = DateTime.parse(timestamp).toLocal();
@@ -48,6 +48,31 @@ class _IndividualPageState extends State<IndividualPage> {
     }
   }
 
+  Future<void> fetchChatPartnerProfileImage() async {
+    try {
+      String? token = await storage.read(key: "token");
+      if (token == null) {
+        print('No token found');
+        return;
+      }
+
+      String chatPartnerEmail = widget.chatPartnerEmail;
+      final response = await networkHandler.get('/profile/getDataByEmail?email=$chatPartnerEmail');
+
+      if (response != null && response.containsKey('data')) {
+        String? imgPath = response['data']['img'];
+        if (imgPath != null && imgPath.isNotEmpty) {
+          setState(() {
+            chatPartnerImageUrl = 'https://hajzi-6883b1f029cf.herokuapp.com/' + imgPath;
+          });
+        }
+      } else {
+        print('Error fetching profile data');
+      }
+    } catch (e) {
+      print('Error in fetchChatPartnerProfileImage: $e');
+    }
+  }
 
 
 
@@ -212,6 +237,9 @@ class _IndividualPageState extends State<IndividualPage> {
     NetworkHandler().socket!.on('disconnect', (_) {
       print("⚠️ Socket disconnected.");
     });
+
+    // Fetch profile image
+    fetchChatPartnerProfileImage();
 
     // If we already have a chatId, fetch messages and set up the listener
     if (chatId.isNotEmpty) {
@@ -433,11 +461,18 @@ class _IndividualPageState extends State<IndividualPage> {
                       color: Colors.white,
                     ),
                     SizedBox(width: screenWidth * 0.03),
-                    CircleAvatar(
+                    chatPartnerImageUrl != null
+                        ? CircleAvatar(
+                      radius: screenWidth * 0.05,
+                      backgroundImage: NetworkImage(chatPartnerImageUrl!),
+                    )
+                        : CircleAvatar(
                       radius: screenWidth * 0.05,
                       backgroundColor: Colors.white,
                       child: Text(
-                        widget.chatPartnerName[0].toUpperCase(), // ⭐️ Use the first letter of chatPartnerName
+                        widget.chatPartnerName.isNotEmpty
+                            ? widget.chatPartnerName[0].toUpperCase()
+                            : 'U',
                         style: TextStyle(
                           color: mainColor,
                           fontWeight: FontWeight.bold,

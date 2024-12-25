@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import '../NetworkHandler.dart';
 import '../constants.dart';
@@ -121,12 +122,10 @@ class _SearchPageState extends State<SearchPage> {
         itemCount: filteredCustomers.length,
         itemBuilder: (context, index) {
           final customer = filteredCustomers[index];
-          return ListTile(
-            leading: CircleAvatar(
-              child: Text(customer['username'][0].toUpperCase()),
-            ),
-            title: Text(customer['username']),
-            subtitle: Text(customer['email']),
+          return UserCard(
+            email: customer['email'],
+            username: customer['username'],
+            imgPath: customer['profile']?['img'] ?? '',
             onTap: () async {
               final existingChatId = await fetchExistingChatId(customer['email']);
 
@@ -144,6 +143,76 @@ class _SearchPageState extends State<SearchPage> {
             ,
           );
         },
+      ),
+    );
+  }
+}
+/// Custom Widget to Display User Information with Profile Image
+class UserCard extends StatelessWidget {
+  final String email;
+  final String username;
+  final String imgPath;
+  final VoidCallback onTap;
+
+  const UserCard({
+    Key? key,
+    required this.email,
+    required this.username,
+    required this.imgPath,
+    required this.onTap,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final String? profileImageUrl = imgPath.isNotEmpty
+        ? 'https://hajzi-6883b1f029cf.herokuapp.com/' + imgPath
+        : null;
+
+    return InkWell(
+      onTap: onTap,
+      child: Column(
+        children: [
+          ListTile(
+            leading: profileImageUrl != null
+                ? CircleAvatar(
+              radius: 30,
+              backgroundImage: CachedNetworkImageProvider(profileImageUrl),
+              backgroundColor: Colors.transparent,
+              onBackgroundImageError: (_, __) {
+                // Handle image load error if necessary
+              },
+            )
+                : ValueListenableBuilder<Color>(
+              valueListenable: appColorNotifier,
+              builder: (context, currentColor, child) {
+                return CircleAvatar(
+                  radius: 30,
+                  backgroundColor: currentColor,
+                  child: Text(
+                    username.isNotEmpty ? username[0].toUpperCase() : 'U',
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                );
+              },
+            ),
+            title: Text(
+              username,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            subtitle: Text(
+              email,
+              style: const TextStyle(fontSize: 14, color: Colors.grey),
+            ),
+          ),
+          const Padding(
+            padding: EdgeInsets.only(right: 20, left: 80),
+            child: Divider(thickness: 1),
+          ),
+        ],
       ),
     );
   }
