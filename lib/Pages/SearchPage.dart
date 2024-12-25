@@ -164,8 +164,9 @@ class UserCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
     final String? profileImageUrl = imgPath.isNotEmpty
-        ? 'https://hajzi-6883b1f029cf.herokuapp.com/' + imgPath
+        ? 'https://hajzi-6883b1f029cf.herokuapp.com/' + imgPath+ '?v=$timestamp'
         : null;
 
     return InkWell(

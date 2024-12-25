@@ -176,7 +176,8 @@ class _ChatPageState extends State<ChatPage> {
                         ...chat,
                         'chatPartnerEmail': chatPartner['email'],
                         'chatPartnerName': chatPartner['username'],
-                      });
+                        'chatPartnerImg': chatPartner['img'],
+                      }, currentUserEmail: currentUserEmail!,);
                     } else {
                       return const SizedBox.shrink();
                     }

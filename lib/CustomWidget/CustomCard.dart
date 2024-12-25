@@ -1,50 +1,43 @@
-import 'package:blogapp/Pages/IndividualPage.dart';
+// CustomCard.dart
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import '../NetworkHandler.dart';
+import '../Pages/IndividualPage.dart';
 import '../constants.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:intl/intl.dart'; // For time formatting
-import 'package:blogapp/NetworkHandler.dart'; // Assuming you have this for API calls
+import 'package:intl/intl.dart';
 
-class CustomCard extends StatefulWidget {
+class CustomCard extends StatelessWidget {
   final Map<String, dynamic> chat;
-  final NetworkHandler networkHandler = NetworkHandler(); // Initialize NetworkHandler
+  final String currentUserEmail;
+  final NetworkHandler networkHandler = NetworkHandler();
 
-  CustomCard({super.key, required this.chat});
+  CustomCard({
+    Key? key,
+    required this.chat,
+    required this.currentUserEmail,
+  }) : super(key: key);
 
-  @override
-  _CustomCardState createState() => _CustomCardState();
-}
-
-class _CustomCardState extends State<CustomCard> {
-  final FlutterSecureStorage storage = const FlutterSecureStorage();
-  String? profileImageUrl;
-
-  @override
-  void initState() {
-    super.initState();
-    fetchProfileImage();
-  }
-
-  Future<void> fetchProfileImage() async {
+  Future<String?> fetchProfileImage(String chatPartnerEmail) async {
     try {
-      // Assuming you have an endpoint to get profile data by email
+      final storage = FlutterSecureStorage();
       String? token = await storage.read(key: "token");
       if (token == null) {
         print('No token found');
-        return;
+        return null;
       }
 
-      String chatPartnerEmail = widget.chat['chatPartnerEmail'];
-      final response = await widget.networkHandler.get('/profile/getDataByEmail?email=$chatPartnerEmail');
+      final response = await networkHandler
+          .get('/profile/getDataByEmail?email=$chatPartnerEmail');
 
       if (response != null && response.containsKey('data')) {
         String? imgPath = response['data']['img'];
         if (imgPath != null && imgPath.isNotEmpty) {
-          // Construct the full URL to the image
-          // Replace 'your-backend-url' with your actual backend URL
-          setState(() {
-            profileImageUrl = 'https://hajzi-6883b1f029cf.herokuapp.com/' + imgPath;
-          });
+          // Append a timestamp to bust the cache
+          String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
+          return 'https://hajzi-6883b1f029cf.herokuapp.com/' +
+              imgPath +
+              '?v=$timestamp';
         }
       } else {
         print('Error fetching profile data');
@@ -52,27 +45,27 @@ class _CustomCardState extends State<CustomCard> {
     } catch (e) {
       print('Error in fetchProfileImage: $e');
     }
+    return null;
   }
 
   @override
   Widget build(BuildContext context) {
+    final chatPartner = chat['chatPartnerEmail'] != null
+        ? {
+            'email': chat['chatPartnerEmail'],
+            'username': chat['chatPartnerName'],
+          }
+        : {'email': 'Unknown', 'username': 'Unknown'};
+
+    final chatPartnerName = chatPartner['username'] ?? 'Unknown User';
+    final chatPartnerEmail = chatPartner['email'] ?? 'Unknown';
+    final lastMessage = chat['lastMessage'] ?? 'No messages yet';
+    final lastMessageTime = chat['lastMessageTime'] ?? '';
+
     return FutureBuilder<String?>(
-      future: storage.read(key: "email"),
+      future: fetchProfileImage(chatPartnerEmail),
       builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return const SizedBox.shrink();
-        }
-
-        final String? currentUserEmail = snapshot.data;
-        final chatPartner = widget.chat['users'].firstWhere(
-                (user) => user['email'] != currentUserEmail,
-            orElse: () => {'email': 'Unknown', 'username': 'Unknown'}
-        );
-
-        final chatPartnerName = chatPartner['username'] ?? 'Unknown User';
-        final chatPartnerEmail = chatPartner['email'] ?? 'Unknown';
-        final lastMessage = widget.chat['lastMessage'] ?? 'No messages yet';
-        final lastMessageTime = widget.chat['lastMessageTime'] ?? '';
+        String? profileImageUrl = snapshot.data;
 
         return InkWell(
           onTap: () {
@@ -80,7 +73,7 @@ class _CustomCardState extends State<CustomCard> {
               context,
               MaterialPageRoute(
                 builder: (context) => IndividualPage(
-                  initialChatId: widget.chat['_id'],
+                  initialChatId: chat['_id'],
                   chatPartnerEmail: chatPartnerEmail,
                   chatPartnerName: chatPartnerName,
                 ),
@@ -92,30 +85,33 @@ class _CustomCardState extends State<CustomCard> {
               ListTile(
                 leading: profileImageUrl != null
                     ? CircleAvatar(
-                  radius: 30,
-                  backgroundImage: NetworkImage(profileImageUrl!),
-                )
+                        radius: 30,
+                        backgroundColor: Colors.transparent,
+                        backgroundImage:
+                            CachedNetworkImageProvider(profileImageUrl),
+                      )
                     : ValueListenableBuilder<Color>(
-                  valueListenable: appColorNotifier,
-                  builder: (context, currentColor, child) {
-                    return CircleAvatar(
-                      radius: 30,
-                      backgroundColor: currentColor,
-                      child: Text(
-                        chatPartnerName.isNotEmpty
-                            ? chatPartnerName[0].toUpperCase()
-                            : 'U',
-                        style: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white),
+                        valueListenable: appColorNotifier,
+                        builder: (context, currentColor, child) {
+                          return CircleAvatar(
+                            radius: 30,
+                            backgroundColor: currentColor,
+                            child: Text(
+                              chatPartnerName.isNotEmpty
+                                  ? chatPartnerName[0].toUpperCase()
+                                  : 'U',
+                              style: const TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white),
+                            ),
+                          );
+                        },
                       ),
-                    );
-                  },
-                ),
                 title: Text(
                   chatPartnerName,
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 subtitle: Row(
                   children: [

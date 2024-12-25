@@ -314,6 +314,7 @@ class _IndividualPageState extends State<IndividualPage> {
         final bool messageAlreadyExists = messages.any((msg) => msg['_id'] == data['_id']);
         if (!messageAlreadyExists) {
           // Convert timestamp to local time before formatting (in formatTime method)
+          if(mounted)
           setState(() {
             messages.add({
               '_id': data['_id'],
@@ -464,6 +465,7 @@ class _IndividualPageState extends State<IndividualPage> {
                     chatPartnerImageUrl != null
                         ? CircleAvatar(
                       radius: screenWidth * 0.05,
+                      backgroundColor: Colors.transparent,
                       backgroundImage: NetworkImage(chatPartnerImageUrl!),
                     )
                         : CircleAvatar(
