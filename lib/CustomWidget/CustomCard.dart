@@ -35,7 +35,7 @@ class _CustomCardState extends State<CustomCard> {
       }
 
       String chatPartnerEmail = widget.chat['chatPartnerEmail'];
-      final response = await widget.networkHandler.getWithAuth('/profile/getDataByEmail?email=$chatPartnerEmail', token);
+      final response = await widget.networkHandler.get('/profile/getDataByEmail?email=$chatPartnerEmail');
 
       if (response != null && response.containsKey('data')) {
         String? imgPath = response['data']['img'];
