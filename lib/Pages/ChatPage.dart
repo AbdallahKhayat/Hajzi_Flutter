@@ -84,6 +84,7 @@ class _ChatPageState extends State<ChatPage> {
         int index = chats.indexWhere((chat) => chat['_id'] == updatedChatId);
         if (index != -1) {
           // Chat found, move it to top and update last message/time
+          if(mounted)
           setState(() {
             final updatedChat = chats.removeAt(index);
             updatedChat['lastMessage'] = data['content'];
@@ -172,11 +173,11 @@ class _ChatPageState extends State<ChatPage> {
                         orElse: () => null);
 
                     if (chatPartner != null) {
-                      return CustomCard(chat: {
+                      return CustomCard(key: ValueKey(chat['_id']), chat: {
                         ...chat,
                         'chatPartnerEmail': chatPartner['email'],
                         'chatPartnerName': chatPartner['username'],
-                      });
+                      }, currentUserEmail: currentUserEmail!,);
                     } else {
                       return const SizedBox.shrink();
                     }

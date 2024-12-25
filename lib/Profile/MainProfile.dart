@@ -39,6 +39,7 @@ class _MainProfileState extends State<MainProfile> {
 
   void fetchData() async {
     var response = await networkHandler.get("/profile/getData");
+    if(mounted)
     setState(() {
       profileModel =
           ProfileModel.fromJson(response["data"]); // Data within 'data'
