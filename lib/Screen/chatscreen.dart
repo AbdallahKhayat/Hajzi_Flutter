@@ -86,7 +86,7 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
             children: [
               const SizedBox.shrink(),
               // We pass no parameters to ChatPage. ChatPage handles its own fetching and socket listeners.
-               ChatPage(chatId: '', chatPartnerEmail: ''),
+               ChatPage(chatId: '', chatPartnerEmail: '', appBarFlag: 0),
               const Center(child: Text("Status", style: TextStyle(fontSize: 18))),
               const Center(child: Text("Calls", style: TextStyle(fontSize: 18))),
             ],

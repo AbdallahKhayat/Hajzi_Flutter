@@ -253,7 +253,7 @@ class _BlogAfterClickState extends State<BlogAfterClick> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) =>  ChatPage(chatId: '', chatPartnerEmail: ''),
+                      builder: (context) =>  ChatPage(chatId: '', chatPartnerEmail: '', appBarFlag: 1),
                     ),
                   );
                   if (userEmail != blogOwnerEmail)

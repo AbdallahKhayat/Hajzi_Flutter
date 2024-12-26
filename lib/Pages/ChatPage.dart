@@ -8,9 +8,13 @@ import '../constants.dart';
 class ChatPage extends StatefulWidget {
   final String chatId;
   final String chatPartnerEmail;
+  final int appBarFlag;
 
   const ChatPage(
-      {super.key, required this.chatId, required this.chatPartnerEmail});
+      {super.key,
+      required this.chatId,
+      required this.chatPartnerEmail,
+      required this.appBarFlag});
 
   @override
   State<ChatPage> createState() => _ChatPageState();
@@ -126,26 +130,28 @@ class _ChatPageState extends State<ChatPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        flexibleSpace: ValueListenableBuilder<Color>(
-          valueListenable: appColorNotifier,
-          builder: (context, appColor, child) {
-            return Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [appColor.withOpacity(1), appColor],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
+      appBar: widget.appBarFlag == 1
+          ? AppBar(
+              flexibleSpace: ValueListenableBuilder<Color>(
+                valueListenable: appColorNotifier,
+                builder: (context, appColor, child) {
+                  return Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [appColor.withOpacity(1), appColor],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                    ),
+                  );
+                },
               ),
-            );
-          },
-        ),
-        title: const Text(
-          'Chats',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-      ),
+              title: const Text(
+                'Chats',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            )
+          : null,
       body: chats.isEmpty
           ? const Center(
               child: Text(
@@ -172,12 +178,15 @@ class _ChatPageState extends State<ChatPage> {
                         orElse: () => null);
 
                     if (chatPartner != null) {
-                      return CustomCard(chat: {
-                        ...chat,
-                        'chatPartnerEmail': chatPartner['email'],
-                        'chatPartnerName': chatPartner['username'],
-                        'chatPartnerImg': chatPartner['img'],
-                      }, currentUserEmail: currentUserEmail!,);
+                      return CustomCard(
+                        chat: {
+                          ...chat,
+                          'chatPartnerEmail': chatPartner['email'],
+                          'chatPartnerName': chatPartner['username'],
+                          'chatPartnerImg': chatPartner['img'],
+                        },
+                        currentUserEmail: currentUserEmail!,
+                      );
                     } else {
                       return const SizedBox.shrink();
                     }
