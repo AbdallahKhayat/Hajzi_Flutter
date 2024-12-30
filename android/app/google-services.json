@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "581478343002",
-    "project_id": "hajzi-c076f",
-    "storage_bucket": "hajzi-c076f.firebasestorage.app"
+    "project_number": "984409303005",
+    "project_id": "hajziapp",
+    "storage_bucket": "hajziapp.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:581478343002:android:45696876b6eac8d7dc5363",
+        "mobilesdk_app_id": "1:984409303005:android:9b6a013abd94d8f037f834",
         "android_client_info": {
           "package_name": "com.example.blogapp"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyDOdPUI2KW7vfXZjsYGuJSLBOsKgYr3KKg"
+          "current_key": "AIzaSyB60YJo_xmGnmPD7yoweRZkj2UzCLDoPUM"
         }
       ],
       "services": {

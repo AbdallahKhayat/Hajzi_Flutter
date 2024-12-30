@@ -37,21 +37,21 @@ void main() async {
   if (kIsWeb) {
     await Firebase.initializeApp(
       options: FirebaseOptions(
-          apiKey: "AIzaSyB7eqd4N6xpFVndjiThtHiJuV_FIWBjWHk",
-          authDomain: "hajzi-c076f.firebaseapp.com",
-          projectId: "hajzi-c076f",
-          storageBucket: "hajzi-c076f.firebasestorage.app",
-          messagingSenderId: "581478343002",
-          appId: "1:581478343002:web:965fefe53783538bdc5363"),
+          apiKey: "AIzaSyCcC5B1TMsrt2lRAKwYfcBGdxsEbymtuMw",
+          authDomain: "hajziapp.firebaseapp.com",
+          projectId: "hajziapp",
+          storageBucket: "hajziapp.firebasestorage.app",
+          messagingSenderId: "984409303005",
+          appId: "1:984409303005:web:a9f763e8398d381037f834"),
     );
   }else{
     try {
       await Firebase.initializeApp(
         options: FirebaseOptions(
-          apiKey: "AIzaSyDOdPUI2KW7vfXZjsYGuJSLBOsKgYr3KKg",
-          appId: "1:581478343002:android:45696876b6eac8d7dc5363",
-          messagingSenderId: "581478343002",
-          projectId: "hajzi-c076f",
+          apiKey: "AIzaSyB60YJo_xmGnmPD7yoweRZkj2UzCLDoPUM",
+          appId: "1:984409303005:android:9b6a013abd94d8f037f834",
+          messagingSenderId: "984409303005",
+          projectId: "hajziapp",
         ),
       );
       print("Firebase initialized successfully");
