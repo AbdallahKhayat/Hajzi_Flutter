@@ -25,10 +25,10 @@
         <meta-data android:name="com.facebook.sdk.ClientToken" android:value="@string/facebook_client_token"/>
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyDOdPUI2KW7vfXZjsYGuJSLBOsKgYr3KKg"/>
+            android:value="AIzaSyB60YJo_xmGnmPD7yoweRZkj2UzCLDoPUM"/>
         <meta-data
             android:name="com.google.android.maps.v2.MAP_ID"
-            android:value="3cf7ff827251b68a"/>
+            android:value="a5eb053c99a9eb1e"/>
 
 
         <activity
