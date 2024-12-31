@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:blogapp/Models/profileModel.dart';
 import 'package:blogapp/Screen/chatscreen.dart';
@@ -22,40 +24,34 @@ import '../Screen/notificationScreen.dart';
 import '../Screen/shopsscreen.dart';
 import 'WelcomePage.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-
 import 'package:blogapp/constants.dart';
-import 'dart:async'; // Add this import at the top
-import 'dart:math' as math; // Required for sine wave
-import 'package:flutter/animation.dart';
-
 
 class HomePage extends StatefulWidget {
   final void Function(Locale) setLocale;
+  int filterState = 0; // 0 => "All Posts", 1 => "BarberShop", 2 => "Hospital"
 
   HomePage({super.key, required this.setLocale, required this.filterState});
 
-  int filterState = 0; // Default to "All Posts"
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin {
-  final storage = FlutterSecureStorage();
+  final storage = const FlutterSecureStorage();
   NetworkHandler networkHandler = NetworkHandler();
 
-  int currentState = 0;
-
-  String focusedDrawerItem = "All Posts"; // Tracks which drawer item is focused
-  String username = "";
+  // -----------------------------------------
+  // Common variables (mobile + web)
+  // -----------------------------------------
   String email = "";
   String? userRole;
 
-  int userCount = 0; // User count
-  int requestCount = 0; // Request count
-  late Timer _timer;
+  int currentState = 0; // This controls which screen index is shown (0..n).
+  int userCount = 0;    // For Admin: number of users
+  int requestCount = 0; // For Admin: number of requests
   int notificationsCount = 0;
-  //Color appColor = Colors.teal; // Default app theme color
-  String selectedLanguage = "English";
+
+  late Timer _timer;
   late AnimationController _animationController;
   late Animation<double> _animation;
 
@@ -69,7 +65,19 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     child: const Icon(Icons.person, size: 50, color: Colors.grey),
   );
 
-  List<Widget> widgets = []; // Initialize as an empty list
+  // For side navigation on web
+  bool isDrawerCollapsed = false;
+
+  // For language selection
+  String selectedLanguage = "English";
+
+  // We'll have a common list of screens for mobile's bottom nav + web main content
+  // Index: 0 => HomeScreen(...)  [filtered by widget.filterState]
+  //        1 => ProfileScreen()
+  //        2 => ChatScreen()
+  //        3 => ShopsScreen() OR UsersScreen() depending on userRole
+  //        4 => RequestsScreen()
+  List<Widget> widgets = [];
 
   @override
   void initState() {
@@ -77,64 +85,53 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     _loadUserRole();
     checkProfile();
 
-
-
-    // Poll for updates every 10 seconds
+    // Poll for counts every 20 seconds
     _timer = Timer.periodic(const Duration(seconds: 20), (timer) {
-      fetchCounts(); // Fetch counts periodically
+      fetchCounts();
     });
 
-    // Initialize the animation controller
+    // Notification wiggle
     _animationController = AnimationController(
-      duration: const Duration(milliseconds:400),
-      vsync: this, // Ensure your widget extends `SingleTickerProviderStateMixin`
+      duration: const Duration(milliseconds: 400),
+      vsync: this,
     );
-
-    // Define the animation curve
     _animation = Tween<double>(begin: -0.5, end: 0.5).animate(
-
       CurvedAnimation(
         parent: _animationController,
         curve: Curves.easeInOut,
       ),
     );
 
-    // Start animation if notificationsCount > 0
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (notificationsCount > 0) {
         _startAnimation();
       }
     });
-
     _animationController.repeat(reverse: true);
 
+    // Initialize the screen list
     widgets = [
-      HomeScreen(filterState: widget.filterState),
-      // "All Posts" corresponds to this
-      ProfileScreen(),
-      ChatScreen(),
-      ShopsScreen(),
-      RequestsScreen(),
+      HomeScreen(filterState: widget.filterState), // Index 0
+      ProfileScreen(),                            // Index 1
+      ChatScreen(),                                // Index 2
+      ShopsScreen(),                               // Index 3 (if customer), or UsersScreen() if admin
+      RequestsScreen(),                            // Index 4 (admin only)
     ];
   }
 
-  void _startAnimation() {
-    // Repeat the animation when there are notifications
-    _animationController.repeat(reverse: true);
-  }
-
-  void _stopAnimation() {
-    _animationController.stop();
-  }
+  void _startAnimation() => _animationController.repeat(reverse: true);
+  void _stopAnimation() => _animationController.stop();
 
   @override
   void dispose() {
-    _timer.cancel(); // Cancel the timer when the widget is disposed
+    _timer.cancel();
     _animationController.dispose();
     super.dispose();
   }
 
-
+  // -----------------------------------------
+  // Load user role
+  // -----------------------------------------
   Future<void> _loadUserRole() async {
     final role = await storage.read(key: "role");
     setState(() {
@@ -142,6 +139,9 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     });
   }
 
+  // -----------------------------------------
+  // Check profile (email + photo)
+  // -----------------------------------------
   void checkProfile() async {
     var response = await networkHandler.get("/profile/checkProfile");
     setState(() {
@@ -158,11 +158,14 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     });
   }
 
+  // -----------------------------------------
+  // Theme color picker
+  // -----------------------------------------
   void pickColor(BuildContext context) {
     showDialog(
       context: context,
       builder: (context) {
-        Color tempColor = appColorNotifier.value; // Preview color
+        Color tempColor = appColorNotifier.value;
         return AlertDialog(
           title: const Text('Pick a Theme Color'),
           content: SingleChildScrollView(
@@ -176,15 +179,13 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
           actions: [
             TextButton(
               child: const Text('Cancel'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
+              onPressed: () => Navigator.of(context).pop(),
             ),
             TextButton(
               child: const Text('Select'),
               onPressed: () {
                 setState(() {
-                  appColorNotifier.value = tempColor; // Update global notifier
+                  appColorNotifier.value = tempColor;
                 });
                 Navigator.of(context).pop();
               },
@@ -195,6 +196,9 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     );
   }
 
+  // -----------------------------------------
+  // Language dialog
+  // -----------------------------------------
   void _showLanguageDialog(BuildContext context) {
     List<String> languages = ["English", "Arabic"];
     showDialog(
@@ -212,7 +216,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                   onChanged: (value) {
                     setState(() {
                       selectedLanguage = value!;
-                      Locale newLocale = selectedLanguage == "Arabic"
+                      Locale newLocale = (selectedLanguage == "Arabic")
                           ? const Locale('ar', 'AE')
                           : const Locale('en', 'US');
                       widget.setLocale(newLocale);
@@ -228,6 +232,9 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     );
   }
 
+  // -----------------------------------------
+  // Logout
+  // -----------------------------------------
   void logout() async {
     await storage.delete(key: "token");
     Navigator.pushAndRemoveUntil(
@@ -235,14 +242,16 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       MaterialPageRoute(
         builder: (context) => WelcomePage(setLocale: widget.setLocale),
       ),
-      (route) => false,
+          (route) => false,
     );
   }
 
-
+  // -----------------------------------------
+  // Fetch counts: users, requests, notifications
+  // -----------------------------------------
   Future<void> fetchCounts() async {
     try {
-      // Fetch user count
+      // user count
       var userResponse = await networkHandler.get("/user/getUsers");
       if (userResponse != null && userResponse['data'] != null) {
         setState(() {
@@ -250,7 +259,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         });
       }
 
-      // Fetch request count
+      // request count
       var requestResponse = await networkHandler.get("/AddBlogApproval/requests");
       if (requestResponse != null && requestResponse['data'] != null) {
         setState(() {
@@ -258,56 +267,66 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         });
       }
 
-
-      try {
-        // Get email from secure storage or however you are storing it
-        String? email = await storage.read(key: "email"); // Fetch email from storage
-        if (email != null) {
-          // Fetch notification count using email
-          var notificationResponse = await networkHandler.get("/notifications/unreadCount/$email");
-          if (notificationResponse != null && notificationResponse['count'] != null) {
-            setState(() {
-              notificationsCount = notificationResponse['count'];
-              // Trigger animation based on the notification count
-              if (notificationsCount > 0) {
-                _startAnimation();
-              } else {
-                _stopAnimation();
-              }
-            });
-          }
-        } else {
-          debugPrint("Email is not available in secure storage.");
+      // notifications
+      String? email = await storage.read(key: "email");
+      if (email != null) {
+        var notificationResponse =
+        await networkHandler.get("/notifications/unreadCount/$email");
+        if (notificationResponse != null &&
+            notificationResponse['count'] != null) {
+          setState(() {
+            notificationsCount = notificationResponse['count'];
+            if (notificationsCount > 0) {
+              _startAnimation();
+            } else {
+              _stopAnimation();
+            }
+          });
         }
-      } catch (e) {
-        debugPrint("Error fetching unread notification count: $e");
       }
-
-
     } catch (e) {
       debugPrint("Error fetching counts: $e");
     }
-
-
   }
 
+  // -----------------------------------------
+  // Build: check if web or mobile
+  // -----------------------------------------
   @override
   Widget build(BuildContext context) {
-    // Dynamically create widgets based on userRole
+    if (kIsWeb) {
+      return buildWebLayout(context);
+    } else {
+      return buildMobileLayout(context);
+    }
+  }
+
+  // -----------------------------------------
+  // Mobile Layout (Drawer + BottomNav)
+  // -----------------------------------------
+  Widget buildMobileLayout(BuildContext context) {
+    // Build the visible screens
     List<Widget> visibleWidgets = [
-      HomeScreen(filterState: widget.filterState),
-      ProfileScreen(),
-      ChatScreen(),
+      // index 0 => Home (with filter)
+      // index 1 => Profile
+      // index 2 => Chat
+      // then conditional:
     ];
+    visibleWidgets.add(widgets[0]); // HomeScreen with filterState
+    visibleWidgets.add(widgets[1]); // ProfileScreen
+    visibleWidgets.add(widgets[2]); // ChatScreen
 
     if (userRole == "customer") {
-      visibleWidgets.add(ShopsScreen());
+      // index 3 => Shops
+      visibleWidgets.add(widgets[3]);
     } else if (userRole == "admin") {
-      visibleWidgets.add(UsersScreen());
-      visibleWidgets.add(RequestsScreen());
+      // index 3 => Users
+      // index 4 => Requests
+      visibleWidgets.add(UsersScreen());     // override index 3
+      visibleWidgets.add(RequestsScreen());  // override index 4
     }
 
-    // Dynamically create nav items based on userRole
+    // Build nav items
     List<BottomNavigationBarItem> navItems = [
       BottomNavigationBarItem(
         icon: const Icon(Icons.home),
@@ -324,16 +343,18 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     ];
 
     if (userRole == "customer") {
-      navItems.add(BottomNavigationBarItem(
-        icon: const Icon(Icons.shop_two),
-        label: AppLocalizations.of(context)!.myshops,
-      ));
+      navItems.add(
+        BottomNavigationBarItem(
+          icon: const Icon(Icons.shop_two),
+          label: AppLocalizations.of(context)!.myshops,
+        ),
+      );
     } else if (userRole == "admin") {
       navItems.add(
         BottomNavigationBarItem(
           icon: Stack(
             children: [
-              const Icon(Icons.people), // Users icon
+              const Icon(Icons.people),
               if (userCount > 0)
                 Positioned(
                   right: 2,
@@ -342,11 +363,11 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                   child: Container(
                     padding: const EdgeInsets.all(3),
                     decoration: BoxDecoration(
-                      color: Colors.red, // Red background for the badge
+                      color: Colors.red,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
-                      '$userCount', // Display the user count
+                      '$userCount',
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 10,
@@ -360,12 +381,11 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
           label: AppLocalizations.of(context)!.users,
         ),
       );
-
       navItems.add(
         BottomNavigationBarItem(
           icon: Stack(
             children: [
-              const Icon(Icons.add_business), // Requests icon
+              const Icon(Icons.add_business),
               if (requestCount > 0)
                 Positioned(
                   right: 2,
@@ -374,11 +394,11 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                   child: Container(
                     padding: const EdgeInsets.all(3),
                     decoration: BoxDecoration(
-                      color: Colors.red, // Red background for the badge
+                      color: Colors.red,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
-                      '$requestCount', // Display the request count
+                      '$requestCount',
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 10,
@@ -394,92 +414,89 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       );
     }
 
-    // Ensure currentState does not exceed visibleWidgets length
+    // Safety check
     if (currentState >= visibleWidgets.length) {
-      currentState = 0; // Reset to HomeScreen if out of bounds
+      currentState = 0;
     }
 
     return ValueListenableBuilder<Color>(
-        valueListenable: appColorNotifier,
-        builder: (context, appColor, child) {
-          return Scaffold(
-            drawer: Drawer(
-              child: ListView(
-                children: [
-                  DrawerHeader(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [appColor.withOpacity(0.8), appColor],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
+      valueListenable: appColorNotifier,
+      builder: (context, appColor, child) {
+        return Scaffold(
+          drawer: Drawer(
+            child: ListView(
+              children: [
+                // Drawer header
+                DrawerHeader(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [appColor.withOpacity(0.8), appColor],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
                     ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        profilePhoto,
-                        const SizedBox(height: 10),
-                        Text(
-                          '$email',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      profilePhoto,
+                      const SizedBox(height: 10),
+                      Text(
+                        email,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                  _drawerItem(
-                    title: AppLocalizations.of(context)!.allposts,
-                    icon: Icons.launch,
-                    isFocused: focusedDrawerItem == "All Posts",
-                    onTap: () {
-                      setState(() {
-                        focusedDrawerItem = "All Posts";
-                        widget.filterState = 0;
-                        widgets[0] = HomeScreen(
-                            filterState:
-                                widget.filterState); // Update HomeScreen
-                      });
-                      Navigator.pop(context);
-                    },
-                  ),
-                  _drawerItem(
-                    title: AppLocalizations.of(context)!.barberShopPosts,
-                    icon: Icons.content_cut,
-                    isFocused: focusedDrawerItem == "BarberShop Posts",
-                    onTap: () {
-                      setState(() {
-                        focusedDrawerItem = "BarberShop Posts";
-                        widget.filterState = 1;
-                        widgets[0] = HomeScreen(
-                            filterState:
-                                widget.filterState); // Update HomeScreen
-                      });
-                      Navigator.pop(context);
-                    },
-                  ),
-                  _drawerItem(
-                    title: AppLocalizations.of(context)!.hospitalPosts,
-                    icon: Icons.local_hospital,
-                    isFocused: focusedDrawerItem == "Hospital Posts",
-                    onTap: () {
-                      setState(() {
-                        focusedDrawerItem = "Hospital Posts";
-                        widget.filterState = 2;
-                        widgets[0] = HomeScreen(
-                            filterState:
-                                widget.filterState); // Update HomeScreen
-                      });
-                      Navigator.pop(context);
-                    },
-                  ),
-                  if(userRole!="user")
+                ),
+                // "All Posts" => sets filterState=0
+                _drawerItem(
+                  title: AppLocalizations.of(context)!.allposts,
+                  icon: Icons.list,
+                  isFocused: widget.filterState == 0,
+                  onTap: () {
+                    setState(() {
+                      widget.filterState = 0;
+                      // Rebuild the home screen with new filter
+                      widgets[0] = HomeScreen(filterState: widget.filterState);
+                    });
+                    Navigator.pop(context);
+                  },
+                ),
+                // "BarberShop Posts" => sets filterState=1
+                _drawerItem(
+                  title: AppLocalizations.of(context)!.barberShopPosts,
+                  icon: Icons.content_cut,
+                  isFocused: widget.filterState == 1,
+                  onTap: () {
+                    setState(() {
+                      widget.filterState = 1;
+                      widgets[0] = HomeScreen(filterState: widget.filterState);
+                    });
+                    Navigator.pop(context);
+                  },
+                ),
+                // "Hospital Posts" => sets filterState=2
+                _drawerItem(
+                  title: AppLocalizations.of(context)!.hospitalPosts,
+                  icon: Icons.local_hospital,
+                  isFocused: widget.filterState == 2,
+                  onTap: () {
+                    setState(() {
+                      widget.filterState = 2;
+                      widgets[0] = HomeScreen(filterState: widget.filterState);
+                    });
+                    Navigator.pop(context);
+                  },
+                ),
+                // "New Story" (if userRole != "user")
+                if (userRole != "user")
                   _drawerItem(
                     title: AppLocalizations.of(context)!.newstory,
                     icon: Icons.add,
-                    isFocused: focusedDrawerItem == "New Story",
+                    isFocused: false,
                     onTap: () {
                       Navigator.push(
                         context,
@@ -487,866 +504,868 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                       );
                     },
                   ),
-                  _drawerItem(
-                    title: AppLocalizations.of(context)!.settings,
-                    icon: Icons.settings,
-                    isFocused: focusedDrawerItem == "Settings",
-                    onTap: () {
-                      pickColor(context);
-                    },
-                  ),
-                  _drawerItem(
-                    title: AppLocalizations.of(context)!.changelanguage,
-                    icon: Icons.language,
-                    isFocused: focusedDrawerItem == "Change Language",
-                    onTap: () {
-                      _showLanguageDialog(context);
-                    },
-                  ),
-                  if (userRole == "user")
-                    ListTile(
-                      leading: Icon(Icons.credit_card, color: appColor),
-                      title: Text(
-                        AppLocalizations.of(context)!.customer,
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.w500),
-                      ),
-                      trailing: Icon(Icons.chevron_right, color: Colors.grey),
-                      onTap: () async {
-                        print(email);
-
-                        // Call the payment method with a callback
-                        await StripeService.instance
-                            .makePayment((bool paymentSuccess) async {
-                          if (paymentSuccess) {
-                            print("Payment successful. Updating role...");
-                            Map<String, dynamic> data = {'role': "customer"};
-                            var response = await networkHandler.patch(
-                              "/user/updateRole/$email",
-                              data,
-                            );
-                            if (response.statusCode == 200) {
-                              print(
-                                  "✅ User role updated successfully on the server.");
-                              await storage.write(
-                                  key: "role", value: "customer");
-                              // Send an email notification
-                              final serviceId = 'service_lap99wb';
-                              final templateId = 'template_d58o7p1';
-                              final userId = 'tPJQRVN9PQ2jjZ_6C';
-                              final url = Uri.parse(
-                                  'https://api.emailjs.com/api/v1.0/email/send');
-
-                              final emailResponse = await http.post(
-                                url,
-                                headers: {
-                                  'origin':
-                                      "https://hajzi-6883b1f029cf.herokuapp.com",
-                                  'Content-Type': 'application/json',
-                                },
-                                body: json.encode({
-                                  'service_id': serviceId,
-                                  'template_id': templateId,
-                                  'user_id': userId,
-                                  'template_params': {
-                                    'user_name': email,
-                                  },
-                                }),
-                              );
-
-                              print("Email Response: ${emailResponse.body}");
-
-                              final notificationResponse =
-                                  await networkHandler.post(
-                                "/notifications/notifyAdmins/customer/$email",
-                                // Note: Ensure proper string interpolation
-                                {},
-                              );
-
-                              print(
-                                  "Notification Response Code: ${notificationResponse.statusCode}");
-                              print(
-                                  "Notification Response Body: ${notificationResponse.body}");
-
-                              if (notificationResponse.statusCode == 200) {
-                                print("Admin notification sent successfully");
-                                PushNotifications.init();
-                              } else {
-                                print("Failed to notify admins");
-                              }
-
-                              print(
-                                  "User role updated successfully on server.");
-
-                              await showDialog(
-                                context: context,
-                                builder: (context) {
-                                  return AlertDialog(
-                                    backgroundColor: Colors.white,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(
-                                          10), // Rounded edges for the dialog
-                                    ),
-                                    title: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text(
-                                          "Congratulations!",
-                                          style: TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.bold),
-                                        ),
-                                        IconButton(
-                                          icon: Icon(Icons.close,
-                                              color: Colors.black),
-                                          onPressed: () {
-                                            Navigator.of(context)
-                                                .pop(); // Close the dialog
-                                          },
-                                        ),
-                                      ],
-                                    ),
-                                    content: Text(
-                                      "You have successfully upgraded to Customer.",
-                                      style: TextStyle(fontSize: 16),
-                                    ),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () {
-                                          Navigator.of(context)
-                                              .pop(); // Close the dialog
-                                        },
-                                        child: Text(
-                                          "Close",
-                                          style: TextStyle(color: Colors.black),
-                                        ),
-                                      ),
-                                    ],
-                                  );
-                                },
-                              );
-
-                              // **Force app to restart HomePage**
-                              Navigator.pushAndRemoveUntil(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => HomePage(
-                                    setLocale: widget.setLocale,
-                                    filterState: 0,
-                                  ),
-                                ),
-                                (route) => false,
-                              );
-                            } else {
-                              print(
-                                  "Failed to update user role on server: Status code ${response.statusCode}");
-                            }
-                          } else {
-                            print(
-                                "Payment failed or was cancelled. Role not updated.");
-                          }
-                        });
-                      },
-                    ),
-                //  if (userRole == "customer")
-                    ListTile(
-                      leading: Icon(FontAwesomeIcons.robot, size: 21, color: appColor),
-                      title: Text(
-                        AppLocalizations.of(context)!.feedback,
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.w500),
-                      ),
-                      trailing: Icon(Icons.chevron_right, color: Colors.grey),
-                      onTap: () {
-                        showDialog(
-                          context: context,
-                          builder: (context) {
-                            return AlertDialog(
-                              title: Text(AppLocalizations.of(context)!.chooseMode),
-                              content: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  ListTile(
-                                    leading: Icon(Icons.chat),
-                                    title: Text(AppLocalizations.of(context)!.aiMode),
-                                    onTap: () async {
-                                      // Make the onTap callback async
-                                      final prefs = await SharedPreferences.getInstance();
-                                      await prefs.remove('chat_history_${email}'); // Clear chat history
-
-                                      Navigator.pop(context); // Close the dialog
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => ChatBotScreen(
-                                            userEmail: email,
-                                            isAIModeInitial: true,
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                  ListTile(
-                                    leading: Icon(Icons.question_answer),
-                                    title: Text(AppLocalizations.of(context)!.predefinedMode),
-                                    onTap: () async {
-                                      // Make the onTap callback async
-                                      final prefs = await SharedPreferences.getInstance();
-                                      await prefs.remove('chat_history_${email}'); // Clear chat history
-
-                                      Navigator.pop(context); // Close the dialog
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => ChatBotScreen(
-                                            userEmail: email,
-                                            isAIModeInitial: false,
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        );
-                      },
-                    ),
-                  Divider(thickness: 1, color: Colors.grey.shade400),
-                  ListTile(
-                    leading: Icon(Icons.power_settings_new, color: Colors.red),
-                    title: Text(
-                      AppLocalizations.of(context)!.logout,
-                      style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.red),
-                    ),
-                    trailing: Icon(Icons.chevron_right, color: Colors.grey),
-                    onTap: () {
-                      logout();
-                    },
-                  ),
-                ],
-              ),
-            ),
-            appBar: AppBar(
-              backgroundColor: appColor,
-              title: Text(
-                // titleString[currentState],
-
-                currentState == 0
-                    ? AppLocalizations.of(context)!.home
-                    : currentState == 1
-                        ? AppLocalizations.of(context)!.profile
-                        : currentState == 2
-                            ? AppLocalizations.of(context)!.chat
-                            : userRole == "customer" && currentState == 3
-                                ? AppLocalizations.of(context)!.myshops
-                                : userRole == "admin"&&currentState == 3
-                                    ? AppLocalizations.of(context)!.users
-                                    : AppLocalizations.of(context)!.requests,
-                // Assuming "requests" for `currentState == 2`
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
+                _drawerItem(
+                  title: AppLocalizations.of(context)!.settings,
+                  icon: Icons.settings,
+                  isFocused: false,
+                  onTap: () => pickColor(context),
                 ),
-              ),
-              centerTitle: true,
-              actions: [
-                Stack(
-                  children: [
-                    AnimatedBuilder(
-                      animation: _animationController,
-                      builder: (context, child) {
-                        return Transform.rotate(
-                            angle: notificationsCount > 0
-                                ? 0.5 * math.sin(_animation.value * math.pi)
-                                : 0.0, // Reset to 0 when no notifications
-                         // Add a rotation effect
-                          child: IconButton(
-                            icon: const Icon(Icons.notifications),
-                            color: Colors.black,
-                            onPressed: () {
-                             // _stopAnimation();
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const NotificationScreen(),
-                                ),
-                              );
-                            },
-                          ),
-                        );
-                      },
+                _drawerItem(
+                  title: AppLocalizations.of(context)!.changelanguage,
+                  icon: Icons.language,
+                  isFocused: false,
+                  onTap: () => _showLanguageDialog(context),
+                ),
+                // "Upgrade to Customer" if userRole == "user"
+                if (userRole == "user")
+                  ListTile(
+                    leading: Icon(Icons.credit_card, color: appColor),
+                    title: Text(
+                      AppLocalizations.of(context)!.customer,
+                      style: const TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.w500),
                     ),
-
-                    if (notificationsCount > 0) // Show badge only if there are notifications
-                      Positioned(
-                        right: 6,
-                        top: 4,
-                        child: Container(
-                          padding: const EdgeInsets.all(2),
-                          decoration: BoxDecoration(
-                            color: Colors.red,
-                            borderRadius: BorderRadius.circular(15),
-                          ),
-                          constraints: const BoxConstraints(
-                            minWidth: 20,
-                            minHeight: 5,
-                          ),
-                          child: Text(
-                            '$notificationsCount', // Show the notification count
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                      ),
-                  ],
+                    trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+                    onTap: _upgradeToCustomer,
+                  ),
+                // Feedback (AI chat)
+                ListTile(
+                  leading: Icon(FontAwesomeIcons.robot, size: 21, color: appColor),
+                  title: Text(
+                    AppLocalizations.of(context)!.feedback,
+                    style: const TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.w500),
+                  ),
+                  trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+                  onTap: _showChatBotModeDialog,
+                ),
+                Divider(thickness: 1, color: Colors.grey.shade400),
+                // Logout
+                ListTile(
+                  leading: const Icon(Icons.power_settings_new, color: Colors.red),
+                  title: Text(
+                    AppLocalizations.of(context)!.logout,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.red,
+                    ),
+                  ),
+                  trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+                  onTap: logout,
                 ),
               ],
-
-
             ),
-            floatingActionButtonLocation:
-                FloatingActionButtonLocation.startFloat,
-            floatingActionButton: userRole != "user"
-                ? FloatingActionButton(
-                    backgroundColor: appColor,
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        PageRouteBuilder(
-                          transitionDuration: const Duration(milliseconds: 500),
-                          pageBuilder:
-                              (context, animation, secondaryAnimation) =>
-                                  AddBlog(),
-                          transitionsBuilder:
-                              (context, animation, secondaryAnimation, child) {
-                            return SlideTransition(
-                              position: animation.drive(
-                                Tween(
-                                        begin: const Offset(0.0, 1.0),
-                                        end: Offset.zero)
-                                    .chain(CurveTween(curve: Curves.easeInOut)),
+          ),
+          appBar: AppBar(
+            backgroundColor: appColor,
+            title: Text(
+              _getMobileAppBarTitle(),
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            centerTitle: true,
+            actions: [
+              // Notification icon
+              Stack(
+                children: [
+                  AnimatedBuilder(
+                    animation: _animationController,
+                    builder: (context, child) {
+                      return Transform.rotate(
+                        angle: notificationsCount > 0
+                            ? 0.5 * math.sin(_animation.value * math.pi)
+                            : 0.0,
+                        child: IconButton(
+                          icon: const Icon(Icons.notifications),
+                          color: Colors.black,
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const NotificationScreen(),
                               ),
-                              child: child,
                             );
                           },
                         ),
                       );
                     },
-                    child: const Icon(Icons.add, color: Colors.white),
-                  )
-                : null,
-            bottomNavigationBar: BottomNavigationBar(
-              currentIndex: currentState,
-              selectedItemColor: Colors.white,
-              unselectedItemColor: Colors.black,
-              backgroundColor: appColor,
-              type: BottomNavigationBarType.fixed,
-              // Ensure proper layout for 4 or more items
-              items: navItems,
-              onTap: (index) => setState(() {
+                  ),
+                  if (notificationsCount > 0)
+                    Positioned(
+                      right: 6,
+                      top: 4,
+                      child: Container(
+                        padding: const EdgeInsets.all(2),
+                        decoration: BoxDecoration(
+                          color: Colors.red,
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        constraints: const BoxConstraints(
+                          minWidth: 20,
+                          minHeight: 5,
+                        ),
+                        child: Text(
+                          '$notificationsCount',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ],
+          ),
+          floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
+          floatingActionButton: (userRole != "user")
+              ? FloatingActionButton(
+            backgroundColor: appColor,
+            onPressed: () {
+              Navigator.push(
+                context,
+                PageRouteBuilder(
+                  transitionDuration: const Duration(milliseconds: 500),
+                  pageBuilder: (context, animation, secondaryAnimation) =>
+                      AddBlog(),
+                  transitionsBuilder:
+                      (context, animation, secondaryAnimation, child) {
+                    return SlideTransition(
+                      position: animation.drive(
+                        Tween(
+                          begin: const Offset(0.0, 1.0),
+                          end: Offset.zero,
+                        ).chain(CurveTween(curve: Curves.easeInOut)),
+                      ),
+                      child: child,
+                    );
+                  },
+                ),
+              );
+            },
+            child: const Icon(Icons.add, color: Colors.white),
+          )
+              : null,
+          // Bottom Nav
+          bottomNavigationBar: BottomNavigationBar(
+            currentIndex: currentState,
+            selectedItemColor: Colors.white,
+            unselectedItemColor: Colors.black,
+            backgroundColor: appColor,
+            type: BottomNavigationBarType.fixed,
+            items: navItems,
+            onTap: (index) {
+              setState(() {
                 currentState = index;
                 checkProfile();
-                // Refresh counts when switching to "Users" or "Requests" tab
+                // If admin in "Users" or "Requests" tab
                 if (userRole == "admin" && (currentState == 3 || currentState == 4)) {
-                  fetchCounts(); // Refresh counts for Users and Requests
+                  fetchCounts();
                 }
-              }),
-            ),
-            body: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 300),
-              transitionBuilder: (child, animation) {
-                return FadeTransition(
-                  opacity: animation,
-                  child: child,
-                );
-              },
-              child: visibleWidgets[currentState],
-            ),
-          );
-        });
+              });
+            },
+          ),
+          body: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            transitionBuilder: (child, animation) {
+              return FadeTransition(opacity: animation, child: child);
+            },
+            child: visibleWidgets[currentState],
+          ),
+        );
+      },
+    );
   }
 
+  // The mobile app bar title, based on currentState and userRole
+  String _getMobileAppBarTitle() {
+    if (currentState == 0) {
+      // Home (but possibly filtered)
+      // You can further refine if you want to show "All Posts", "BarberShop", "Hospital"
+      // For now, just show "Home"
+      return AppLocalizations.of(context)!.home;
+    } else if (currentState == 1) {
+      return AppLocalizations.of(context)!.profile;
+    } else if (currentState == 2) {
+      return AppLocalizations.of(context)!.chat;
+    } else if (userRole == "customer" && currentState == 3) {
+      return AppLocalizations.of(context)!.myshops;
+    } else if (userRole == "admin" && currentState == 3) {
+      return AppLocalizations.of(context)!.users;
+    } else {
+      // admin & currentState == 4
+      return AppLocalizations.of(context)!.requests;
+    }
+  }
+
+  // -----------------------------------------
+  // WEB LAYOUT
+  // -----------------------------------------
+  Widget buildWebLayout(BuildContext context) {
+    Widget mainContent = buildMainContentWeb();
+
+    return ValueListenableBuilder<Color>(
+      valueListenable: appColorNotifier,
+      builder: (context, appColor, child) {
+        return Scaffold(
+          body: Row(
+            children: [
+              // Side nav
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                width: isDrawerCollapsed ? 70 : 230,
+                color: appColor,
+                child: Column(
+                  children: [
+                    // Header with profile
+                    Container(
+                      height: 140,
+                      padding: const EdgeInsets.all(4.0),
+                      color: appColor.withOpacity(0.9),
+                      alignment: Alignment.center,
+                      child: isDrawerCollapsed
+                          ? IconButton(
+                        icon: const Icon(Icons.menu, color: Colors.white),
+                        onPressed: () {
+                          setState(() {
+                            isDrawerCollapsed = !isDrawerCollapsed;
+                          });
+                        },
+                      )
+                          : Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          ClipOval(
+                            child: SizedBox(
+                              width: 60,
+                              height: 60,
+                              child: profilePhoto,
+                            ),
+                          ),
+                          const SizedBox(height: 5),
+                          Text(
+                            email,
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          Align(
+                            alignment: Alignment.topRight,
+                            child: IconButton(
+                              icon: const Icon(Icons.chevron_left,
+                                  color: Colors.white),
+                              onPressed: () {
+                                setState(() {
+                                  isDrawerCollapsed = !isDrawerCollapsed;
+                                });
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Nav items
+                    Expanded(
+                      child: SingleChildScrollView(
+                        child: Column(
+                          children: [
+                            // All Posts => filter=0, currentState=0
+                            _webNavItem(
+                              icon: Icons.list,
+                              label: AppLocalizations.of(context)!.allposts,
+                              // We consider isActive if filterState=0 & currentState=0
+                              isActive: (currentState == 0 && widget.filterState == 0),
+                              onTap: () {
+                                setState(() {
+                                  currentState = 0;
+                                  widget.filterState = 0;
+                                  widgets[0] = HomeScreen(filterState: 0);
+                                });
+                              },
+                            ),
+                            // BarberShop => filter=1, still index=0
+                            _webNavItem(
+                              icon: Icons.content_cut,
+                              label: AppLocalizations.of(context)!.barberShopPosts,
+                              isActive: (currentState == 0 && widget.filterState == 1),
+                              onTap: () {
+                                setState(() {
+                                  currentState = 0;
+                                  widget.filterState = 1;
+                                  widgets[0] = HomeScreen(filterState: 1);
+                                });
+                              },
+                            ),
+                            // Hospital => filter=2, still index=0
+                            _webNavItem(
+                              icon: Icons.local_hospital,
+                              label: AppLocalizations.of(context)!.hospitalPosts,
+                              isActive: (currentState == 0 && widget.filterState == 2),
+                              onTap: () {
+                                setState(() {
+                                  currentState = 0;
+                                  widget.filterState = 2;
+                                  widgets[0] = HomeScreen(filterState: 2);
+                                });
+                              },
+                            ),
+                            // Profile => currentState=1
+                            _webNavItem(
+                              icon: Icons.person,
+                              label: AppLocalizations.of(context)!.profile,
+                              isActive: currentState == 1,
+                              onTap: () {
+                                setState(() {
+                                  currentState = 1;
+                                });
+                              },
+                            ),
+                            // Chat => currentState=2
+                            _webNavItem(
+                              icon: Icons.chat,
+                              label: AppLocalizations.of(context)!.chat,
+                              isActive: currentState == 2,
+                              onTap: () {
+                                setState(() {
+                                  currentState = 2;
+                                });
+                              },
+                            ),
+                            // If customer => MyShops => index=3
+                            if (userRole == "customer")
+                              _webNavItem(
+                                icon: Icons.shop_two,
+                                label: AppLocalizations.of(context)!.myshops,
+                                isActive: currentState == 3,
+                                onTap: () {
+                                  setState(() {
+                                    currentState = 3;
+                                  });
+                                },
+                              ),
+                            // If admin => Users (3), Requests (4)
+                            if (userRole == "admin") ...[
+                              _webNavItem(
+                                icon: Icons.people,
+                                label: AppLocalizations.of(context)!.users,
+                                isActive: currentState == 3,
+                                countBadge: userCount,
+                                onTap: () {
+                                  setState(() {
+                                    currentState = 3;
+                                    fetchCounts();
+                                  });
+                                },
+                              ),
+                              _webNavItem(
+                                icon: Icons.add_business,
+                                label: AppLocalizations.of(context)!.requests,
+                                isActive: currentState == 4,
+                                countBadge: requestCount,
+                                onTap: () {
+                                  setState(() {
+                                    currentState = 4;
+                                    fetchCounts();
+                                  });
+                                },
+                              ),
+                            ],
+                            // new story if userRole != "user"
+                            if (userRole != "user")
+                              _webNavItem(
+                                icon: Icons.add,
+                                label: AppLocalizations.of(context)!.newstory,
+                                isActive: false,
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (context) => AddBlog()),
+                                  );
+                                },
+                              ),
+                            // settings
+                            _webNavItem(
+                              icon: Icons.settings,
+                              label: AppLocalizations.of(context)!.settings,
+                              isActive: false,
+                              onTap: () => pickColor(context),
+                            ),
+                            // language
+                            _webNavItem(
+                              icon: Icons.language,
+                              label: AppLocalizations.of(context)!.changelanguage,
+                              isActive: false,
+                              onTap: () => _showLanguageDialog(context),
+                            ),
+                            // upgrade to customer if userRole=="user"
+                            if (userRole == "user")
+                              _webNavItem(
+                                icon: Icons.credit_card,
+                                label: AppLocalizations.of(context)!.customer,
+                                isActive: false,
+                                onTap: _upgradeToCustomer,
+                              ),
+                            // feedback
+                            _webNavItem(
+                              icon: FontAwesomeIcons.robot,
+                              label: AppLocalizations.of(context)!.feedback,
+                              isActive: false,
+                              onTap: _showChatBotModeDialog,
+                            ),
+                            // Logout
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 8.0),
+                              child: Divider(color: Colors.white70),
+                            ),
+                            _webNavItem(
+                              icon: Icons.power_settings_new,
+                              label: AppLocalizations.of(context)!.logout,
+                              isActive: false,
+                              iconColor: Colors.red,
+                              textColor: Colors.red,
+                              onTap: logout,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // Main content
+              Expanded(
+                child: Column(
+                  children: [
+                    // Top bar
+                    Container(
+                      color: appColor,
+                      height: 60,
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: Row(
+                        children: [
+                          if (isDrawerCollapsed)
+                            IconButton(
+                              icon: const Icon(Icons.menu, color: Colors.white),
+                              onPressed: () {
+                                setState(() {
+                                  isDrawerCollapsed = !isDrawerCollapsed;
+                                });
+                              },
+                            ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              _getWebAppBarTitle(),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                              ),
+                            ),
+                          ),
+                          // Notification icon
+                          Stack(
+                            children: [
+                              AnimatedBuilder(
+                                animation: _animationController,
+                                builder: (context, child) {
+                                  return Transform.rotate(
+                                    angle: notificationsCount > 0
+                                        ? 0.5 *
+                                        math.sin(_animation.value * math.pi)
+                                        : 0.0,
+                                    child: IconButton(
+                                      icon: const Icon(Icons.notifications),
+                                      color: Colors.white,
+                                      onPressed: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                            const NotificationScreen(),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  );
+                                },
+                              ),
+                              if (notificationsCount > 0)
+                                Positioned(
+                                  right: 6,
+                                  top: 4,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(2),
+                                    decoration: BoxDecoration(
+                                      color: Colors.red,
+                                      borderRadius: BorderRadius.circular(15),
+                                    ),
+                                    constraints: const BoxConstraints(
+                                      minWidth: 20,
+                                      minHeight: 5,
+                                    ),
+                                    child: Text(
+                                      '$notificationsCount',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                          const SizedBox(width: 8),
+                        ],
+                      ),
+                    ),
+                    Expanded(child: mainContent),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          // Optionally add floatingActionButton on web
+          floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
+          floatingActionButton: (userRole != "user")
+              ? FloatingActionButton(
+            backgroundColor: appColor,
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => AddBlog()),
+              );
+            },
+            child: const Icon(Icons.add, color: Colors.white),
+          )
+              : null,
+        );
+      },
+    );
+  }
+
+  /// Decide which screen to show in main content on web (based on currentState + userRole)
+  Widget buildMainContentWeb() {
+    if (currentState == 0) {
+      // HomeScreen with the chosen filter
+      return HomeScreen(filterState: widget.filterState);
+    } else if (currentState == 1) {
+      return ProfileScreen();
+    } else if (currentState == 2) {
+      return ChatScreen();
+    } else if (userRole == "customer" && currentState == 3) {
+      return ShopsScreen();
+    } else if (userRole == "admin") {
+      if (currentState == 3) {
+        return UsersScreen();
+      } else if (currentState == 4) {
+        return RequestsScreen();
+      }
+    }
+    // fallback
+    return HomeScreen(filterState: widget.filterState);
+  }
+
+  /// The web top AppBar title
+  String _getWebAppBarTitle() {
+    if (currentState == 0) {
+      // Might refine the title based on widget.filterState
+      switch (widget.filterState) {
+        case 0:
+          return AppLocalizations.of(context)!.allposts;
+        case 1:
+          return AppLocalizations.of(context)!.barberShopPosts;
+        case 2:
+          return AppLocalizations.of(context)!.hospitalPosts;
+      }
+      return AppLocalizations.of(context)!.home;
+    } else if (currentState == 1) {
+      return AppLocalizations.of(context)!.profile;
+    } else if (currentState == 2) {
+      return AppLocalizations.of(context)!.chat;
+    } else if (userRole == "customer" && currentState == 3) {
+      return AppLocalizations.of(context)!.myshops;
+    } else if (userRole == "admin" && currentState == 3) {
+      return AppLocalizations.of(context)!.users;
+    } else if (userRole == "admin" && currentState == 4) {
+      return AppLocalizations.of(context)!.requests;
+    }
+    return AppLocalizations.of(context)!.home;
+  }
+
+  // -----------------------------------------
+  // Helper widgets
+  // -----------------------------------------
+  /// Drawer item for mobile
   Widget _drawerItem({
     required String title,
     required IconData icon,
     required bool isFocused,
     required VoidCallback onTap,
-    Color? iconColor, // Default null; fallback to appColor
-    Color textColor = Colors.black,
   }) {
-    return kIsWeb
-        ? SizedBox(
-            height: 120,
-            child: ListTile(
-              leading: Icon(
-                icon,
-                color: isFocused
-                    ? appColorNotifier.value
-                    : (iconColor ??
-                        appColorNotifier
-                            .value), // Dynamically set the icon color
-              ),
-              title: Text(
-                title,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                  color: isFocused ? appColorNotifier.value : textColor,
+    return ListTile(
+      leading: Icon(
+        icon,
+        color: isFocused ? appColorNotifier.value : appColorNotifier.value,
+      ),
+      title: Text(
+        title,
+        style: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w500,
+          color: isFocused ? appColorNotifier.value : Colors.black,
+        ),
+      ),
+      trailing: isFocused
+          ? Container(width: 5, height: 30, color: appColorNotifier.value)
+          : const Icon(Icons.chevron_right, color: Colors.grey),
+      onTap: onTap,
+    );
+  }
+
+  /// Side-nav item for the web
+  Widget _webNavItem({
+    required IconData icon,
+    required String label,
+    required bool isActive,
+    required VoidCallback onTap,
+    Color? iconColor,
+    Color? textColor,
+    int countBadge = 0,
+  }) {
+    final activeColor = Colors.white;
+    final inactiveColor = Colors.white70;
+    final color = isActive ? (textColor ?? activeColor) : (textColor ?? inactiveColor);
+
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6.0),
+        child: Row(
+          mainAxisAlignment: isDrawerCollapsed
+              ? MainAxisAlignment.center
+              : MainAxisAlignment.start,
+          children: [
+            const SizedBox(width: 8),
+            if (countBadge > 0)
+              Stack(
+                children: [
+                  Icon(icon, color: iconColor ?? color),
+                  Positioned(
+                    right: -2,
+                    top: -3,
+                    child: Container(
+                      padding: const EdgeInsets.all(2),
+                      decoration: BoxDecoration(
+                        color: Colors.red,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      constraints: const BoxConstraints(minWidth: 18),
+                      child: Text(
+                        '$countBadge',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              )
+            else
+              Icon(icon, color: iconColor ?? color),
+            if (!isDrawerCollapsed) ...[
+              const SizedBox(width: 10),
+              Flexible(
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    color: color,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
-              trailing: isFocused
-                  ? Container(
-                      width: 5,
-                      height: 30,
-                      color: appColorNotifier.value) // Highlight focused item
-                  : const Icon(Icons.chevron_right, color: Colors.grey),
-              onTap: onTap,
-            ),
-          )
-        : ListTile(
-            leading: Icon(
-              icon,
-              color: isFocused
-                  ? appColorNotifier.value
-                  : (iconColor ??
-                      appColorNotifier.value), // Dynamically set the icon color
-            ),
-            title: Text(
-              title,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-                color: isFocused ? appColorNotifier.value : textColor,
-              ),
-            ),
-            trailing: isFocused
-                ? Container(
-                    width: 5,
-                    height: 30,
-                    color: appColorNotifier.value) // Highlight focused item
-                : const Icon(Icons.chevron_right, color: Colors.grey),
-            onTap: onTap,
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Upgrade to Customer if user
+  Future<void> _upgradeToCustomer() async {
+    await StripeService.instance.makePayment(
+          (bool paymentSuccess) async {
+        if (paymentSuccess) {
+          Map<String, dynamic> data = {'role': "customer"};
+          var response = await networkHandler.patch(
+            "/user/updateRole/$email",
+            data,
           );
+          if (response.statusCode == 200) {
+            await storage.write(key: "role", value: "customer");
+            // Send an email notification
+            final serviceId = 'service_lap99wb';
+            final templateId = 'template_d58o7p1';
+            final userId = 'tPJQRVN9PQ2jjZ_6C';
+            final url = Uri.parse(
+                'https://api.emailjs.com/api/v1.0/email/send');
+
+            final emailResponse = await http.post(
+              url,
+              headers: {
+                'origin':
+                "https://hajzi-6883b1f029cf.herokuapp.com",
+                'Content-Type': 'application/json',
+              },
+              body: json.encode({
+                'service_id': serviceId,
+                'template_id': templateId,
+                'user_id': userId,
+                'template_params': {
+                  'user_name': email,
+                },
+              }),
+            );
+
+            print("Email Response: ${emailResponse.body}");
+
+            final notificationResponse =
+            await networkHandler.post(
+              "/notifications/notifyAdmins/customer/$email",
+              // Note: Ensure proper string interpolation
+              {},
+            );
+
+            print(
+                "Notification Response Code: ${notificationResponse.statusCode}");
+            print(
+                "Notification Response Body: ${notificationResponse.body}");
+
+            if (notificationResponse.statusCode == 200) {
+              print("Admin notification sent successfully");
+              PushNotifications.init();
+            } else {
+              print("Failed to notify admins");
+            }
+
+            print(
+                "User role updated successfully on server.");
+            // Show success
+            await showDialog(
+              context: context,
+              builder: (context) {
+                return AlertDialog(
+                  backgroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  title: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        "Congratulations!",
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close, color: Colors.black),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                    ],
+                  ),
+                  content: const Text(
+                    "You have successfully upgraded to Customer.",
+                    style: TextStyle(fontSize: 16),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: const Text("Close", style: TextStyle(color: Colors.black)),
+                    ),
+                  ],
+                );
+              },
+            );
+
+            // Reload with new role
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(
+                builder: (context) => HomePage(
+                  setLocale: widget.setLocale,
+                  filterState: 0,
+                ),
+              ),
+                  (route) => false,
+            );
+          }
+        }
+      },
+    );
+  }
+
+  /// Feedback (ChatBot) selection
+  void _showChatBotModeDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(AppLocalizations.of(context)!.chooseMode),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.chat),
+                title: Text(AppLocalizations.of(context)!.aiMode),
+                onTap: () async {
+                  final prefs = await SharedPreferences.getInstance();
+                  await prefs.remove('chat_history_$email');
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ChatBotScreen(
+                        userEmail: email,
+                        isAIModeInitial: true,
+                      ),
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.question_answer),
+                title: Text(AppLocalizations.of(context)!.predefinedMode),
+                onTap: () async {
+                  final prefs = await SharedPreferences.getInstance();
+                  await prefs.remove('chat_history_$email');
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ChatBotScreen(
+                        userEmail: email,
+                        isAIModeInitial: false,
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 }
-
-// import 'package:blogapp/Models/profileModel.dart';
-// import 'package:blogapp/services/stripe_service.dart';
-// import 'package:flutter/material.dart';
-//
-// import '../Blog/addBlog.dart';
-// import '../NetworkHandler.dart';
-// import '../Requests/RequestsScreen.dart';
-// import '../Screen/HomeScreen.dart';
-// import '../Profile/ProfileScreen.dart';
-// import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-// import 'package:flutter_colorpicker/flutter_colorpicker.dart';
-// import 'WelcomePage.dart';
-// import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-//
-//
-// class HomePage extends StatefulWidget {
-//   final void Function(Locale) setLocale;
-//   const HomePage({super.key,required this.setLocale});
-//
-//   @override
-//   State<HomePage> createState() => _HomePageState();
-// }
-//
-// class _HomePageState extends State<HomePage> {
-//   bool isLoading = true;
-//
-//   final storage = FlutterSecureStorage();
-//
-//   int currentState = 0;
-//   List<Widget> widgets = [
-//     //to switch between screens on body
-//     HomeScreen(),
-//     ProfileScreen(),
-//     RequestsScreen(),
-//   ];
-//
-//   List<String> titleString = ["Home Page", "Profile Page"];
-//
-//   @override
-//   void initState() {
-//     // TODO: implement initState
-//     super.initState();
-//     _loadUserRole();
-//     checkProfile();
-//   }
-//
-//   NetworkHandler networkHandler = NetworkHandler();
-//   ProfileModel profileModel = ProfileModel();
-//
-//   String? userRole;
-//
-//
-//   // Load the user role from secure storage
-//   Future<void> _loadUserRole() async {
-//     final role = await storage.read(key: "role"); // Assume the role is stored under the "role" key
-//     setState(() {
-//       userRole = role; // Update userRole when data is loaded
-//     });
-//   }
-//
-//
-//
-//
-//   void checkProfile() async {
-//     var response = await networkHandler.get("/profile/checkProfile");
-//     setState(() {
-//       username=response["username"];
-//     });
-//     if (response["Status"] == true) {
-//       //if status is true (200)
-//       setState(() {
-//         profilePhoto = CircleAvatar(
-//           radius: 50,
-//           backgroundImage: response["username"] == null
-//               ? null
-//               : NetworkHandler().getImage(response["username"]),
-//         );
-//       });
-//     } else {
-//       setState(() {
-//         profilePhoto = Container(
-//           height: 100,
-//           width: 100,
-//           decoration: BoxDecoration(
-//             color: Colors.black,
-//             borderRadius: BorderRadius.circular(50),
-//           ),
-//         );
-//       });
-//     }
-//   }
-//   String username="";
-//
-//   Widget profilePhoto = Container(
-//     height: 100,
-//     width: 100,
-//     decoration: BoxDecoration(
-//       color: Colors.black,
-//       borderRadius: BorderRadius.circular(50),
-//     ),
-//   );
-//
-//   Color appColor = Colors.teal; // Default color
-//   String selectedLanguage = "English"; // Default language
-//
-//
-//
-//   void _showLanguageDialog(BuildContext context) {
-//     List<String> languages = ["English", "Arabic"]; // Add your supported languages here
-//     showDialog(
-//       context: context,
-//       builder: (context) {
-//         return AlertDialog(
-//           title: Text("Select Language"),
-//           content: SingleChildScrollView(
-//             child: Column(
-//               mainAxisSize: MainAxisSize.min,
-//               children: languages.map((language) {
-//                 return RadioListTile(
-//                   title: Text(language),
-//                   value: language,
-//                   groupValue: selectedLanguage, // Tracks the selected language
-//                   onChanged: (value) async {
-//                     setState(() {
-//                       selectedLanguage = value!; // Update selected language
-//                       Locale newLocale;
-//                       switch (selectedLanguage) {
-//                         case "Arabic":
-//                           newLocale = Locale('ar', 'AE');
-//                           break;
-//                         case "English":
-//                         default:
-//                           newLocale = Locale('en', 'US');
-//                           break;
-//                       }
-//                       widget.setLocale(newLocale); // Use global setLocale
-//                     });
-//                     Navigator.of(context).pop(); // Close the dialog
-//                   },
-//                 );
-//               }).toList(),
-//             ),
-//           ),
-//         );
-//       },
-//     );
-//   }
-//
-//
-//
-//   void pickColor(BuildContext context) {
-//     showDialog(
-//       context: context,
-//       builder: (context) {
-//         Color tempColor = appColor; // Temporary color for preview
-//         return AlertDialog(
-//           title: Text('Pick a Theme Color'),
-//           content: SingleChildScrollView(
-//             child: BlockPicker(
-//               pickerColor: tempColor,
-//               onColorChanged: (color) {
-//                 tempColor = color; // Preview selected color
-//               },
-//             ),
-//           ),
-//           actions: [
-//             TextButton(
-//               child: Text('Cancel'),
-//               onPressed: () {
-//                 Navigator.of(context).pop();
-//               },
-//             ),
-//             TextButton(
-//               child: Text('Select'),
-//               onPressed: () {
-//                 setState(() {
-//                   appColor = tempColor; // Apply the selected color
-//                 });
-//                 Navigator.of(context).pop();
-//               },
-//             ),
-//           ],
-//         );
-//       },
-//     );
-//   }
-//   void logout() async {
-//     await storage.delete(key: "token");
-//     //for language part
-//   //  await storage.delete(key: "language"); // Optional: Reset language preference
-//   //  widget.setLocale(const Locale('en', 'US')); // Reset locale to default
-//
-//     Navigator.pushAndRemoveUntil(
-//       context,
-//       MaterialPageRoute(builder: (context) => WelcomePage(setLocale: widget.setLocale,)),
-//           (route) => false,
-//     );
-//   }
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       drawer: Drawer(
-//         child: ListView(
-//           children: [
-//             DrawerHeader(
-//               decoration: BoxDecoration(
-//                 gradient: LinearGradient(
-//                   colors: [appColor.withOpacity(0.8), appColor],
-//                   begin: Alignment.topLeft,
-//                   end: Alignment.bottomRight,
-//                 ),
-//               ),
-//               child: Column(
-//                 mainAxisAlignment: MainAxisAlignment.center,
-//                 children: [
-//                   profilePhoto,
-//                   SizedBox(height: 10),
-//                   Text(
-//                     '@$username' ?? "@Username",
-//                     style: TextStyle(
-//                       fontSize: 17,
-//                       fontWeight: FontWeight.bold,
-//                       color: Colors.white,
-//                     ),
-//                   ),
-//                 ],
-//               ),
-//             ),
-//             ListTile(
-//               leading: Icon(Icons.launch, color: appColor),
-//               title: Text(
-//                 AppLocalizations.of(context)!.allposts,
-//                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-//               ),
-//               trailing: Icon(Icons.chevron_right, color: Colors.grey),
-//               onTap: () {},
-//             ),
-//             ListTile(
-//               leading: Icon(Icons.add, color: appColor),
-//               title: Text(
-//                 AppLocalizations.of(context)!.newstory,
-//                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-//               ),
-//               trailing: Icon(Icons.chevron_right, color: Colors.grey),
-//               onTap: () {},
-//             ),
-//             ListTile(
-//               leading: Icon(Icons.settings, color: appColor),
-//               title: Text(
-//                 AppLocalizations.of(context)!.settings,
-//                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-//               ),
-//               trailing: Icon(Icons.chevron_right, color: Colors.grey),
-//               onTap: () {
-//                 pickColor(context);
-//               },
-//             ),
-//             ListTile(
-//               leading: Icon(Icons.language, color: appColor),
-//               title: Text(
-//                 AppLocalizations.of(context)!.changelanguage,
-//                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-//               ),
-//               trailing: Icon(Icons.chevron_right, color: Colors.grey),
-//               onTap: () {
-//                 _showLanguageDialog(context);
-//               },
-//             ),
-//             if(userRole=="user")
-//               ListTile(
-//                 leading: Icon(Icons.credit_card, color: appColor),
-//                 title: Text(
-//                   AppLocalizations.of(context)!.customer,
-//                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-//                 ),
-//                 trailing: Icon(Icons.chevron_right, color: Colors.grey),
-//                 onTap: () async {
-//                   print(username);
-//
-//                   // Call the payment method with a callback
-//                   await StripeService.instance.makePayment((bool paymentSuccess) async {
-//                     if (paymentSuccess) {
-//                       print("Payment successful. Updating role...");
-//                       Map<String, dynamic> data = {'role': "customer"};
-//                       var response = await networkHandler.patch(
-//                         "/user/updateRole/$username",
-//                         data,
-//                       );
-//                       if (response.statusCode == 200) {
-//                         print("User role updated successfully on server.");
-//                       } else {
-//                         print("Failed to update user role on server: Status code ${response.statusCode}");
-//                       }
-//                     } else {
-//                       print("Payment failed or was cancelled. Role not updated.");
-//                     }
-//                   });
-//                 },
-//               ),
-//
-//             if(userRole=="customer")
-//             ListTile(
-//               leading: Icon(Icons.feedback, color: appColor),
-//               title: Text(
-//                 AppLocalizations.of(context)!.feedback,
-//                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-//               ),
-//               trailing: Icon(Icons.chevron_right, color: Colors.grey),
-//               onTap: () {},
-//             ),
-//             Divider(thickness: 1, color: Colors.grey.shade400),
-//             ListTile(
-//               leading: Icon(Icons.power_settings_new, color: Colors.red),
-//               title: Text(
-//                 AppLocalizations.of(context)!.logout,
-//                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.red),
-//               ),
-//               trailing: Icon(Icons.chevron_right, color: Colors.grey),
-//               onTap: () {
-//                 logout();
-//               },
-//             ),
-//           ],
-//         ),
-//       ),
-//
-//       appBar: AppBar(
-//         backgroundColor: appColor,
-//         title: Text(
-//         // titleString[currentState],
-//
-//             currentState == 0
-//                 ? AppLocalizations.of(context)!.home
-//                 : currentState == 1
-//                 ? AppLocalizations.of(context)!.profile
-//                 : AppLocalizations.of(context)!.requests, // Assuming "requests" for `currentState == 2`
-//             style: const TextStyle(
-//               fontWeight: FontWeight.bold,
-//             ),
-//
-//         ),
-//         centerTitle: true,
-//         actions: <Widget>[
-//           IconButton(
-//               icon: Icon(Icons.notifications),
-//               color: Colors.black,
-//               onPressed: () {})
-//         ],
-//       ),
-//
-//       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-//
-//       floatingActionButton: userRole!="user"?FloatingActionButton(
-//         backgroundColor: appColor,
-//         onPressed: () {
-//           Navigator.push(
-//             context,
-//             MaterialPageRoute(
-//               builder: (context) => AddBlog(),
-//             ),
-//           );
-//         },
-//         shape: CircleBorder(),
-//         child: const Text(
-//           "+",
-//           style: TextStyle(
-//             fontSize: 40,
-//             color: Colors.black,
-//           ),
-//         ),
-//       ):null,
-//       bottomNavigationBar: BottomNavigationBar(
-//         currentIndex: currentState,
-//         selectedItemColor: Colors.white,
-//         unselectedItemColor: Colors.black,
-//         backgroundColor: appColor,
-//         items: [
-//           BottomNavigationBarItem(
-//               icon: Icon(Icons.home), label: AppLocalizations.of(context)!.home),
-//           BottomNavigationBarItem(
-//               icon: Icon(Icons.person), label: AppLocalizations.of(context)!.profile),
-//           if(userRole=="admin")
-//           BottomNavigationBarItem(
-//               icon: Icon(Icons.add_business), label: AppLocalizations.of(context)!.requests),
-//         ],
-//         onTap: (index) => setState(() => currentState = index),
-//       ),
-//       body: widgets[currentState],
-//     );
-//
-//
-//   }
-//
-//
-// //   void logout() async {
-// //     //delete token that we stored from the login page/register page
-// // //since token is null we will go to welcome page from (main.dart)
-// //
-// //     await storage.delete(key: "token");
-// //     Navigator.pushAndRemoveUntil(
-// //         context,
-// //         MaterialPageRoute(builder: (context) => WelcomePage()),
-// //         (route) =>
-// //             false); // when user presses logout it will go to welcome page
-// //     //and then if the user press back button it will go to home page
-// //     //to fix this issue use pushAndRemoveUntil(remove homePage from stack)
-// //   }
-//
-//
-// }
