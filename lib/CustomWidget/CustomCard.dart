@@ -77,8 +77,7 @@ class CustomCard extends StatelessWidget {
               if (onChatSelected != null) {
                 onChatSelected!(chat);
               }
-            }
-            if(!kIsWeb)
+            }else
             Navigator.push(
               context,
               MaterialPageRoute(
