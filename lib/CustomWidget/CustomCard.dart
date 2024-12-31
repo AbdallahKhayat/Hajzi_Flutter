@@ -1,5 +1,6 @@
 // CustomCard.dart
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../NetworkHandler.dart';
 import '../Pages/IndividualPage.dart';
@@ -11,11 +12,12 @@ class CustomCard extends StatelessWidget {
   final Map<String, dynamic> chat;
   final String currentUserEmail;
   final NetworkHandler networkHandler = NetworkHandler();
-
+  final void Function(Map<String, dynamic>)? onChatSelected;
   CustomCard({
     Key? key,
     required this.chat,
     required this.currentUserEmail,
+    this.onChatSelected
   }) : super(key: key);
 
   Future<String?> fetchProfileImage(String chatPartnerEmail) async {
@@ -69,6 +71,14 @@ class CustomCard extends StatelessWidget {
 
         return InkWell(
           onTap: () {
+
+            if(kIsWeb) {
+              // Instead, call the parent callback if provided.
+              if (onChatSelected != null) {
+                onChatSelected!(chat);
+              }
+            }
+            if(!kIsWeb)
             Navigator.push(
               context,
               MaterialPageRoute(
