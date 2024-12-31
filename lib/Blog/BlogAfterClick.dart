@@ -13,7 +13,6 @@ import '../Pages/IndividualPage.dart';
 import '../Pages/userAppointmentPage.dart';
 import '../constants.dart';
 
-
 class BlogAfterClick extends StatefulWidget {
   BlogAfterClick({super.key, required this.addBlogModel, required this.networkHandler});
 
@@ -31,7 +30,7 @@ class _BlogAfterClickState extends State<BlogAfterClick> {
   String userName = 'Unknown User';
   String? userEmail; // Current user's email from secure storage
   String blogOwnerEmail = ''; // Blog owner's email from fetchBlogDetails
-  String blogOwnerName='';
+  String blogOwnerName = '';
   final storage = FlutterSecureStorage();
 
   // Example coordinates for the shop location
@@ -93,7 +92,7 @@ class _BlogAfterClickState extends State<BlogAfterClick> {
       if (response != null && response['authorName'] != null) {
         setState(() {
           blogOwnerEmail = response['authorName'];
-          blogOwnerName=response['username'];
+          blogOwnerName = response['username'];
         });
       }
     } catch (e) {
@@ -107,11 +106,10 @@ class _BlogAfterClickState extends State<BlogAfterClick> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) =>
-              CustomerAppointmentPage(
-                networkHandler: widget.networkHandler,
-                blogId: widget.addBlogModel.id!,
-              ),
+          builder: (context) => CustomerAppointmentPage(
+            networkHandler: widget.networkHandler,
+            blogId: widget.addBlogModel.id!,
+          ),
         ),
       );
     } else {
@@ -119,12 +117,11 @@ class _BlogAfterClickState extends State<BlogAfterClick> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) =>
-              UserAppointmentPage(
-                networkHandler: widget.networkHandler,
-                blogId: widget.addBlogModel.id!,
-                userName: userEmail!,
-              ),
+          builder: (context) => UserAppointmentPage(
+            networkHandler: widget.networkHandler,
+            blogId: widget.addBlogModel.id!,
+            userName: userEmail!,
+          ),
         ),
       );
     }
@@ -134,7 +131,9 @@ class _BlogAfterClickState extends State<BlogAfterClick> {
     if (widget.addBlogModel.lat != null && widget.addBlogModel.lng != null) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => MapPage(lat: widget.addBlogModel.lat!, lng: widget.addBlogModel.lng!)),
+        MaterialPageRoute(
+            builder: (context) =>
+                MapPage(lat: widget.addBlogModel.lat!, lng: widget.addBlogModel.lng!)),
       );
     }
   }
@@ -155,6 +154,7 @@ class _BlogAfterClickState extends State<BlogAfterClick> {
       return null;
     }
   }
+
   void _shareBlogDetails() {
     final String blogDetails = "🛒 Check out this amazing Shop!\n\n"
         "Title: ${widget.addBlogModel.title}\n"
@@ -162,6 +162,7 @@ class _BlogAfterClickState extends State<BlogAfterClick> {
         "View it here 📍: https://www.google.com/maps/search/?api=1&query=${widget.addBlogModel.lat},${widget.addBlogModel.lng}";
     Share.share(blogDetails);
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -184,195 +185,227 @@ class _BlogAfterClickState extends State<BlogAfterClick> {
           "Shop Details",
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
+        centerTitle: true, // Center the title for better aesthetics on web
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16.0),
-        children: [
-          // Image carousel
-          Container(
-            decoration: BoxDecoration(
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black12,
-                  blurRadius: 10,
-                  offset: Offset(0, 5),
-                ),
-              ],
-              borderRadius: BorderRadius.circular(15),
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(15),
-              child: CarouselSlider(
-                items: widget.networkHandler
-                    .getImages(widget.addBlogModel.coverImages ?? [])
-                    .map((image) {
-                  return Container(
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          // Define a max width for large screens
+          double maxWidth = 800;
+          if (constraints.maxWidth > 900) {
+            maxWidth = 800;
+          } else {
+            maxWidth = constraints.maxWidth;
+          }
+
+          return Center(
+            child: Container(
+              width: maxWidth,
+              padding: const EdgeInsets.all(16.0),
+              child: ListView(
+                children: [
+                  // Image carousel
+                  Container(
                     decoration: BoxDecoration(
-                      image: DecorationImage(image: image, fit: BoxFit.cover),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 10,
+                          offset: Offset(0, 5),
+                        ),
+                      ],
+                      borderRadius: BorderRadius.circular(15),
                     ),
-                  );
-                }).toList(),
-                options: CarouselOptions(
-                  height: 230,
-                  autoPlay: true,
-                  enlargeCenterPage: true,
-                  aspectRatio: 16 / 9,
-                  viewportFraction: 0.8,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 20),
-
-          // Blog title
-          Text(
-            widget.addBlogModel.title!,
-            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 10),
-
-          // Action row with Find Me, Chat, and Share
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              TextButton.icon(
-                icon: const Icon(Icons.location_on, color: Colors.black),
-                label: const Text(
-                  "Find Me",
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold,color: Colors.black),
-                ),
-                onPressed: _openMapPage,
-              ),
-
-              IconButton(
-                icon: const Icon(Icons.chat_bubble, color: Colors.black),
-                onPressed: () async {
-                  final existingChatId = await fetchExistingChatId(blogOwnerEmail);
-                  if (userEmail == blogOwnerEmail)
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>  ChatPage(chatId: '', chatPartnerEmail: '', appBarFlag: 1),
-                    ),
-                  );
-                  if (userEmail != blogOwnerEmail)
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => IndividualPage(
-                        initialChatId: existingChatId ?? '',
-                        chatPartnerEmail: blogOwnerEmail,
-                        chatPartnerName: blogOwnerName,
-                      ),
-                    ),
-                  );
-                },
-              ),
-              const Text(
-                "Chat",
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-              ),
-
-              IconButton(
-                icon: const Icon(Icons.share, color: Colors.black),
-                onPressed: () {
-                  _shareBlogDetails();
-                  // Add share functionality here
-                },
-              ),
-              const Text(
-                "Share",
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-
-          // Blog description
-          Card(
-            elevation: 5,
-            margin: const EdgeInsets.symmetric(vertical: 10),
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(15)),
-            child: Padding(
-              padding: const EdgeInsets.all(15),
-              child: Text(
-                widget.addBlogModel.body!,
-                style: const TextStyle(fontSize: 16),
-                textAlign: TextAlign.justify,
-              ),
-            ),
-          ),
-          const SizedBox(height: 20),
-
-          // Book Appointment Section
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.teal.shade50,
-              borderRadius: BorderRadius.circular(15),
-              border: Border.all(color: Colors.teal, width: 1),
-            ),
-            padding: const EdgeInsets.all(15),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                ValueListenableBuilder<Color>(
-                  valueListenable: appColorNotifier,
-                  builder: (context, appColor, child) {
-                    return ShaderMask(
-                      shaderCallback: (bounds) {
-                        return LinearGradient(
-                          colors: [appColor.withOpacity(1), appColor],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ).createShader(bounds);
-                      },
-                      child:const Text(
-                        "Book An Appointment",
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
-                          color: Colors.white, // Required but overridden by the shader
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(15),
+                      child: CarouselSlider(
+                        items: widget.networkHandler
+                            .getImages(widget.addBlogModel.coverImages ?? [])
+                            .map((image) {
+                          return Container(
+                            decoration: BoxDecoration(
+                              image: DecorationImage(image: image, fit: BoxFit.cover),
+                            ),
+                          );
+                        }).toList(),
+                        options: CarouselOptions(
+                          height: constraints.maxWidth > 600 ? 400 : 230,
+                          autoPlay: true,
+                          enlargeCenterPage: true,
+                          aspectRatio: 16 / 9,
+                          viewportFraction: 0.8,
                         ),
                       ),
-                    );
-                  },
-                ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
 
-                const SizedBox(height: 10),
-                const Text(
-                  "Click the button below to book or manage your appointments.",
-                  style: TextStyle(fontSize: 14),
-                ),
-                const SizedBox(height: 15),
-                ValueListenableBuilder<Color>(
-                  valueListenable: appColorNotifier,
-                  builder: (context, appColor, child) {
-                    return ElevatedButton.icon(
-                      onPressed: _navigateToAppointmentPage,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: appColor, // Dynamic color
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 12, horizontal: 20),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                  // Blog title
+                  Text(
+                    widget.addBlogModel.title!,
+                    style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 10),
+
+                  // Action row with Find Me, Chat, and Share
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      // Find Me Button
+                      Expanded(
+                        child: TextButton.icon(
+                          icon: const Icon(Icons.location_on, color: Colors.black),
+                          label: const Text(
+                            "Find Me",
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
+                          ),
+                          onPressed: _openMapPage,
                         ),
-                        elevation: 5,
                       ),
-                      icon: const Icon(Icons.calendar_today, color: Colors.white),
-                      label: const Text(
-                        "Book Appointment",
-                        style: TextStyle(color: Colors.white, fontSize: 16),
-                      ),
-                    );
-                  },
-                )
 
-              ],
+                      // Chat Button with Label
+                      Expanded(
+                        child: Column(
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.chat_bubble, color: Colors.black),
+                              onPressed: () async {
+                                final existingChatId = await fetchExistingChatId(blogOwnerEmail);
+                                if (userEmail == blogOwnerEmail) {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => ChatPage(
+                                          chatId: '', chatPartnerEmail: '', appBarFlag: 1),
+                                    ),
+                                  );
+                                } else {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => IndividualPage(
+                                        initialChatId: existingChatId ?? '',
+                                        chatPartnerEmail: blogOwnerEmail,
+                                        chatPartnerName: blogOwnerName,
+                                      ),
+                                    ),
+                                  );
+                                }
+                              },
+                            ),
+                            const Text(
+                              "Chat",
+                              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // Share Button with Label
+                      Expanded(
+                        child: Column(
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.share, color: Colors.black),
+                              onPressed: _shareBlogDetails,
+                            ),
+                            const Text(
+                              "Share",
+                              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Blog description
+                  Card(
+                    elevation: 5,
+                    margin: const EdgeInsets.symmetric(vertical: 10),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                    child: Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Text(
+                        widget.addBlogModel.body!,
+                        style: const TextStyle(fontSize: 18),
+                        textAlign: TextAlign.justify,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Book Appointment Section
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.teal.shade50,
+                      borderRadius: BorderRadius.circular(15),
+                      border: Border.all(color: Colors.teal, width: 1),
+                    ),
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        ValueListenableBuilder<Color>(
+                          valueListenable: appColorNotifier,
+                          builder: (context, appColor, child) {
+                            return ShaderMask(
+                              shaderCallback: (bounds) {
+                                return LinearGradient(
+                                  colors: [appColor.withOpacity(1), appColor],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ).createShader(bounds);
+                              },
+                              child: const Text(
+                                "Book An Appointment",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 24,
+                                  color: Colors.white, // Required but overridden by the shader
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+
+                        const SizedBox(height: 15),
+                        const Text(
+                          "Click the button below to book or manage your appointments.",
+                          style: TextStyle(fontSize: 16),
+                        ),
+                        const SizedBox(height: 20),
+                        ValueListenableBuilder<Color>(
+                          valueListenable: appColorNotifier,
+                          builder: (context, appColor, child) {
+                            return ElevatedButton.icon(
+                              onPressed: _navigateToAppointmentPage,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: appColor, // Dynamic color
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 16, horizontal: 24),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                elevation: 5,
+                              ),
+                              icon: const Icon(Icons.calendar_today, color: Colors.white, size: 24),
+                              label: const Text(
+                                "Book Appointment",
+                                style: TextStyle(color: Colors.white, fontSize: 18),
+                              ),
+                            );
+                          },
+                        )
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }
