@@ -337,18 +337,79 @@ class _AddBlogState extends State<AddBlog> {
                               SizedBox(height: 10),
                               titleTextField(),
                               SizedBox(height: 20),
-                              Text(
-                                "Post Content",
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 18,
-                                  color: Colors.teal,
+                          ValueListenableBuilder<Color>(
+                            valueListenable: appColorNotifier,
+                            builder: (context, appColor, child) {
+                              return ShaderMask(
+                                shaderCallback: (bounds) {
+                                  return LinearGradient(
+                                    colors: [appColor.withOpacity(1), appColor],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  ).createShader(bounds);
+                                },
+                                child: Text(
+                                  "Post Content",
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 18,
+                                    color: Colors
+                                        .white, // Required but overridden by the shader
+                                  ),
                                 ),
-                              ),
+                              );
+                            },
+                          ),
                               SizedBox(height: 10),
                               bodyTextField(),
                               SizedBox(height: 20),
                               imagePreview(),
+                              SizedBox(height: 30),
+                              SizedBox(height: 30),
+                              ElevatedButton(
+                                onPressed: () async {
+                                  final chosenLocation = await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                        const SelectLocationPage()),
+                                  );
+                                  if (chosenLocation != null) {
+                                    LatLng loc = chosenLocation;
+                                    setState(() {
+                                      selectedLat = loc.latitude;
+                                      selectedLng = loc.longitude;
+                                    });
+                                  }
+                                },
+                                child: ValueListenableBuilder<Color>(
+                                  valueListenable: appColorNotifier,
+                                  builder: (context, appColor, child) {
+                                    return ShaderMask(
+                                      shaderCallback: (bounds) {
+                                        return LinearGradient(
+                                          colors: [
+                                            appColor.withOpacity(1),
+                                            appColor
+                                          ],
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                        ).createShader(bounds);
+                                      },
+                                      child: Text(
+                                        "Select Shop Location",
+                                        style: const TextStyle(
+                                          color: Colors
+                                              .white, // Required but overridden by the shader
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                              if (selectedLat != null && selectedLng != null)
+                                Text(
+                                    "Location Selected: $selectedLat, $selectedLng"),
                               SizedBox(height: 30),
                               Center(
                                 child: addButton(),
