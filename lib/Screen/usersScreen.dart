@@ -338,17 +338,28 @@ class _UsersScreenState extends State<UsersScreen> {
       body: users.isEmpty
           ? const Center(child: CircularProgressIndicator())
           : kIsWeb
-          ? Padding(
+          ?  Padding(
         padding: const EdgeInsets.all(16.0),
-        child: GridView.builder(
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 4, // Number of items per row
-            crossAxisSpacing: 10.0, // Spacing between columns
-            mainAxisSpacing: 10.0, // Spacing between rows
-            childAspectRatio: 2, // Adjust the aspect ratio of items
-          ),
-          itemCount: users.length,
-          itemBuilder: (context, index) => _buildUserCard(users[index]),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return GridView.builder(
+              shrinkWrap: true,
+              physics:
+              const NeverScrollableScrollPhysics(), // Prevent GridView from scrolling separately
+              gridDelegate:
+              SliverGridDelegateWithMaxCrossAxisExtent(
+                maxCrossAxisExtent:
+                400, // Maximum width of each card
+                mainAxisSpacing: 16.0, // Spacing between rows
+                crossAxisSpacing: 16.0, // Spacing between columns
+                childAspectRatio:
+                5 / 4, // Adjust the aspect ratio as needed
+              ),
+              itemCount: users.length,
+              itemBuilder: (context, index) =>
+                  _buildUserCard(users[index]),
+            );
+          },
         ),
       )
           : ListView.builder(

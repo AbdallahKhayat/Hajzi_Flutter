@@ -840,7 +840,7 @@ class _ChatScreenWebState extends State<_ChatScreenWeb>
           style: TextStyle(color: Colors.white)),
       actions: [
         IconButton(
-          icon: const Icon(Icons.search),
+          icon: const Icon(Icons.search,color: Colors.white,),
           onPressed: () {
             Navigator.push(
               context,
@@ -849,7 +849,7 @@ class _ChatScreenWebState extends State<_ChatScreenWeb>
           },
         ),
         PopupMenuButton<String>(
-          icon: const Icon(Icons.more_vert),
+          icon: const Icon(Icons.more_vert,color: Colors.white),
           onSelected: (value) => debugPrint("Action: $value"),
           itemBuilder: (_) => const [
             PopupMenuItem(value: "New group", child: Text("New group")),
