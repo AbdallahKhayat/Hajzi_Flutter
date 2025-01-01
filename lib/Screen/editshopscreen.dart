@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../Models/addBlogModel.dart';
 import '../NetworkHandler.dart';
@@ -193,6 +194,12 @@ class _EditShopScreenState extends State<EditShopScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Determine if the platform is web
+    bool isWeb = kIsWeb;
+
+    // Define maximum width for web layout
+    double maxWidth = 800;
+
     return Scaffold(
       appBar: AppBar(
         flexibleSpace: ValueListenableBuilder<Color>(
@@ -209,135 +216,281 @@ class _EditShopScreenState extends State<EditShopScreen> {
             );
           },
         ),
-        title: const Text("Edit Shop",style: TextStyle(
-          fontWeight: FontWeight.bold,
-        ),),
+        title: const Text(
+          "Edit Shop",
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            children: [
-              DropdownButtonFormField<String>(
-                value: selectedRole,
-                onChanged: (value) {
-                  setState(() {
-                    selectedRole = value;
-                  });
-                },
-                items: [
-                  const DropdownMenuItem(value: "general", child: Text("General")),
-                  const DropdownMenuItem(value: "barbershop", child: Text("Barbershop")),
-                  const DropdownMenuItem(value: "hospital", child: Text("Hospital")),
-                ],
-                decoration: const InputDecoration(labelText: "Type"),
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _titleController,
-                decoration: const InputDecoration(labelText: "Title"),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "Title can't be empty";
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _bodyController,
-                decoration: const InputDecoration(labelText: "Body"),
-                maxLines: 5,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "Body can't be empty";
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              Text("Preview Image", style: Theme.of(context).textTheme.titleMedium),
-              const SizedBox(height: 8),
-              previewImageFile != null
-                  ? Image.file(previewImageFile!, height: 150)
-                  : widget.addBlogModel.previewImage != null
-                  ? Image.network(widget.networkHandler.formater2(widget.addBlogModel.previewImage!),
-                  height: 150)
-                  : const Text("No preview image selected"),
-            ValueListenableBuilder<Color>(
-              valueListenable: appColorNotifier,
-              builder: (context, color, child) {
-                return TextButton(
-                  onPressed: _pickPreviewImage,
-                  child: const Text("Change Preview Image"),
-                  style: ButtonStyle(
-                    foregroundColor: MaterialStateProperty.all<Color>(Colors.black),
-                    backgroundColor: MaterialStateProperty.all<Color>(color),
-                  ),
-                );
-              },
-            ),
-              const SizedBox(height: 16),
-              Text("Slideshow Images", style: Theme.of(context).textTheme.titleMedium),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  ...existingCoverImages.map(
-                        (imageUrl) => Stack(
+      body: Center(
+        child: SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: isWeb
+                ? BoxConstraints(
+              maxWidth: maxWidth,
+            )
+                : BoxConstraints(), // No constraints on mobile
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Card(
+                elevation: 4.0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.0),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Image.network(
-                          widget.networkHandler.formater2(imageUrl),
-                          width: 100,
-                          height: 100,
-                          fit: BoxFit.cover,
+                        // Dropdown for Role Selection
+                        DropdownButtonFormField<String>(
+                          value: selectedRole,
+                          onChanged: (value) {
+                            setState(() {
+                              selectedRole = value;
+                            });
+                          },
+                          items: const [
+                            DropdownMenuItem(
+                                value: "general", child: Text("General")),
+                            DropdownMenuItem(
+                                value: "barbershop", child: Text("Barbershop")),
+                            DropdownMenuItem(
+                                value: "hospital", child: Text("Hospital")),
+                          ],
+                          decoration: const InputDecoration(labelText: "Type"),
                         ),
-                        Positioned(
-                          top: 0,
-                          right: 0,
-                          child: IconButton(
-                            icon: const Icon(Icons.close, color: Colors.red),
-                            onPressed: () => _removeExistingCoverImage(imageUrl),
+                        const SizedBox(height: 24),
+
+                        // Title Field
+                        TextFormField(
+                          controller: _titleController,
+                          decoration: const InputDecoration(
+                            labelText: "Title",
+                            border: OutlineInputBorder(),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return "Title can't be empty";
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 24),
+
+                        // Body Field
+                        TextFormField(
+                          controller: _bodyController,
+                          decoration: const InputDecoration(
+                            labelText: "Body",
+                            border: OutlineInputBorder(),
+                          ),
+                          maxLines: 5,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return "Body can't be empty";
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 24),
+
+                        // Preview Image Section
+                        Text(
+                          "Preview Image",
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        const SizedBox(height: 12),
+                        Container(
+                          height: 150,
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey.shade300),
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(8.0),
+                            child: previewImageFile != null
+                                ? Image.file(
+                              previewImageFile!,
+                              width: double.infinity,
+                              height: double.infinity,
+                              fit: BoxFit.cover,
+                            )
+                                : widget.addBlogModel.previewImage != null
+                                ? Image.network(
+                              widget.networkHandler
+                                  .formater2(widget.addBlogModel.previewImage!),
+                              width: double.infinity,
+                              height: double.infinity,
+                              fit: BoxFit.cover,
+                            )
+                                : const Center(
+                              child: Text(
+                                "No preview image selected",
+                                style: TextStyle(color: Colors.grey),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+
+                        // Button to Change Preview Image (Centered)
+                        Align(
+                          alignment: Alignment.center,
+                          child: ValueListenableBuilder<Color>(
+                            valueListenable: appColorNotifier,
+                            builder: (context, color, child) {
+                              return TextButton(
+                                onPressed: _pickPreviewImage,
+                                child: const Text("Change Preview Image"),
+                                style: ButtonStyle(
+                                  foregroundColor:
+                                  MaterialStateProperty.all<Color>(Colors.black),
+                                  backgroundColor:
+                                  MaterialStateProperty.all<Color>(color),
+                                  padding: MaterialStateProperty.all<EdgeInsets>(
+                                      const EdgeInsets.symmetric(
+                                          horizontal: 16.0, vertical: 8.0)),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+
+                        // Slideshow Images Section
+                        Text(
+                          "Slideshow Images",
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        const SizedBox(height: 12),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            ...existingCoverImages.map(
+                                  (imageUrl) => Stack(
+                                children: [
+                                  Container(
+                                    width: 100,
+                                    height: 100,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(8.0),
+                                      image: DecorationImage(
+                                        image: NetworkImage(
+                                          widget.networkHandler
+                                              .formater2(imageUrl),
+                                        ),
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                  ),
+                                  Positioned(
+                                    top: 0,
+                                    right: 0,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: Colors.black54,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: IconButton(
+                                        icon: const Icon(Icons.close,
+                                            color: Colors.red, size: 20),
+                                        onPressed: () =>
+                                            _removeExistingCoverImage(imageUrl),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            ...newCoverImages.map(
+                                  (imageFile) => Stack(
+                                children: [
+                                  Container(
+                                    width: 100,
+                                    height: 100,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(8.0),
+                                      image: DecorationImage(
+                                        image: FileImage(imageFile),
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                  ),
+                                  Positioned(
+                                    top: 0,
+                                    right: 0,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: Colors.black54,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: IconButton(
+                                        icon: const Icon(Icons.close,
+                                            color: Colors.red, size: 20),
+                                        onPressed: () =>
+                                            _removeExistingCoverImage(imageFile as String),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+
+                        // Button to Add New Slideshow Images (Centered)
+                        Align(
+                          alignment: Alignment.center,
+                          child: ValueListenableBuilder<Color>(
+                            valueListenable: appColorNotifier,
+                            builder: (context, color, child) {
+                              return TextButton(
+                                onPressed: _pickNewCoverImages,
+                                child: const Text("Add New Images"),
+                                style: ButtonStyle(
+                                  foregroundColor:
+                                  MaterialStateProperty.all<Color>(Colors.black),
+                                  backgroundColor:
+                                  MaterialStateProperty.all<Color>(color),
+                                  padding: MaterialStateProperty.all<EdgeInsets>(
+                                      const EdgeInsets.symmetric(
+                                          horizontal: 16.0, vertical: 8.0)),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+
+                        // Save Changes Button (Aligned to Right)
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: ElevatedButton(
+                            onPressed: _submitChanges,
+                            child: const Text("Save Changes"),
+                            style: ElevatedButton.styleFrom(
+                              foregroundColor: Colors.black,
+                              backgroundColor: Colors.blueGrey,
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 24.0, vertical: 12.0),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8.0),
+                              ),
+                            ),
                           ),
                         ),
                       ],
                     ),
                   ),
-                  ...newCoverImages.map(
-                        (imageFile) => Stack(
-                      children: [
-                        Image.file(imageFile, width: 100, height: 100, fit: BoxFit.cover),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ValueListenableBuilder<Color>(
-              valueListenable: appColorNotifier,
-              builder: (context, color, child) {
-                return TextButton(
-                  onPressed: _pickNewCoverImages,
-                  child: const Text("Add New Images"),
-                  style: ButtonStyle(
-                    foregroundColor: MaterialStateProperty.all<Color>(Colors.black),
-                    backgroundColor: MaterialStateProperty.all<Color>(color),
-                  ),
-                );
-              },
-            ),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: _submitChanges,
-                child: const Text("Save Changes"),
-                style: const ButtonStyle(
-                  foregroundColor: MaterialStatePropertyAll<Color>(Colors.black),
-                 backgroundColor: MaterialStatePropertyAll<Color>(Colors.blueGrey),
-
                 ),
               ),
-            ],
+            ),
           ),
         ),
       ),

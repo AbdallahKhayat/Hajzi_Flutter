@@ -234,6 +234,7 @@ class _ChatScreenWebState extends State<_ChatScreenWeb>
     } catch (e) {
       debugPrint("Error in _fetchChats: $e");
     } finally {
+      if(mounted)
       setState(() {
         _isLoadingChats = false;
       });
