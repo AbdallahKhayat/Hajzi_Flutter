@@ -13,10 +13,12 @@ class CustomCard extends StatelessWidget {
   final String currentUserEmail;
   final NetworkHandler networkHandler = NetworkHandler();
   final void Function(Map<String, dynamic>)? onChatSelected;
+  final int chatFlag;
   CustomCard({
     Key? key,
     required this.chat,
     required this.currentUserEmail,
+    required this.chatFlag,
     this.onChatSelected
   }) : super(key: key);
 
@@ -76,6 +78,18 @@ class CustomCard extends StatelessWidget {
               // Instead, call the parent callback if provided.
               if (onChatSelected != null) {
                 onChatSelected!(chat);
+              }
+              if(chatFlag == 1){
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => IndividualPage(
+                      initialChatId: chat['_id'],
+                      chatPartnerEmail: chatPartnerEmail,
+                      chatPartnerName: chatPartnerName,
+                    ),
+                  ),
+                );
               }
             }else
             Navigator.push(

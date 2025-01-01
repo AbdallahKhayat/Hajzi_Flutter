@@ -186,6 +186,7 @@ class _ChatPageState extends State<ChatPage> {
                           'chatPartnerImg': chatPartner['img'],
                         },
                         currentUserEmail: currentUserEmail!,
+                        chatFlag: 1,
                       );
                     } else {
                       return const SizedBox.shrink();

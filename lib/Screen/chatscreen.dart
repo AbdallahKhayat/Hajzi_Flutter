@@ -440,6 +440,7 @@ class _ChatScreenWebState extends State<_ChatScreenWeb>
                     },
                     currentUserEmail: currentUserEmail,
                     onChatSelected: (selectedChat) => _onChatSelected(chat),
+                    chatFlag: 0,
                   );
                 },
               );
