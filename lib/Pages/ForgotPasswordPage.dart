@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -114,7 +115,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Colors.white, Colors.green[200]!],
+            colors: [Colors.white, Colors.green[400]!],
             begin: const FractionalOffset(0.0, 1.0),
             end: const FractionalOffset(0.0, 1.0),
             stops: [0.0, 1.0],
@@ -221,7 +222,37 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   }
 
   Widget emailTextField() {
-    return TextFormField(
+    return kIsWeb //web part//////////////////
+        ? Center(
+      child: SizedBox(
+        width: 400,
+        child: TextFormField(
+          controller: _emailController,
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Email can’t be empty!';
+            }
+            if (!value.contains("@")) {
+              return 'Invalid email!';
+            }
+            return null;
+          },
+          decoration: InputDecoration(
+            hintText: "Enter your email",
+            filled: true,
+            fillColor: Colors.white.withOpacity(0.9),
+            prefixIcon: const Icon(Icons.email, color: Colors.black),
+            border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8)),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: Colors.blue, width: 2),
+            ),
+          ),
+        ),
+      ),
+    ):
+    TextFormField(
       controller: _emailController,
       validator: (value) {
         if (value == null || value.isEmpty) {
@@ -247,7 +278,39 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   }
 
   Widget passwordTextField() {
-    return TextFormField(
+    return kIsWeb //web part///////////////
+        ? Center(
+      child: SizedBox(
+        width: 400,
+        child: TextFormField(
+          controller: _passwordController,
+          obscureText: visible,
+          decoration: InputDecoration(
+            hintText: "Enter your new password",
+            filled: true,
+            fillColor: Colors.white.withOpacity(0.9),
+            prefixIcon: const Icon(Icons.lock, color: Colors.black),
+            suffixIcon: IconButton(
+              icon:
+              Icon(visible ? Icons.visibility_off : Icons.visibility),
+              onPressed: () {
+                setState(() {
+                  visible = !visible;
+                });
+              },
+            ),
+            border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8)),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: Colors.blue, width: 2),
+            ),
+
+          ),
+        ),
+      ),
+    ):
+   TextFormField(
       controller: _passwordController,
       obscureText: visible,
       decoration: InputDecoration(

@@ -6,6 +6,7 @@ import 'HomePage.dart';
 
 class CheckVerificationPage extends StatefulWidget {
   final Function(Locale) setLocale;
+
   const CheckVerificationPage({super.key, required this.setLocale});
 
   @override
@@ -41,14 +42,14 @@ class _CheckVerificationPageState extends State<CheckVerificationPage> {
                 context,
                 MaterialPageRoute(
                     builder: (context) => HomePage(
-                      setLocale: widget.setLocale,
-                      filterState: 0,
-                    )),
+                          setLocale: widget.setLocale,
+                          filterState: 0,
+                        )),
               );
             },
           ),
         ),
-            (route) => false,
+        (route) => false,
       );
     }
   }
@@ -65,7 +66,8 @@ class _CheckVerificationPageState extends State<CheckVerificationPage> {
     }
   }
 
-  Widget buildStyledButton({required String label, required VoidCallback onPressed}) {
+  Widget buildStyledButton(
+      {required String label, required VoidCallback onPressed}) {
     return GestureDetector(
       onTap: onPressed,
       child: Container(
@@ -80,7 +82,8 @@ class _CheckVerificationPageState extends State<CheckVerificationPage> {
         child: Center(
           child: Text(
             label,
-            style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.white),
+            style: TextStyle(
+                fontSize: 17, fontWeight: FontWeight.bold, color: Colors.white),
           ),
         ),
       ),
@@ -93,53 +96,47 @@ class _CheckVerificationPageState extends State<CheckVerificationPage> {
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Colors.white, Colors.green[200]!],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            stops: [0.0, 1.0],
+            colors: [
+              Colors.white,
+              Colors.green[400]!,
+            ],
+            begin: const FractionalOffset(0.0, 1.0),
+            end: const FractionalOffset(0.0, 1.0),
+            stops: const [0.0, 1.0],
+            tileMode: TileMode.repeated,
           ),
         ),
         child: Center(
           child: isVerified
               ? CircularProgressIndicator()
               : Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                child: Text(
-                  "Please verify your email. Check your inbox and click 'I Have Verified' once you complete verification.",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 16, color: Colors.black),
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                      child: Text(
+                        "Please verify your email. Check your inbox and click 'I Have Verified' once you complete verification.",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 16, color: Colors.black),
+                      ),
+                    ),
+                    SizedBox(height: 20),
+                    buildStyledButton(
+                      label: "I Have Verified",
+                      onPressed: checkVerification,
+                    ),
+                    SizedBox(height: 10),
+                    buildStyledButton(
+                      label: "Resend Verification Email",
+                      onPressed: resendVerificationEmail,
+                    ),
+                  ],
                 ),
-              ),
-              SizedBox(height: 20),
-              buildStyledButton(
-                label: "I Have Verified",
-                onPressed: checkVerification,
-              ),
-              SizedBox(height: 10),
-              buildStyledButton(
-                label: "Resend Verification Email",
-                onPressed: resendVerificationEmail,
-              ),
-            ],
-          ),
         ),
       ),
     );
   }
 }
-
-
-
-
-
-
-
-
-
-
 
 // import 'package:firebase_auth/firebase_auth.dart';
 // import 'package:flutter/material.dart';
