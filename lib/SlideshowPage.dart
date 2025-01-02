@@ -108,7 +108,7 @@ class _SlideshowPageState extends State<SlideshowPage> {
 
           // Slide indicators
           Positioned(
-            bottom: 100,
+            bottom: 120,
             left: 0,
             right: 0,
             child: Row(
@@ -122,7 +122,7 @@ class _SlideshowPageState extends State<SlideshowPage> {
 
           // Floating button at the bottom
           Positioned(
-            bottom: 20,
+            bottom: 40,
             left: 20,
             right: 20,
             child: Center(
@@ -170,7 +170,7 @@ class _SlideshowPageState extends State<SlideshowPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Image.asset(imagePath,
-                  width: 300, height: 630, fit: BoxFit.cover),
+                  width: 300, height: 580, fit: BoxFit.fill),
               const SizedBox(height: 20),
               Text(title,
                   style: const TextStyle(

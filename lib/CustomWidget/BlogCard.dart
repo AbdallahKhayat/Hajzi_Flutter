@@ -141,7 +141,7 @@ class _BlogCardState extends State<BlogCard> {
                                 return AlertDialog(
                                   title: const Text("Confirm Deletion"),
                                   content: Text(
-                                    "Are you sure you want to delete the Shop with ID: ${widget.addBlogModel.id}?",
+                                    "Are you sure you want to delete the Shop with ID: ${widget.addBlogModel.title}?",
                                   ),
                                   actions: [
                                     TextButton(
