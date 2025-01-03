@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:blogapp/CustomWidget/OwnMessageCard.dart';
 import 'package:blogapp/CustomWidget/ReplyCard.dart';
@@ -10,6 +11,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // 🔥 Add
 import 'package:intl/intl.dart'; // 🔥 Make sure you import this at the top of the file
 import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class IndividualPage extends StatefulWidget {
   final String initialChatId; // ✅ Rename from chatId to initialChatId
@@ -39,6 +41,8 @@ class _IndividualPageState extends State<IndividualPage> {
   String? loggedInUserEmail; // 🔥 Store logged-in user's email
   String? chatPartnerImageUrl; // Add this line
   NetworkHandler networkHandler = NetworkHandler();
+  XFile? _imageFile;
+  final ImagePicker _picker = ImagePicker();
 
   String formatTime(String timestamp) {
     try {
@@ -404,20 +408,25 @@ class _IndividualPageState extends State<IndividualPage> {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final isWeb = screenWidth > 600; // Check if the screen width indicates a web environment
+    final isWeb = screenWidth >
+        600; // Check if the screen width indicates a web environment
 
     return ValueListenableBuilder<Color>(
       valueListenable: appColorNotifier, // Listen to appColorNotifier
       builder: (context, mainColor, child) {
-        final messageBubbleColor = lightenColor(mainColor, 0.2); // Slightly lighter than mainColor
-        final backgroundColor = lightenColor(mainColor, 0.4); // Much lighter than mainColor
+        final messageBubbleColor =
+            lightenColor(mainColor, 0.2); // Slightly lighter than mainColor
+        final backgroundColor =
+            lightenColor(mainColor, 0.4); // Much lighter than mainColor
 
         return Scaffold(
           backgroundColor: backgroundColor, // Lighter shade of mainColor
           appBar: PreferredSize(
-            preferredSize: Size.fromHeight(isWeb ? kToolbarHeight * 1.2 : kToolbarHeight),
+            preferredSize:
+                Size.fromHeight(isWeb ? kToolbarHeight * 1.2 : kToolbarHeight),
             child: AppBar(
-              backgroundColor: mainColor, // Main color used for AppBar
+              backgroundColor: mainColor,
+              // Main color used for AppBar
 
               titleSpacing: isWeb ? screenWidth * 0.01 : 0,
               leadingWidth: isWeb ? screenWidth * 0.15 : screenWidth * 0.25,
@@ -428,33 +437,39 @@ class _IndividualPageState extends State<IndividualPage> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    SizedBox(width: isWeb ? screenWidth * 0.01 : screenWidth * 0.02),
+                    SizedBox(
+                        width: isWeb ? screenWidth * 0.01 : screenWidth * 0.02),
                     Icon(
                       Icons.arrow_back,
                       size: isWeb ? screenWidth * 0.02 : screenWidth * 0.06,
                       color: Colors.white,
                     ),
-                    SizedBox(width: isWeb ? screenWidth * 0.02 : screenWidth * 0.03),
+                    SizedBox(
+                        width: isWeb ? screenWidth * 0.02 : screenWidth * 0.03),
                     chatPartnerImageUrl != null
                         ? CircleAvatar(
-                      radius: isWeb ? screenWidth * 0.03 : screenWidth * 0.05,
-                      backgroundColor: Colors.transparent,
-                      backgroundImage: NetworkImage(chatPartnerImageUrl!),
-                    )
+                            radius:
+                                isWeb ? screenWidth * 0.03 : screenWidth * 0.05,
+                            backgroundColor: Colors.transparent,
+                            backgroundImage: NetworkImage(chatPartnerImageUrl!),
+                          )
                         : CircleAvatar(
-                      radius: isWeb ? screenWidth * 0.03 : screenWidth * 0.05,
-                      backgroundColor: Colors.white,
-                      child: Text(
-                        widget.chatPartnerName.isNotEmpty
-                            ? widget.chatPartnerName[0].toUpperCase()
-                            : 'U',
-                        style: TextStyle(
-                          color: mainColor,
-                          fontWeight: FontWeight.bold,
-                          fontSize: isWeb ? screenWidth * 0.03 : screenWidth * 0.05,
-                        ),
-                      ),
-                    ),
+                            radius:
+                                isWeb ? screenWidth * 0.03 : screenWidth * 0.05,
+                            backgroundColor: Colors.white,
+                            child: Text(
+                              widget.chatPartnerName.isNotEmpty
+                                  ? widget.chatPartnerName[0].toUpperCase()
+                                  : 'U',
+                              style: TextStyle(
+                                color: mainColor,
+                                fontWeight: FontWeight.bold,
+                                fontSize: isWeb
+                                    ? screenWidth * 0.03
+                                    : screenWidth * 0.05,
+                              ),
+                            ),
+                          ),
                   ],
                 ),
               ),
@@ -463,7 +478,9 @@ class _IndividualPageState extends State<IndividualPage> {
                 onTap: () {},
                 // Optional: You can add functionality when tapping the title
                 child: Container(
-                  margin: EdgeInsets.symmetric(horizontal: isWeb ? screenWidth * 0.005 : screenWidth * 0.002),
+                  margin: EdgeInsets.symmetric(
+                      horizontal:
+                          isWeb ? screenWidth * 0.005 : screenWidth * 0.002),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -509,12 +526,19 @@ class _IndividualPageState extends State<IndividualPage> {
                   onSelected: (value) {}, // 🚀 To be implemented later
                   itemBuilder: (BuildContext context) {
                     return const [
-                      PopupMenuItem(value: "View Contact", child: Text("View Contact")),
-                      PopupMenuItem(value: "Media, links, and docs", child: Text("Media, links, and docs")),
-                      PopupMenuItem(value: "Hajzi web", child: Text("Hajzi web")),
+                      PopupMenuItem(
+                          value: "View Contact", child: Text("View Contact")),
+                      PopupMenuItem(
+                          value: "Media, links, and docs",
+                          child: Text("Media, links, and docs")),
+                      PopupMenuItem(
+                          value: "Hajzi web", child: Text("Hajzi web")),
                       PopupMenuItem(value: "Search", child: Text("Search")),
-                      PopupMenuItem(value: "Mute Notifications", child: Text("Mute Notifications")),
-                      PopupMenuItem(value: "Wall Paper", child: Text("Wall Paper")),
+                      PopupMenuItem(
+                          value: "Mute Notifications",
+                          child: Text("Mute Notifications")),
+                      PopupMenuItem(
+                          value: "Wall Paper", child: Text("Wall Paper")),
                     ];
                   },
                 ),
@@ -525,11 +549,13 @@ class _IndividualPageState extends State<IndividualPage> {
             children: [
               Expanded(
                 child: ListView.builder(
-                  controller: _scrollController, // Attach scroll controller to auto-scroll
+                  controller: _scrollController,
+                  // Attach scroll controller to auto-scroll
                   itemCount: messages.length,
                   itemBuilder: (context, index) {
                     final message = messages[index];
-                    bool isOwnMessage = message['senderEmail'] == loggedInUserEmail; // Check if message is from the current user
+                    bool isOwnMessage = message['senderEmail'] ==
+                        loggedInUserEmail; // Check if message is from the current user
 
                     if (isOwnMessage) {
                       return ValueListenableBuilder<Color>(
@@ -537,12 +563,16 @@ class _IndividualPageState extends State<IndividualPage> {
                         builder: (context, appColor, child) {
                           // Make the color lighter
                           HSLColor hsl = HSLColor.fromColor(appColor);
-                          Color lighterHSLColor = hsl.withLightness((hsl.lightness + 0.3).clamp(0.0, 1.0)).toColor();
+                          Color lighterHSLColor = hsl
+                              .withLightness(
+                                  (hsl.lightness + 0.3).clamp(0.0, 1.0))
+                              .toColor();
 
                           return OwnMessageCard(
                             message: message['content'],
                             time: formatTime(message['timestamp']),
-                            messageColor: lighterHSLColor, // Use the lighter version of appColor
+                            messageColor: lighterHSLColor,
+                            // Use the lighter version of appColor
                             textColor: Colors.black,
                           );
                         },
@@ -579,13 +609,62 @@ class _IndividualPageState extends State<IndividualPage> {
                             sendButton = value.isNotEmpty;
                           });
                         },
-                        onFieldSubmitted: sendMessage, // 🔥 Use the sendMessage method here
+                        onFieldSubmitted: (value) {
+                          sendMessage(value);
+                          // Clear the selected image after sending the message
+                          if (_imageFile != null) {
+                            setState(() {
+                              _imageFile = null;
+                            });
+                          }
+                        },
+                        // 🔥 Use the sendMessage method here
                         decoration: InputDecoration(
                           border: InputBorder.none,
                           hintText: "Type a message",
                           contentPadding: isWeb
-                              ? EdgeInsets.symmetric(horizontal: 20, vertical: 15)
-                              : const EdgeInsets.only(left: 20, top: 10, bottom: 10),
+                              ? EdgeInsets.symmetric(
+                                  horizontal: 20, vertical: 15)
+                              : const EdgeInsets.only(
+                                  left: 20, top: 10, bottom: 10),
+                          prefix: _imageFile != null
+                              ? Container(
+                                  margin: EdgeInsets.only(right: 8),
+                                  child: Stack(
+                                    children: [
+                                      ClipRRect(
+                                        borderRadius: BorderRadius.circular(8),
+                                        child: Image.file(
+                                          File(_imageFile!.path),
+                                          width: 60,
+                                          height: 60,
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                      Positioned(
+                                        right: -10,
+                                        top: -10,
+                                        child: GestureDetector(
+                                          onTap: () {
+                                            setState(() {
+                                              _imageFile = null;
+                                            });
+                                          },
+                                          child: CircleAvatar(
+                                            radius: 10,
+                                            backgroundColor: Colors.red,
+                                            child: Icon(
+                                              Icons.close,
+                                              size: 12,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              : null,
                           suffixIcon: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
@@ -598,11 +677,15 @@ class _IndividualPageState extends State<IndividualPage> {
                                   );
                                 },
                                 icon: Icon(Icons.attach_file),
-                                padding: const EdgeInsets.only(right: 0, left: 30),
+                                padding:
+                                    const EdgeInsets.only(right: 0, left: 30),
                               ),
                               IconButton(
                                 onPressed: () {
-                                  // TODO: Implement camera logic
+                                  showModalBottomSheet(
+                                    context: context,
+                                    builder: ((builder) => buttonSheet()),
+                                  );
                                 },
                                 icon: Icon(Icons.camera_alt),
                               ),
@@ -621,15 +704,19 @@ class _IndividualPageState extends State<IndividualPage> {
                       radius: isWeb ? 20 : 25,
                       child: IconButton(
                         onPressed: () {
-                          if (sendButton) sendMessage(_messageController.text.trim());
+                          if (sendButton)
+                            sendMessage(_messageController.text.trim());
                         },
                         icon: AnimatedSwitcher(
                           duration: Duration(milliseconds: 200),
-                          child: sendButton
-                              ? Icon(Icons.send, key: ValueKey('send'), color: Colors.black)
-                              : Icon(Icons.mic, key: ValueKey('mic'), color: Colors.black),
+                          child: sendButton || _imageFile != null
+                              ? Icon(Icons.send,
+                                  key: ValueKey('send'), color: Colors.black)
+                              : Icon(Icons.mic,
+                                  key: ValueKey('mic'), color: Colors.black),
                         ),
-                        splashColor: mainColor.withOpacity(0.3), // Slight splash on click
+                        splashColor: mainColor
+                            .withOpacity(0.3), // Slight splash on click
                       ),
                     ),
                   ),
@@ -640,6 +727,95 @@ class _IndividualPageState extends State<IndividualPage> {
         );
       },
     );
+  }
+
+  Future<void> requestPermissions() async {
+    if (await Permission.camera.request().isGranted &&
+        await Permission.photos.request().isGranted) {
+      print("All permissions granted");
+    } else {
+      print("Camera or Gallery permission denied");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Camera or Gallery permission is required")),
+      );
+    }
+  }
+
+  Widget buttonSheet() {
+    return Container(
+      height: 100,
+      width: MediaQuery.of(context).size.width,
+      margin: EdgeInsets.symmetric(
+        horizontal: 20,
+        vertical: 20,
+      ),
+      child: Column(
+        children: [
+          const Text(
+            "Choose Image From",
+            style: TextStyle(
+              fontSize: 20,
+            ),
+          ),
+          const SizedBox(
+            height: 20,
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              TextButton.icon(
+                onPressed: () {
+                  takePhoto(ImageSource.camera);
+                },
+                icon: const Icon(
+                  Icons.camera,
+                  color: Colors.black,
+                ),
+                // The icon to display
+                label: const Text(
+                  "Camera",
+                  style: TextStyle(
+                    color: Colors.black,
+                  ),
+                ), // The label text to display
+              ),
+              SizedBox(
+                width: 20,
+              ),
+              TextButton.icon(
+                onPressed: () {
+                  takePhoto(ImageSource.gallery);
+                },
+                icon: const Icon(
+                  Icons.image,
+                  color: Colors.black,
+                ),
+                // The icon to display
+                label: const Text(
+                  "Gallery",
+                  style: TextStyle(
+                    color: Colors.black,
+                  ),
+                ), // The label text to display
+              ),
+            ],
+          )
+        ],
+      ),
+    );
+  }
+
+  void takePhoto(ImageSource source) async {
+    await requestPermissions(); // Request permissions
+
+    final XFile? pickedFile = await _picker.pickImage(source: source);
+    if (pickedFile != null) {
+      setState(() {
+        _imageFile = pickedFile;
+      });
+    } else {
+      print("No image selected.");
+    }
   }
 
   Widget CustomBottomSheet() {
