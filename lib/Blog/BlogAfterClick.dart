@@ -45,8 +45,16 @@ class _BlogAfterClickState extends State<BlogAfterClick> {
     _loadUserRole();
     _loadEmailRole();
     _loadUserName();
+    _storeLastClickedType(widget.addBlogModel.type ?? 'none');
   }
-
+  Future<void> _storeLastClickedType(String storeType) async {
+    try {
+      await storage.write(key: "lastClickedStoreType", value: storeType);
+      debugPrint("Stored lastClickedStoreType = $storeType");
+    } catch (e) {
+      debugPrint("Failed to store lastClickedStoreType: $e");
+    }
+  }
   // Simulate fetching available slots from the backend
   List<DateTime> _getAvailableSlots() {
     return [

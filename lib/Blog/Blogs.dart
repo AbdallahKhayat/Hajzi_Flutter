@@ -9,7 +9,9 @@ import '../CustomWidget/BlogCard.dart';
 class Blogs extends StatefulWidget {
   final String url;
   final int flag;
-  const Blogs({super.key, required this.url, required this.flag});
+  final String searchQuery; // <-- New param
+  final bool isRecommendation; // new param
+  const Blogs({super.key, required this.url, required this.flag, this.searchQuery = '',   this.isRecommendation = false,});
 
   @override
   State<Blogs> createState() => _BlogsState();
@@ -35,7 +37,18 @@ class _BlogsState extends State<Blogs> {
     _searchController.dispose();
     super.dispose();
   }
-
+  @override
+  void didUpdateWidget(covariant Blogs oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // If the incoming search query changes, re-fetch data
+    if (oldWidget.searchQuery != widget.searchQuery) {
+      fetchData();
+    }
+    // Also, if the incoming url changes, we might want to re-fetch
+    if (oldWidget.url != widget.url) {
+      fetchData();
+    }
+  }
   Future<void> fetchData({String searchQuery = ''}) async {
     setState(() {
       _isLoading = true;
@@ -43,9 +56,14 @@ class _BlogsState extends State<Blogs> {
     });
 
     try {
-      final response = searchQuery.isNotEmpty
-          ? await networkHandler.get("/blogpost/search?query=$searchQuery")
+      final searchText = widget.searchQuery.trim();
+
+      final response = searchText.isNotEmpty
+      // If there's a search query, call your search endpoint:
+          ? await networkHandler.get("/blogpost/search?query=$searchText")
+      // Otherwise, call the URL that was passed in (recommendations or filter-based):
           : await networkHandler.get(widget.url);
+
 
       listBlogModel = ListBlogModel.fromJson(response);
 
@@ -63,87 +81,40 @@ class _BlogsState extends State<Blogs> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: kIsWeb //Web part//////////////////////
-                ? SizedBox(
-                    width: 1300,
-                    child: TextField(
-                      controller: _searchController,
-                      decoration: InputDecoration(
-                        labelText: 'Search Blogs',
-                        border: OutlineInputBorder(),
-                        suffixIcon: IconButton(
-                          icon: const Icon(Icons.clear),
-                          onPressed: () {
-                            _searchController.clear();
-                            fetchData(); // Fetch all blogs when cleared
-                          },
-                        ),
-                      ),
-                      onChanged: (value) {
-                        fetchData(
-                            searchQuery:
-                                value); // Update results based on input
-                      },
-                    ),
-                  )
-                : widget.flag == 0
-                    ? TextField(
-                        controller: _searchController,
-                        decoration: InputDecoration(
-                          labelText: 'Search Blogs',
-                          border: OutlineInputBorder(),
-                          suffixIcon: IconButton(
-                            icon: const Icon(Icons.clear),
-                            onPressed: () {
-                              _searchController.clear();
-                              fetchData(); // Fetch all blogs when cleared
-                            },
-                          ),
-                        ),
-                        onChanged: (value) {
-                          fetchData(
-                              searchQuery:
-                                  value); // Update results based on input
-                        },
-                      )
-                    : null,
-          ),
-          if (_isLoading)
-            const Center(child: CircularProgressIndicator())
-          else if (errorMessage.isNotEmpty)
-            Center(
-              child: Text(
-                errorMessage,
-                style: const TextStyle(color: Colors.red, fontSize: 16),
-              ),
-            )
-          else if (data.isEmpty)
-            const Center(
-              child: Text(
-                "No Blogs Currently Available",
-                style: TextStyle(fontSize: 18, color: Colors.red),
-              ),
-            )
-          else
-            kIsWeb
-                ? GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(), // No scroll for GridView
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3, // Number of columns in the grid
-                crossAxisSpacing: 16.0, // Space between columns
-                mainAxisSpacing: 16.0, // Space between rows
-                childAspectRatio: 1.2, // Width to height ratio of each item
-              ),
-              itemCount: data.length,
-              itemBuilder: (context, index) {
-                final blog = data[index];
-                return InkWell(
+    // Loading or error states
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    } else if (errorMessage.isNotEmpty) {
+      return Center(
+        child: Text(
+          errorMessage,
+          style: const TextStyle(color: Colors.red, fontSize: 16),
+        ),
+      );
+    } else if (data.isEmpty) {
+      return const Center(
+        child: Text(
+          "No Blogs Currently Available",
+          style: TextStyle(fontSize: 18, color: Colors.red),
+        ),
+      );
+    }
+
+    // ============ HORIZONTAL LAYOUT FOR RECOMMENDATION ============ //
+    if (widget.isRecommendation) {
+      return SizedBox(
+        height: 230,
+        // Adjust this height to show smaller cards
+        child: ListView.builder(
+          scrollDirection: Axis.horizontal,
+          itemCount: data.length,
+          itemBuilder: (context, index) {
+            final blog = data[index];
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 6.0),
+              child: SizedBox(
+                width: 220, // smaller width for smaller cards
+                child: InkWell(
                   onTap: () {
                     Navigator.push(
                       context,
@@ -161,40 +132,76 @@ class _BlogsState extends State<Blogs> {
                     onDelete: () => fetchData(),
                     flag: widget.flag,
                   ),
-                );
-              },
-            )
-                : ListView.builder(
-                    shrinkWrap: true,
-                    // Important to avoid unbounded height
-                    physics: const NeverScrollableScrollPhysics(),
-                    // Disable scrolling for this list
-                    itemCount: data.length,
-                    itemBuilder: (context, index) {
-                      final blog = data[index];
-                      return InkWell(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => BlogAfterClick(
-                                addBlogModel: blog,
-                                networkHandler: networkHandler,
-                              ),
-                            ),
-                          );
-                        },
-                        child: BlogCard(
-                          addBlogModel: blog,
-                          networkHandler: networkHandler,
-                          onDelete: () => fetchData(),
-                          flag: widget.flag,
-                        ),
-                      );
-                    },
-                  ),
-        ],
+                ),
+              ),
+            );
+          },
+        ),
+      );
+    }
+
+    // ============ VERTICAL LAYOUT FOR “ALL SHOPS” ============ //
+    // Still handle web vs mobile. If your code uses a grid for web, keep that.
+    return kIsWeb
+        ? GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+        crossAxisSpacing: 16.0,
+        mainAxisSpacing: 16.0,
+        childAspectRatio: 1.2,
       ),
+      itemCount: data.length,
+      itemBuilder: (context, index) {
+        final blog = data[index];
+        return InkWell(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => BlogAfterClick(
+                  addBlogModel: blog,
+                  networkHandler: networkHandler,
+                ),
+              ),
+            );
+          },
+          child: BlogCard(
+            addBlogModel: blog,
+            networkHandler: networkHandler,
+            onDelete: () => fetchData(),
+            flag: widget.flag,
+          ),
+        );
+      },
+    )
+        : ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: data.length,
+      itemBuilder: (context, index) {
+        final blog = data[index];
+        return InkWell(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => BlogAfterClick(
+                  addBlogModel: blog,
+                  networkHandler: networkHandler,
+                ),
+              ),
+            );
+          },
+          child: BlogCard(
+            addBlogModel: blog,
+            networkHandler: networkHandler,
+            onDelete: () => fetchData(),
+            flag: widget.flag,
+          ),
+        );
+      },
     );
   }
 }
