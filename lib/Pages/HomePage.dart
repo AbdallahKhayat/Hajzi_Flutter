@@ -36,7 +36,8 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin {
+class _HomePageState extends State<HomePage>
+    with SingleTickerProviderStateMixin {
   final storage = const FlutterSecureStorage();
   NetworkHandler networkHandler = NetworkHandler();
 
@@ -47,7 +48,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   String? userRole;
 
   int currentState = 0; // This controls which screen index is shown (0..n).
-  int userCount = 0;    // For Admin: number of users
+  int userCount = 0; // For Admin: number of users
   int requestCount = 0; // For Admin: number of requests
   int notificationsCount = 0;
 
@@ -112,14 +113,15 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     // Initialize the screen list
     widgets = [
       HomeScreen(filterState: widget.filterState), // Index 0
-      ProfileScreen(),                            // Index 1
-      ChatScreen(),                                // Index 2
-      ShopsScreen(),                               // Index 3 (if customer), or UsersScreen() if admin
-      RequestsScreen(),                            // Index 4 (admin only)
+      ProfileScreen(), // Index 1
+      ChatScreen(), // Index 2
+      ShopsScreen(), // Index 3 (if customer), or UsersScreen() if admin
+      RequestsScreen(), // Index 4 (admin only)
     ];
   }
 
   void _startAnimation() => _animationController.repeat(reverse: true);
+
   void _stopAnimation() => _animationController.stop();
 
   @override
@@ -242,7 +244,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       MaterialPageRoute(
         builder: (context) => WelcomePage(setLocale: widget.setLocale),
       ),
-          (route) => false,
+      (route) => false,
     );
   }
 
@@ -260,7 +262,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       }
 
       // request count
-      var requestResponse = await networkHandler.get("/AddBlogApproval/requests");
+      var requestResponse =
+          await networkHandler.get("/AddBlogApproval/requests");
       if (requestResponse != null && requestResponse['data'] != null) {
         setState(() {
           requestCount = requestResponse['data'].length;
@@ -271,7 +274,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       String? email = await storage.read(key: "email");
       if (email != null) {
         var notificationResponse =
-        await networkHandler.get("/notifications/unreadCount/$email");
+            await networkHandler.get("/notifications/unreadCount/$email");
         if (notificationResponse != null &&
             notificationResponse['count'] != null) {
           setState(() {
@@ -322,8 +325,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     } else if (userRole == "admin") {
       // index 3 => Users
       // index 4 => Requests
-      visibleWidgets.add(UsersScreen());     // override index 3
-      visibleWidgets.add(RequestsScreen());  // override index 4
+      visibleWidgets.add(UsersScreen()); // override index 3
+      visibleWidgets.add(RequestsScreen()); // override index 4
     }
 
     // Build nav items
@@ -525,12 +528,14 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                       style: const TextStyle(
                           fontSize: 16, fontWeight: FontWeight.w500),
                     ),
-                    trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+                    trailing:
+                        const Icon(Icons.chevron_right, color: Colors.grey),
                     onTap: _upgradeToCustomer,
                   ),
                 // Feedback (AI chat)
                 ListTile(
-                  leading: Icon(FontAwesomeIcons.robot, size: 21, color: appColor),
+                  leading:
+                      Icon(FontAwesomeIcons.robot, size: 21, color: appColor),
                   title: Text(
                     AppLocalizations.of(context)!.feedback,
                     style: const TextStyle(
@@ -542,7 +547,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                 Divider(thickness: 1, color: Colors.grey.shade400),
                 // Logout
                 ListTile(
-                  leading: const Icon(Icons.power_settings_new, color: Colors.red),
+                  leading:
+                      const Icon(Icons.power_settings_new, color: Colors.red),
                   title: Text(
                     AppLocalizations.of(context)!.logout,
                     style: const TextStyle(
@@ -582,7 +588,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => const NotificationScreen(),
+                                builder: (context) =>
+                                    const NotificationScreen(),
                               ),
                             );
                           },
@@ -622,31 +629,31 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
           floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
           floatingActionButton: (userRole != "user")
               ? FloatingActionButton(
-            backgroundColor: appColor,
-            onPressed: () {
-              Navigator.push(
-                context,
-                PageRouteBuilder(
-                  transitionDuration: const Duration(milliseconds: 500),
-                  pageBuilder: (context, animation, secondaryAnimation) =>
-                      AddBlog(),
-                  transitionsBuilder:
-                      (context, animation, secondaryAnimation, child) {
-                    return SlideTransition(
-                      position: animation.drive(
-                        Tween(
-                          begin: const Offset(0.0, 1.0),
-                          end: Offset.zero,
-                        ).chain(CurveTween(curve: Curves.easeInOut)),
+                  backgroundColor: appColor,
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      PageRouteBuilder(
+                        transitionDuration: const Duration(milliseconds: 500),
+                        pageBuilder: (context, animation, secondaryAnimation) =>
+                            AddBlog(),
+                        transitionsBuilder:
+                            (context, animation, secondaryAnimation, child) {
+                          return SlideTransition(
+                            position: animation.drive(
+                              Tween(
+                                begin: const Offset(0.0, 1.0),
+                                end: Offset.zero,
+                              ).chain(CurveTween(curve: Curves.easeInOut)),
+                            ),
+                            child: child,
+                          );
+                        },
                       ),
-                      child: child,
                     );
                   },
-                ),
-              );
-            },
-            child: const Icon(Icons.add, color: Colors.white),
-          )
+                  child: const Icon(Icons.add, color: Colors.white),
+                )
               : null,
           // Bottom Nav
           bottomNavigationBar: BottomNavigationBar(
@@ -661,7 +668,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                 currentState = index;
                 checkProfile();
                 // If admin in "Users" or "Requests" tab
-                if (userRole == "admin" && (currentState == 3 || currentState == 4)) {
+                if (userRole == "admin" &&
+                    (currentState == 3 || currentState == 4)) {
                   fetchCounts();
                 }
               });
@@ -727,47 +735,47 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                       alignment: Alignment.center,
                       child: isDrawerCollapsed
                           ? IconButton(
-                        icon: const Icon(Icons.menu, color: Colors.white),
-                        onPressed: () {
-                          setState(() {
-                            isDrawerCollapsed = !isDrawerCollapsed;
-                          });
-                        },
-                      )
-                          : Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          ClipOval(
-                            child: SizedBox(
-                              width: 60,
-                              height: 60,
-                              child: profilePhoto,
-                            ),
-                          ),
-                          const SizedBox(height: 5),
-                          Text(
-                            email,
-                            style: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          Align(
-                            alignment: Alignment.topRight,
-                            child: IconButton(
-                              icon: const Icon(Icons.chevron_left,
-                                  color: Colors.white),
+                              icon: const Icon(Icons.menu, color: Colors.white),
                               onPressed: () {
                                 setState(() {
                                   isDrawerCollapsed = !isDrawerCollapsed;
                                 });
                               },
+                            )
+                          : Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                ClipOval(
+                                  child: SizedBox(
+                                    width: 60,
+                                    height: 60,
+                                    child: profilePhoto,
+                                  ),
+                                ),
+                                const SizedBox(height: 5),
+                                Text(
+                                  email,
+                                  style: const TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                Align(
+                                  alignment: Alignment.topRight,
+                                  child: IconButton(
+                                    icon: const Icon(Icons.chevron_left,
+                                        color: Colors.white),
+                                    onPressed: () {
+                                      setState(() {
+                                        isDrawerCollapsed = !isDrawerCollapsed;
+                                      });
+                                    },
+                                  ),
+                                ),
+                              ],
                             ),
-                          ),
-                        ],
-                      ),
                     ),
                     // Nav items
                     Expanded(
@@ -779,7 +787,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                               icon: Icons.list,
                               label: AppLocalizations.of(context)!.allposts,
                               // We consider isActive if filterState=0 & currentState=0
-                              isActive: (currentState == 0 && widget.filterState == 0),
+                              isActive: (currentState == 0 &&
+                                  widget.filterState == 0),
                               onTap: () {
                                 setState(() {
                                   currentState = 0;
@@ -791,8 +800,10 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                             // BarberShop => filter=1, still index=0
                             _webNavItem(
                               icon: Icons.content_cut,
-                              label: AppLocalizations.of(context)!.barberShopPosts,
-                              isActive: (currentState == 0 && widget.filterState == 1),
+                              label:
+                                  AppLocalizations.of(context)!.barberShopPosts,
+                              isActive: (currentState == 0 &&
+                                  widget.filterState == 1),
                               onTap: () {
                                 setState(() {
                                   currentState = 0;
@@ -804,8 +815,10 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                             // Hospital => filter=2, still index=0
                             _webNavItem(
                               icon: Icons.local_hospital,
-                              label: AppLocalizations.of(context)!.hospitalPosts,
-                              isActive: (currentState == 0 && widget.filterState == 2),
+                              label:
+                                  AppLocalizations.of(context)!.hospitalPosts,
+                              isActive: (currentState == 0 &&
+                                  widget.filterState == 2),
                               onTap: () {
                                 setState(() {
                                   currentState = 0;
@@ -884,7 +897,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                                 onTap: () {
                                   Navigator.push(
                                     context,
-                                    MaterialPageRoute(builder: (context) => AddBlog()),
+                                    MaterialPageRoute(
+                                        builder: (context) => AddBlog()),
                                   );
                                 },
                               ),
@@ -898,7 +912,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                             // language
                             _webNavItem(
                               icon: Icons.language,
-                              label: AppLocalizations.of(context)!.changelanguage,
+                              label:
+                                  AppLocalizations.of(context)!.changelanguage,
                               isActive: false,
                               onTap: () => _showLanguageDialog(context),
                             ),
@@ -919,7 +934,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                             ),
                             // Logout
                             Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 8.0),
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 8.0),
                               child: Divider(color: Colors.white70),
                             ),
                             _webNavItem(
@@ -977,7 +993,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                                   return Transform.rotate(
                                     angle: notificationsCount > 0
                                         ? 0.5 *
-                                        math.sin(_animation.value * math.pi)
+                                            math.sin(_animation.value * math.pi)
                                         : 0.0,
                                     child: IconButton(
                                       icon: const Icon(Icons.notifications),
@@ -987,7 +1003,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                                           context,
                                           MaterialPageRoute(
                                             builder: (context) =>
-                                            const NotificationScreen(),
+                                                const NotificationScreen(),
                                           ),
                                         );
                                       },
@@ -1036,15 +1052,15 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
           floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
           floatingActionButton: (userRole != "user")
               ? FloatingActionButton(
-            backgroundColor: appColor,
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => AddBlog()),
-              );
-            },
-            child: const Icon(Icons.add, color: Colors.white),
-          )
+                  backgroundColor: appColor,
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => AddBlog()),
+                    );
+                  },
+                  child: const Icon(Icons.add, color: Colors.white),
+                )
               : null,
         );
       },
@@ -1142,7 +1158,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   }) {
     final activeColor = Colors.white;
     final inactiveColor = Colors.white70;
-    final color = isActive ? (textColor ?? activeColor) : (textColor ?? inactiveColor);
+    final color =
+        isActive ? (textColor ?? activeColor) : (textColor ?? inactiveColor);
 
     return InkWell(
       onTap: onTap,
@@ -1203,8 +1220,13 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
 
   /// Upgrade to Customer if user
   Future<void> _upgradeToCustomer() async {
+    if (kIsWeb) {
+      _showErrorDialog(
+          "This method isn't currently available on WEB pls switch to mobile app.");
+      return;
+    }
     await StripeService.instance.makePayment(
-          (bool paymentSuccess) async {
+      (bool paymentSuccess) async {
         if (paymentSuccess) {
           Map<String, dynamic> data = {'role': "customer"};
           var response = await networkHandler.patch(
@@ -1217,14 +1239,13 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
             final serviceId = 'service_lap99wb';
             final templateId = 'template_d58o7p1';
             final userId = 'tPJQRVN9PQ2jjZ_6C';
-            final url = Uri.parse(
-                'https://api.emailjs.com/api/v1.0/email/send');
+            final url =
+                Uri.parse('https://api.emailjs.com/api/v1.0/email/send');
 
             final emailResponse = await http.post(
               url,
               headers: {
-                'origin':
-                "https://hajzi-6883b1f029cf.herokuapp.com",
+                'origin': "https://hajzi-6883b1f029cf.herokuapp.com",
                 'Content-Type': 'application/json',
               },
               body: json.encode({
@@ -1239,8 +1260,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
 
             print("Email Response: ${emailResponse.body}");
 
-            final notificationResponse =
-            await networkHandler.post(
+            final notificationResponse = await networkHandler.post(
               "/notifications/notifyAdmins/customer/$email",
               // Note: Ensure proper string interpolation
               {},
@@ -1248,8 +1268,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
 
             print(
                 "Notification Response Code: ${notificationResponse.statusCode}");
-            print(
-                "Notification Response Body: ${notificationResponse.body}");
+            print("Notification Response Body: ${notificationResponse.body}");
 
             if (notificationResponse.statusCode == 200) {
               print("Admin notification sent successfully");
@@ -1258,8 +1277,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
               print("Failed to notify admins");
             }
 
-            print(
-                "User role updated successfully on server.");
+            print("User role updated successfully on server.");
             // Show success
             await showDialog(
               context: context,
@@ -1292,7 +1310,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.of(context).pop(),
-                      child: const Text("Close", style: TextStyle(color: Colors.black)),
+                      child: const Text("Close",
+                          style: TextStyle(color: Colors.black)),
                     ),
                   ],
                 );
@@ -1308,10 +1327,78 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                   filterState: 0,
                 ),
               ),
-                  (route) => false,
+              (route) => false,
             );
+          } else {
+            // Handle server error when updating role
+            _showProfileCreationDialog();
           }
+        } else {
+          // Handle payment failure (e.g., user hasn't created a profile)
+          _showProfileCreationDialog();
         }
+      },
+    );
+  }
+
+  /// Helper method to show an error dialog
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Feature not provided yet"),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text(
+                "Close",
+                style: TextStyle(color: Colors.black),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  /// Helper method to prompt user to create a profile
+  void _showProfileCreationDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Profile Required"),
+          content: const Text(
+              "Please create a profile before upgrading to Customer."),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                // Navigate to profile creation page
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        ProfileScreen(), // Replace with your profile creation page
+                  ),
+                );
+              },
+              child: const Text(
+                "Create Profile",
+                style: TextStyle(color: Colors.black),
+              ),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text(
+                "Cancel",
+                style: TextStyle(color: Colors.black),
+              ),
+            ),
+          ],
+        );
       },
     );
   }
