@@ -1,13 +1,17 @@
+import 'dart:convert';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import '../NetworkHandler.dart';
 import '../SlideshowPage.dart';
 import 'HomePage.dart';
-
+import 'package:http/http.dart' as http;
 class CheckVerificationPage extends StatefulWidget {
   final Function(Locale) setLocale;
+  final String email; // Add email as a parameter
 
-  const CheckVerificationPage({super.key, required this.setLocale});
+  const CheckVerificationPage({super.key, required this.setLocale, required this.email,});
 
   @override
   _CheckVerificationPageState createState() => _CheckVerificationPageState();
@@ -15,56 +19,116 @@ class CheckVerificationPage extends StatefulWidget {
 
 class _CheckVerificationPageState extends State<CheckVerificationPage> {
   bool isVerified = false;
-
+  bool isLoading = false;
+  String? errorText;
+  NetworkHandler networkHandler = NetworkHandler();
   @override
   void initState() {
     super.initState();
     checkVerification();
   }
+  // Function to send verification email using EmailJS
+  Future<void> sendVerificationEmail(String email) async {
+    try {
+      final serviceId = 'service_8eg3t9i'; // Replace with your EmailJS Service ID
+      final templateId = 'template_f69skpr'; // Replace with your EmailJS Template ID
+      final userId = '3QhZNOXQgjXaKjDRk'; // Replace with your EmailJS User ID
 
+      final url = Uri.parse('https://api.emailjs.com/api/v1.0/email/send');
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json', 'origin': 'http://localhost'},
+        body: json.encode({
+          'service_id': serviceId,
+          'template_id': templateId,
+          'user_id': userId,
+          'template_params': {
+            'from_name': "Hajzi Team",
+            'to_name': email,
+            'to_email': email,
+            'reset_link': 'https://hajzi-6883b1f029cf.herokuapp.com/user/verify/$email',
+          },
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Verification email sent!')),
+        );
+      } else {
+        throw Exception('Failed to send email: ${response.body}');
+      }
+    } catch (e) {
+      errorText = 'Error while sending email: $e';
+    }
+  }
+
+  Future<bool> checkVerificationStatus(String email) async {
+    final response =
+    await networkHandler.get2E('/user/isVerified/$email', requireAuth: false);
+
+    if (response != null && response['verified'] != null) {
+      return response['verified'] == true;
+    } else {
+      throw Exception('Failed to fetch verification status');
+    }
+  }
+  // Function to resend verification email
+  Future<void> resendVerificationEmail() async {
+    await sendVerificationEmail(widget.email);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text("Verification email has been sent."),
+      ),
+    );
+  }
+
+
+  // Function to check verification status via NetworkHandler
   Future<void> checkVerification() async {
-    User? user = FirebaseAuth.instance.currentUser;
-
-    // Reload user to get the latest verification status
-    await user?.reload();
     setState(() {
-      isVerified = user?.emailVerified ?? false;
+      isLoading = true;
+      errorText = null;
     });
 
-    // If verified, navigate to the homepage
-    if (isVerified) {
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(
-          builder: (context) => SlideshowPage(
-            onDone: () {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => HomePage(
-                          setLocale: widget.setLocale,
-                          filterState: 0,
-                        )),
-              );
-            },
+    try {
+      bool verified = await checkVerificationStatus(widget.email);
+      setState(() {
+        isVerified = verified;
+      });
+
+      if (isVerified) {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(
+            builder: (context) => SlideshowPage(
+              onDone: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => HomePage(
+                        setLocale: widget.setLocale,
+                        filterState: 0,
+                      )),
+                );
+              },
+            ),
           ),
-        ),
-        (route) => false,
-      );
+              (route) => false,
+        );
+      }
+    } catch (e) {
+      setState(() {
+        errorText = e.toString();
+      });
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
-  Future<void> resendVerificationEmail() async {
-    User? user = FirebaseAuth.instance.currentUser;
-    if (user != null && !user.emailVerified) {
-      await user.sendEmailVerification();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Verification email has been sent."),
-        ),
-      );
-    }
-  }
+
 
   Widget buildStyledButton(
       {required String label, required VoidCallback onPressed}) {

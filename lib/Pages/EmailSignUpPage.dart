@@ -10,7 +10,7 @@ import '../NetworkHandler.dart';
 import '../SlideshowPage.dart';
 import 'CheckVerificationPage.dart';
 import 'HomePage.dart';
-
+import 'package:http/http.dart' as http;
 class EmailSignUpPage extends StatefulWidget {
   const EmailSignUpPage({
     super.key,
@@ -38,6 +38,41 @@ class _EmailSignUpPageState extends State<EmailSignUpPage> {
 
   final storage = FlutterSecureStorage();
   var log = Logger();
+
+  Future<void> sendVerificationEmail(String email) async {
+    try {
+      final serviceId = 'service_8eg3t9i'; // Replace with your EmailJS Service ID
+      final templateId = 'template_f69skpr'; // Replace with your EmailJS Template ID
+      final userId = '3QhZNOXQgjXaKjDRk'; // Replace with your EmailJS User ID
+
+      final url = Uri.parse('https://api.emailjs.com/api/v1.0/email/send');
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json', 'origin': 'http://localhost'},
+        body: json.encode({
+          'service_id': serviceId,
+          'template_id': templateId,
+          'user_id': userId,
+          'template_params': {
+            'from_name': "Hajzi Team",
+            'to_name': email,
+            'to_email': email,
+            'reset_link': 'https://hajzi-6883b1f029cf.herokuapp.com/user/verify/$email',
+          },
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Verification email sent!')),
+        );
+      } else {
+        throw Exception('Failed to send email: ${response.body}');
+      }
+    } catch (e) {
+      throw Exception('Error while sending email: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -162,14 +197,15 @@ class _EmailSignUpPageState extends State<EmailSignUpPage> {
                       if (_globalKey.currentState!.validate() && validate) {
                         try {
                           // Step 1: Create the user with Firebase
-                          UserCredential userCredential = await FirebaseAuth.instance
-                              .createUserWithEmailAndPassword(
-                            email: _emailController.text,
-                            password: _passwordController.text,
-                          );
+                          // UserCredential userCredential = await FirebaseAuth.instance
+                          //     .createUserWithEmailAndPassword(
+                          //   email: _emailController.text,
+                          //   password: _passwordController.text,
+                          // );
 
                           // Step 2: Send email verification
-                          await userCredential.user!.sendEmailVerification();
+                        //  await userCredential.user!.sendEmailVerification();
+                          await sendVerificationEmail(_emailController.text);
 
                           // Step 3: Send user data to backend for registration and token generation
                           Map<String, String> data = {
@@ -212,6 +248,7 @@ class _EmailSignUpPageState extends State<EmailSignUpPage> {
                               context,
                               MaterialPageRoute(
                                 builder: (context) => CheckVerificationPage(
+                                  email: _emailController.text,
                                   setLocale: widget.setLocale,
                                 ),
                               ),
