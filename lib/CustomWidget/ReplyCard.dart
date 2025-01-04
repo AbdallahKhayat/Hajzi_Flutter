@@ -31,18 +31,18 @@ class ReplyCard extends StatelessWidget {
           child: Stack(
             children: [
               Padding(
-                padding: const EdgeInsets.only(left: 10, right: 60, top: 5, bottom: 12),
+                padding: const EdgeInsets.only(left: 10, right: 60, top: 5, bottom: 20),
                 child: Text(
                   message, // 🔥 Dynamic message text
-                  style: TextStyle(fontSize: 14, color: textColor),
+                  style: TextStyle(fontSize: 16, color: textColor),
                 ),
               ),
               Positioned(
-                bottom: 5,
+                bottom: 4,
                 right: 10,
                 child: Text(
                   time, // 🔥 Dynamic timestamp
-                  style: TextStyle(fontSize: 11.2, color: Colors.grey[600]),
+                  style: TextStyle(fontSize: 13, color: Colors.grey[600]),
                 ),
               ),
             ],

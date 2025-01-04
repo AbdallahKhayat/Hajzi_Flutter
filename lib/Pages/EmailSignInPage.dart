@@ -184,6 +184,9 @@ class _EmailSignInPageState extends State<EmailSignInPage> {
                               circular = false;
                             });
 
+                            if(kIsWeb)
+                              hasProfile=true;
+
                             if (hasProfile) {
                               // Navigate to SlideshowPage or HomePage
                               Navigator.pushAndRemoveUntil(
