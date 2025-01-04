@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../NetworkHandler.dart';
 import '../constants.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class UserAppointmentPage extends StatefulWidget {
   final NetworkHandler networkHandler;
@@ -57,21 +58,28 @@ class _UserAppointmentPageState extends State<UserAppointmentPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text("Confirm Booking"),
-          content: Text("Are you sure you want to book an appointment at $time?"),
+          title:  Text(AppLocalizations.of(context)!.confirmBooking),
+          content:
+              Text("${AppLocalizations.of(context)!.sureBooking} $time?"),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop(); // Close the dialog
               },
-              child: const Text("Cancel",style: TextStyle(color: Colors.black),),
+              child:  Text(
+                AppLocalizations.of(context)!.cancel,
+                style: TextStyle(color: Colors.black),
+              ),
             ),
             ElevatedButton(
               onPressed: () {
                 Navigator.of(context).pop(); // Close the dialog
                 _confirmBooking(time); // Proceed with booking
               },
-              child: const Text("Confirm",style: TextStyle(color: Colors.red),),
+              child:  Text(
+               AppLocalizations.of(context)!.confirm,
+                style: TextStyle(color: Colors.red),
+              ),
             ),
           ],
         );
@@ -93,7 +101,7 @@ class _UserAppointmentPageState extends State<UserAppointmentPage> {
     try {
       // Send only the "HH:mm" part of the time
       final formattedTime =
-      time.length == 5 ? time : time.substring(0, 5); // e.g., 09:30
+          time.length == 5 ? time : time.substring(0, 5); // e.g., 09:30
 
       final response = await widget.networkHandler.post("/appointment/book", {
         "time": formattedTime,
@@ -123,7 +131,7 @@ class _UserAppointmentPageState extends State<UserAppointmentPage> {
 
   // Function to book an appointment
   Future<void> _bookAppointment(String time) async {
-   _showConfirmationDialog(time);
+    _showConfirmationDialog(time);
   }
 
   String _formatTimeWithAMPM(String time) {
@@ -144,8 +152,8 @@ class _UserAppointmentPageState extends State<UserAppointmentPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          "Available Slots",
+        title: Text(
+          AppLocalizations.of(context)!.availableSlots,
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         flexibleSpace: ValueListenableBuilder<Color>(
@@ -164,7 +172,9 @@ class _UserAppointmentPageState extends State<UserAppointmentPage> {
         ),
       ),
       body: appointments.isEmpty
-          ? const Center(child: Text("No available time slots."))
+          ? Center(
+              child: Text(AppLocalizations.of(context)!.noAvailableSlots),
+            )
           : ListView.builder(
               itemCount: appointments.length,
               itemBuilder: (context, index) {
@@ -179,15 +189,15 @@ class _UserAppointmentPageState extends State<UserAppointmentPage> {
                       vertical: 8.0, horizontal: 16.0),
                   child: ListTile(
                     title: Text(
-                      "Time: ${_formatTimeWithAMPM(appointment['time'] ?? 'N/A')}",
+                      "${AppLocalizations.of(context)!.time}: ${_formatTimeWithAMPM(appointment['time'] ?? 'N/A')}",
                       style: TextStyle(
                         color: isBooked ? Colors.red : Colors.green,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     subtitle: isBooked
-                        ? Text("Booked by: ${appointment['userName'] ?? 'N/A'}")
-                        : const Text("Available slot"),
+                        ? Text("${AppLocalizations.of(context)!.bookedBy}: ${appointment['userName'] ?? 'N/A'}")
+                        :  Text(AppLocalizations.of(context)!.availableSlot),
                     trailing: (hasBooked || isBooked)
                         ? const Icon(Icons.lock, color: Colors.red)
                         : ValueListenableBuilder<Color>(
@@ -199,8 +209,8 @@ class _UserAppointmentPageState extends State<UserAppointmentPage> {
                                   backgroundColor:
                                       appColor, // Dynamic background color
                                 ),
-                                child: const Text(
-                                  "Book",
+                                child: Text(
+                               AppLocalizations.of(context)!.book,
                                   style: TextStyle(color: Colors.white),
                                 ),
                               );
