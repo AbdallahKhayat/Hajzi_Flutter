@@ -6,11 +6,13 @@ import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 
 import '../NetworkHandler.dart';
+import '../Profile/CreateProfile.dart';
 import '../SlideshowPage.dart';
 import 'EmailSignUpPage.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import 'ForgotPasswordPage.dart';
+import 'WelcomePage.dart';
 
 class EmailSignInPage extends StatefulWidget {
   final Function(Locale) setLocale;
@@ -34,6 +36,27 @@ class _EmailSignInPageState extends State<EmailSignInPage> {
   bool circular = false;
 
   final storage = FlutterSecureStorage();
+
+  Future<bool> checkProfileFlag() async {
+    String? flag = await storage.read(key: "profileFlag");
+    return flag == "1";
+  }
+
+  void logout() async {
+    await storage.delete(key: "token");
+    await storage.delete(key: "email");
+    await storage.delete(key: "role");
+    await storage.delete(key: "profileFlag"); // Clear profileFlag
+    // Delete other stored keys if necessary
+
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(
+        builder: (context) => WelcomePage(setLocale: widget.setLocale),
+      ),
+      (route) => false,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -128,13 +151,15 @@ class _EmailSignInPageState extends State<EmailSignInPage> {
 
                             // Store the JWT token in secure storage
                             await storage.write(key: "token", value: jwtToken);
-                            await storage.write(key: "email", value: _emailController.text);
+                            await storage.write(
+                                key: "email", value: _emailController.text);
 
                             // 🔥 Initialize Socket.io connection
                             networkHandler.initSocketConnection();
 
                             // 🔥 Join the socket.io chat using email
-                            networkHandler.socket!.emit('join_chat', _emailController.text);
+                            networkHandler.socket!
+                                .emit('join_chat', _emailController.text);
 
                             // Store user role if available
                             if (output.containsKey('role')) {
@@ -153,30 +178,78 @@ class _EmailSignInPageState extends State<EmailSignInPage> {
                                   : Locale('en', 'US');
                               widget.setLocale(newLocale);
                             }
-
+                            // Check if profile exists
+                            bool hasProfile = await checkProfileFlag();
                             setState(() {
                               circular = false;
                             });
 
-                            // Navigate to SlideshowPage or HomePage
-                            Navigator.pushAndRemoveUntil(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => SlideshowPage(
-                                  onDone: () {
-                                    Navigator.pushReplacement(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) => HomePage(
-                                                setLocale: widget.setLocale,
-                                                filterState: 0,
-                                              )),
-                                    );
-                                  },
+                            if (hasProfile) {
+                              // Navigate to SlideshowPage or HomePage
+                              Navigator.pushAndRemoveUntil(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => SlideshowPage(
+                                    onDone: () {
+                                      Navigator.pushReplacement(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) => HomePage(
+                                                  setLocale: widget.setLocale,
+                                                  filterState: 0,
+                                                )),
+                                      );
+                                    },
+                                  ),
                                 ),
-                              ),
-                              (route) => false,
-                            );
+                                (route) => false,
+                              );
+                            } else {
+                              // Show dialog prompting user to create profile
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return AlertDialog(
+                                    title: Text(
+                                      "Complete Your Profile",
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    content: Text(
+                                        "Please create your profile to continue using the app."),
+                                    actions: [
+                                      TextButton(
+                                        child: Text(
+                                          "Cancel",
+                                          style: TextStyle(color: Colors.red),
+                                        ),
+                                        onPressed: () {
+                                          Navigator.of(context)
+                                              .pop(); // Close the dialog
+                                          logout(); // Logout the user
+                                        },
+                                      ),
+                                      TextButton(
+                                        child: Text(
+                                          "Create Profile",
+                                          style: TextStyle(color: Colors.black),
+                                        ),
+                                        onPressed: () {
+                                          Navigator.of(context)
+                                              .pop(); // Close the dialog
+                                          Navigator.pushReplacement(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    CreateProfile()),
+                                          );
+                                        },
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+                            }
                           } else {
                             throw Exception("Token not found in the response");
                           }

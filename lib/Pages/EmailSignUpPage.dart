@@ -11,6 +11,7 @@ import '../SlideshowPage.dart';
 import 'CheckVerificationPage.dart';
 import 'HomePage.dart';
 import 'package:http/http.dart' as http;
+
 class EmailSignUpPage extends StatefulWidget {
   const EmailSignUpPage({
     super.key,
@@ -41,14 +42,19 @@ class _EmailSignUpPageState extends State<EmailSignUpPage> {
 
   Future<void> sendVerificationEmail(String email) async {
     try {
-      final serviceId = 'service_8eg3t9i'; // Replace with your EmailJS Service ID
-      final templateId = 'template_f69skpr'; // Replace with your EmailJS Template ID
+      final serviceId =
+          'service_8eg3t9i'; // Replace with your EmailJS Service ID
+      final templateId =
+          'template_f69skpr'; // Replace with your EmailJS Template ID
       final userId = '3QhZNOXQgjXaKjDRk'; // Replace with your EmailJS User ID
 
       final url = Uri.parse('https://api.emailjs.com/api/v1.0/email/send');
       final response = await http.post(
         url,
-        headers: {'Content-Type': 'application/json', 'origin': 'http://localhost'},
+        headers: {
+          'Content-Type': 'application/json',
+          'origin': 'http://localhost'
+        },
         body: json.encode({
           'service_id': serviceId,
           'template_id': templateId,
@@ -57,7 +63,8 @@ class _EmailSignUpPageState extends State<EmailSignUpPage> {
             'from_name': "Hajzi Team",
             'to_name': email,
             'to_email': email,
-            'reset_link': 'https://hajzi-6883b1f029cf.herokuapp.com/user/verify/$email',
+            'reset_link':
+                'https://hajzi-6883b1f029cf.herokuapp.com/user/verify/$email',
           },
         }),
       );
@@ -137,53 +144,59 @@ class _EmailSignUpPageState extends State<EmailSignUpPage> {
                   passwordTextField(),
                   const SizedBox(height: 30),
 
-                  kIsWeb? Center( //web part//////////////////////////
-                    child: SizedBox(
-                      width: 400,
-                      child: DropdownButtonFormField<String>(
-                        padding: EdgeInsets.only(bottom: 15),
-                        value: selectedRole,
-                        onChanged: (value) {
-                          setState(() {
-                            selectedRole = value;
-                          });
-                        },
-                        items: [
-                          DropdownMenuItem(value: "user", child: Text("User")),
-                          DropdownMenuItem(
-                              value: "customer", child: Text("Customer")),
-                          DropdownMenuItem(value: "admin", child: Text("Admin")),
-                        ],
-                        decoration: InputDecoration(
-                          labelText: "Select Role",
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
+                  kIsWeb
+                      ? Center(
+                          //web part//////////////////////////
+                          child: SizedBox(
+                            width: 400,
+                            child: DropdownButtonFormField<String>(
+                              padding: EdgeInsets.only(bottom: 15),
+                              value: selectedRole,
+                              onChanged: (value) {
+                                setState(() {
+                                  selectedRole = value;
+                                });
+                              },
+                              items: [
+                                DropdownMenuItem(
+                                    value: "user", child: Text("User")),
+                                DropdownMenuItem(
+                                    value: "customer", child: Text("Customer")),
+                                DropdownMenuItem(
+                                    value: "admin", child: Text("Admin")),
+                              ],
+                              decoration: InputDecoration(
+                                labelText: "Select Role",
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                            ),
+                          ),
+                        )
+                      : DropdownButtonFormField<String>(
+                          padding: EdgeInsets.only(bottom: 15),
+                          value: selectedRole,
+                          onChanged: (value) {
+                            setState(() {
+                              selectedRole = value;
+                            });
+                          },
+                          items: [
+                            DropdownMenuItem(
+                                value: "user", child: Text("User")),
+                            DropdownMenuItem(
+                                value: "customer", child: Text("Customer")),
+                            DropdownMenuItem(
+                                value: "admin", child: Text("Admin")),
+                          ],
+                          decoration: InputDecoration(
+                            labelText: "Select Role",
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
                           ),
                         ),
-                      ),
-                    ),
-                  ):
-                  DropdownButtonFormField<String>(
-                    padding: EdgeInsets.only(bottom: 15),
-                    value: selectedRole,
-                    onChanged: (value) {
-                      setState(() {
-                        selectedRole = value;
-                      });
-                    },
-                    items: [
-                      DropdownMenuItem(value: "user", child: Text("User")),
-                      DropdownMenuItem(
-                          value: "customer", child: Text("Customer")),
-                      DropdownMenuItem(value: "admin", child: Text("Admin")),
-                    ],
-                    decoration: InputDecoration(
-                      labelText: "Select Role",
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                  ),
 
                   // Sign-Up Button
                   InkWell(
@@ -204,42 +217,50 @@ class _EmailSignUpPageState extends State<EmailSignUpPage> {
                           // );
 
                           // Step 2: Send email verification
-                        //  await userCredential.user!.sendEmailVerification();
+                          //  await userCredential.user!.sendEmailVerification();
                           await sendVerificationEmail(_emailController.text);
 
                           // Step 3: Send user data to backend for registration and token generation
                           Map<String, String> data = {
                             "username": _usernameController.text,
                             "email": _emailController.text,
-                            "password": _passwordController.text, // Optionally hashed on backend
+                            "password": _passwordController.text,
+                            // Optionally hashed on backend
                             "role": selectedRole ?? "user",
                           };
 
                           // Use NetworkHandler to make the backend request
-                          var response = await networkHandler.post("/user/register", data);
+                          var response =
+                              await networkHandler.post("/user/register", data);
 
                           print("Raw response: ${response.body}");
-                          if (response.statusCode == 200 || response.statusCode == 201) {
+                          if (response.statusCode == 200 ||
+                              response.statusCode == 201) {
                             // Decode the response and retrieve the JWT token
                             var responseData = json.decode(response.body);
-                            String jwtToken = responseData["token"]; // Ensure the token key matches your backend response
+                            String jwtToken = responseData[
+                                "token"]; // Ensure the token key matches your backend response
 
                             // Store the JWT token in secure storage
                             await storage.write(key: "token", value: jwtToken);
-                            await storage.write(key: "role", value: selectedRole);
-                            await storage.write(key: "email", value: _emailController.text);
-
+                            await storage.write(
+                                key: "role", value: selectedRole);
+                            await storage.write(
+                                key: "email", value: _emailController.text);
+                            // 🔥 Initialize profileFlag to "0" indicating profile not created
+                            await storage.write(key: "profileFlag", value: "0");
                             // 🔥 Initialize Socket.io connection
                             networkHandler.initSocketConnection();
 
                             // 🔥 Join the socket.io chat using email
-                            networkHandler.socket!.emit('join_chat', _emailController.text);
-
+                            networkHandler.socket!
+                                .emit('join_chat', _emailController.text);
 
                             // Show a success message
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text("Verification email sent! Please verify your email before logging in."),
+                                content: Text(
+                                    "Verification email sent! Please verify your email before logging in."),
                               ),
                             );
 
@@ -254,7 +275,8 @@ class _EmailSignUpPageState extends State<EmailSignUpPage> {
                               ),
                             );
                           } else {
-                            throw Exception("Failed to register user on the backend");
+                            throw Exception(
+                                "Failed to register user on the backend");
                           }
                         } catch (e) {
                           log.e("Sign-up error: $e");
@@ -534,9 +556,9 @@ class _EmailSignUpPageState extends State<EmailSignUpPage> {
   Widget passwordTextField() {
     return kIsWeb //web part//////////////////
         ? Center(
-          child: SizedBox(
-             width: 400,
-            child: TextFormField(
+            child: SizedBox(
+              width: 400,
+              child: TextFormField(
                 controller: _passwordController,
                 obscureText: visible,
                 validator: (value) {
@@ -554,23 +576,24 @@ class _EmailSignUpPageState extends State<EmailSignUpPage> {
                   fillColor: Colors.white.withOpacity(0.9),
                   prefixIcon: const Icon(Icons.lock, color: Colors.black),
                   suffixIcon: IconButton(
-                    icon: Icon(visible ? Icons.visibility_off : Icons.visibility),
+                    icon:
+                        Icon(visible ? Icons.visibility_off : Icons.visibility),
                     onPressed: () {
                       setState(() {
                         visible = !visible;
                       });
                     },
                   ),
-                  border:
-                      OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8)),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                     borderSide: const BorderSide(color: Colors.blue, width: 2),
                   ),
                 ),
               ),
-          ),
-        )
+            ),
+          )
         : TextFormField(
             controller: _passwordController,
             obscureText: visible,

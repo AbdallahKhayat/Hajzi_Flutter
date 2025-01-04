@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:blogapp/Pages/HomePage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -33,6 +34,8 @@ class _CreateProfileState extends State<CreateProfile> {
   TextEditingController _dobController = TextEditingController();
   TextEditingController _titleController = TextEditingController();
   TextEditingController _aboutController = TextEditingController();
+  final storage = FlutterSecureStorage();
+
 
   String? errorText; //help validate user
   bool validate = false;
@@ -115,6 +118,7 @@ class _CreateProfileState extends State<CreateProfile> {
                               var imageResponse = await networkHandler.patchImage(
                                   "/profile/add/image", _imageFile!.path);
                               if (imageResponse.statusCode == 200) {
+                                await storage.write(key: "profileFlag", value: "1");
                                 setState(() {
                                   circular = false; // Hide the loading indicator
                                 });
@@ -136,6 +140,8 @@ class _CreateProfileState extends State<CreateProfile> {
                                 );
                               }
                             } else {
+                              // Set profileFlag to 1 even if no image is uploaded
+                              await storage.write(key: "profileFlag", value: "1");
                               setState(() {
                                 circular = false; // Hide the loading indicator
                               });
