@@ -22,6 +22,8 @@ class OwnMessageCard extends StatelessWidget {
       child: ConstrainedBox(
         constraints: BoxConstraints(
           maxWidth: MediaQuery.of(context).size.width - 45,
+          minWidth: MediaQuery.of(context).size.width -300,
+
         ),
         child: Card(
           elevation: 5,
@@ -33,10 +35,10 @@ class OwnMessageCard extends StatelessWidget {
           child: Stack(
             children: [
               Padding(
-                padding: const EdgeInsets.only(left: 10, right: 60, top: 5, bottom: 20),
+                padding: const EdgeInsets.only(left: 10, right: 60, top: 5, bottom: 15),
                 child: Text(
                   message, // 🔥 Dynamic message text
-                  style: TextStyle(fontSize: 16, color: textColor),
+                  style: TextStyle(fontSize: 14, color: textColor),
                 ),
               ),
               Positioned(
@@ -46,12 +48,12 @@ class OwnMessageCard extends StatelessWidget {
                   children: [
                     Text(
                       time, // 🔥 Dynamic timestamp
-                      style: TextStyle(fontSize: 13, color: textColor.withOpacity(0.6)),
+                      style: TextStyle(fontSize: 11.2, color: textColor.withOpacity(0.6)),
                     ),
                     const SizedBox(width: 5),
                     const Icon(
                       Icons.done_all,
-                      size: 20,
+                      size: 14,
                       color: Colors.grey, // Icon color
                     ),
                   ],
