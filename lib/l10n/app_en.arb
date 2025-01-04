@@ -63,7 +63,8 @@
   "booked": "Booked",
   "confirmDeletion": "Confirm Deletion",
   "delete": "Delete",
-  "sureDelete": "Are you sure you want to delete the time slot at"
+  "sureDelete": "Are you sure you want to delete the time slot at",
+  "bookedBy": "Booked by"
 
 
 
