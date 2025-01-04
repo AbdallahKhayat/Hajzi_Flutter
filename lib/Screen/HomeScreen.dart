@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../Blog/Blogs.dart';
-
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 class HomeScreen extends StatefulWidget {
   final int filterState;
 
@@ -115,7 +115,7 @@ class _HomeScreenState extends State<HomeScreen> {
               child: TextField(
                 controller: _searchController,
                 decoration: InputDecoration(
-                  labelText: 'Search Shops',
+                  labelText: AppLocalizations.of(context)!.searchShops,
                   border: const OutlineInputBorder(),
                   suffixIcon: IconButton(
                     icon: const Icon(Icons.clear),
@@ -139,7 +139,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Text(
-                "Recommendations",
+                AppLocalizations.of(context)!.recommendations,
                 style: kIsWeb
                     ? TextStyle(
                         color: Colors.black,
@@ -162,12 +162,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     true, // <--- Renders horizontally with smaller cards
               )
             else
-              const Center(
+              Center(
                 child: Padding(
-                  padding: EdgeInsets.only(bottom: 16.0),
+                  padding: const EdgeInsets.only(bottom: 16.0),
                   child: Text(
-                    "No recommendations yet",
-                    style: TextStyle(fontSize: 16, color: Colors.grey),
+                    AppLocalizations.of(context)!.noRecommendationsYet,
+                    style: const TextStyle(fontSize: 16, color: Colors.grey),
                   ),
                 ),
               ),
@@ -177,7 +177,7 @@ class _HomeScreenState extends State<HomeScreen> {
               padding: const EdgeInsets.all(8.0),
               child: Center(
                 child: Text(
-                  "All Shops",
+                  AppLocalizations.of(context)!.allShops,
                   style: kIsWeb
                       ? TextStyle(
                           color: Colors.black,

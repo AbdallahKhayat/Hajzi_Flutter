@@ -12,9 +12,11 @@ import '../Pages/CustomerAppointmentPage.dart';
 import '../Pages/IndividualPage.dart';
 import '../Pages/userAppointmentPage.dart';
 import '../constants.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class BlogAfterClick extends StatefulWidget {
-  BlogAfterClick({super.key, required this.addBlogModel, required this.networkHandler});
+  BlogAfterClick(
+      {super.key, required this.addBlogModel, required this.networkHandler});
 
   final AddBlogModel addBlogModel;
   final NetworkHandler networkHandler;
@@ -34,7 +36,8 @@ class _BlogAfterClickState extends State<BlogAfterClick> {
   final storage = FlutterSecureStorage();
 
   // Example coordinates for the shop location
-  final latLng.LatLng _center = latLng.LatLng(37.42796133580664, -122.085749655962);
+  final latLng.LatLng _center =
+      latLng.LatLng(37.42796133580664, -122.085749655962);
 
   @override
   void initState() {
@@ -47,6 +50,7 @@ class _BlogAfterClickState extends State<BlogAfterClick> {
     _loadUserName();
     _storeLastClickedType(widget.addBlogModel.type ?? 'none');
   }
+
   Future<void> _storeLastClickedType(String storeType) async {
     try {
       await storage.write(key: "lastClickedStoreType", value: storeType);
@@ -55,6 +59,7 @@ class _BlogAfterClickState extends State<BlogAfterClick> {
       debugPrint("Failed to store lastClickedStoreType: $e");
     }
   }
+
   // Simulate fetching available slots from the backend
   List<DateTime> _getAvailableSlots() {
     return [
@@ -95,8 +100,8 @@ class _BlogAfterClickState extends State<BlogAfterClick> {
   // Fetch the blog details (like blogOwnerEmail)
   Future<void> fetchBlogDetails() async {
     try {
-      final response = await widget.networkHandler.get(
-          "/blogpost/getBlogDetails/${widget.addBlogModel.id}");
+      final response = await widget.networkHandler
+          .get("/blogpost/getBlogDetails/${widget.addBlogModel.id}");
       if (response != null && response['authorName'] != null) {
         setState(() {
           blogOwnerEmail = response['authorName'];
@@ -140,15 +145,16 @@ class _BlogAfterClickState extends State<BlogAfterClick> {
       Navigator.push(
         context,
         MaterialPageRoute(
-            builder: (context) =>
-                MapPage(lat: widget.addBlogModel.lat!, lng: widget.addBlogModel.lng!)),
+            builder: (context) => MapPage(
+                lat: widget.addBlogModel.lat!, lng: widget.addBlogModel.lng!)),
       );
     }
   }
 
   Future<String?> fetchExistingChatId(String partnerEmail) async {
     try {
-      final response = await NetworkHandler().get('/chat/existing?partnerEmail=$partnerEmail');
+      final response = await NetworkHandler()
+          .get('/chat/existing?partnerEmail=$partnerEmail');
       // Ensure `NetworkHandler().get()` returns the decoded JSON. If it returns a raw response, decode it here.
       if (response != null && response is Map) {
         // If the response contains '_id', it means chat exists
@@ -189,8 +195,8 @@ class _BlogAfterClickState extends State<BlogAfterClick> {
             );
           },
         ),
-        title: const Text(
-          "Shop Details",
+        title: Text(
+          AppLocalizations.of(context)!.shopDetails,
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: true, // Center the title for better aesthetics on web
@@ -231,7 +237,8 @@ class _BlogAfterClickState extends State<BlogAfterClick> {
                             .map((image) {
                           return Container(
                             decoration: BoxDecoration(
-                              image: DecorationImage(image: image, fit: BoxFit.cover),
+                              image: DecorationImage(
+                                  image: image, fit: BoxFit.cover),
                             ),
                           );
                         }).toList(),
@@ -250,7 +257,8 @@ class _BlogAfterClickState extends State<BlogAfterClick> {
                   // Blog title
                   Text(
                     widget.addBlogModel.title!,
-                    style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                        fontSize: 28, fontWeight: FontWeight.bold),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 10),
@@ -262,10 +270,14 @@ class _BlogAfterClickState extends State<BlogAfterClick> {
                       // Find Me Button
                       Expanded(
                         child: TextButton.icon(
-                          icon: const Icon(Icons.location_on, color: Colors.black),
-                          label: const Text(
-                            "Find Me",
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
+                          icon: const Icon(Icons.location_on,
+                              color: Colors.black),
+                          label: Text(
+                            AppLocalizations.of(context)!.findMe,
+                            style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black),
                           ),
                           onPressed: _openMapPage,
                         ),
@@ -276,15 +288,19 @@ class _BlogAfterClickState extends State<BlogAfterClick> {
                         child: Column(
                           children: [
                             IconButton(
-                              icon: const Icon(Icons.chat_bubble, color: Colors.black),
+                              icon: const Icon(Icons.chat_bubble,
+                                  color: Colors.black),
                               onPressed: () async {
-                                final existingChatId = await fetchExistingChatId(blogOwnerEmail);
+                                final existingChatId =
+                                    await fetchExistingChatId(blogOwnerEmail);
                                 if (userEmail == blogOwnerEmail) {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
                                       builder: (context) => ChatPage(
-                                          chatId: '', chatPartnerEmail: '', appBarFlag: 1),
+                                          chatId: '',
+                                          chatPartnerEmail: '',
+                                          appBarFlag: 1),
                                     ),
                                   );
                                 } else {
@@ -301,9 +317,10 @@ class _BlogAfterClickState extends State<BlogAfterClick> {
                                 }
                               },
                             ),
-                            const Text(
-                              "Chat",
-                              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                            Text(
+                              AppLocalizations.of(context)!.chat,
+                              style: TextStyle(
+                                  fontSize: 14, fontWeight: FontWeight.bold),
                             ),
                           ],
                         ),
@@ -314,12 +331,14 @@ class _BlogAfterClickState extends State<BlogAfterClick> {
                         child: Column(
                           children: [
                             IconButton(
-                              icon: const Icon(Icons.share, color: Colors.black),
+                              icon:
+                                  const Icon(Icons.share, color: Colors.black),
                               onPressed: _shareBlogDetails,
                             ),
-                            const Text(
-                              "Share",
-                              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                             Text(
+                              AppLocalizations.of(context)!.share,
+                              style: TextStyle(
+                                  fontSize: 14, fontWeight: FontWeight.bold),
                             ),
                           ],
                         ),
@@ -332,7 +351,8 @@ class _BlogAfterClickState extends State<BlogAfterClick> {
                   Card(
                     elevation: 5,
                     margin: const EdgeInsets.symmetric(vertical: 10),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15)),
                     child: Padding(
                       padding: const EdgeInsets.all(20),
                       child: Text(
@@ -366,21 +386,21 @@ class _BlogAfterClickState extends State<BlogAfterClick> {
                                   end: Alignment.bottomRight,
                                 ).createShader(bounds);
                               },
-                              child: const Text(
-                                "Book An Appointment",
+                              child:  Text(
+                                AppLocalizations.of(context)!.bookAnAppointment,
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 24,
-                                  color: Colors.white, // Required but overridden by the shader
+                                  color: Colors
+                                      .white, // Required but overridden by the shader
                                 ),
                               ),
                             );
                           },
                         ),
-
                         const SizedBox(height: 15),
-                        const Text(
-                          "Click the button below to book or manage your appointments.",
+                         Text(
+                          AppLocalizations.of(context)!.bookingText,
                           style: TextStyle(fontSize: 16),
                         ),
                         const SizedBox(height: 20),
@@ -398,10 +418,12 @@ class _BlogAfterClickState extends State<BlogAfterClick> {
                                 ),
                                 elevation: 5,
                               ),
-                              icon: const Icon(Icons.calendar_today, color: Colors.white, size: 24),
-                              label: const Text(
-                                "Book Appointment",
-                                style: TextStyle(color: Colors.white, fontSize: 18),
+                              icon: const Icon(Icons.calendar_today,
+                                  color: Colors.white, size: 24),
+                              label: Text(
+                                AppLocalizations.of(context)!.bookAppointment,
+                                style: TextStyle(
+                                    color: Colors.white, fontSize: 18),
                               ),
                             );
                           },

@@ -29,7 +29,44 @@
 
   "chooseMode": "Choose Interaction Mode",
   "aiMode": "Chat with AI",
-  "predefinedMode": "Use Hajzi Questions"
+  "predefinedMode": "Use Hajzi Questions",
+  "searchShops": "Search Shops",
+  "recommendations": "Recommendations",
+  "noRecommendationsYet": "No Recommendations Yet",
+  "allShops": "All Shops",
+  "shopDetails": "Shop Details",
+  "findMe": "Find Me",
+  "share": "Share",
+  "bookAnAppointment": "Book An Appointment",
+  "bookAppointment": "Book Appointment",
+  "bookingText": "Click the button below to book or manage your appointments.",
+  "availableSlots": "Available Slots",
+  "noAvailableSlots": "No Available time Slots",
+  "book": "Book",
+  "confirmBooking": "Confirm Booking",
+  "sureBooking": "Are you sure you want to book an appointment at",
+  "cancel": "Cancel",
+  "confirm": "Confirm",
+  "manageAppointments": "Manage Appointments",
+  "addAvailableTime": "Add Available Time",
+  "opening": "Opening",
+  "closing": "Closing",
+  "duration": "Duration",
+  "add": "Add",
+  "addSlots": "Add Slots",
+  "user": "User",
+  "time": "Time",
+  "status": "Status",
+  "actions": "Actions",
+  "availableSlot": "Available Slot",
+  "available": "Available",
+  "booked": "Booked",
+  "confirmDeletion": "Confirm Deletion",
+  "delete": "Delete",
+  "sureDelete": "Are you sure you want to delete the time slot at"
+
+
+
 
 
 

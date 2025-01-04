@@ -3,7 +3,7 @@ import '../NetworkHandler.dart';
 import 'package:intl/intl.dart';
 
 import '../constants.dart';
-
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 class CustomerAppointmentPage extends StatefulWidget {
   final NetworkHandler networkHandler;
   final String blogId;
@@ -190,21 +190,21 @@ class _CustomerAppointmentPageState extends State<CustomerAppointmentPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text("Confirm Deletion"),
-          content: Text("Are you sure you want to delete the time slot at $time?"),
+          title:  Text(AppLocalizations.of(context)!.confirmDeletion),
+          content: Text("${AppLocalizations.of(context)!.sureDelete} $time?"),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop(); // Close the dialog
               },
-              child: const Text("Cancel",style: TextStyle(color: Colors.black),),
+              child:  Text(AppLocalizations.of(context)!.cancel,style: TextStyle(color: Colors.black),),
             ),
             ElevatedButton(
               onPressed: () {
                 Navigator.of(context).pop(); // Close the dialog
                 _confirmDeleteSlot(time); // Proceed with deletion
               },
-              child: const Text("Delete",style: TextStyle(color: Colors.red),),
+              child:  Text(AppLocalizations.of(context)!.delete,style: TextStyle(color: Colors.red),),
             ),
           ],
         );
@@ -297,8 +297,8 @@ class _CustomerAppointmentPageState extends State<CustomerAppointmentPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          "Manage Appointments",
+        title:  Text(
+          AppLocalizations.of(context)!.manageAppointments,
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         flexibleSpace: ValueListenableBuilder<Color>(
@@ -330,8 +330,8 @@ class _CustomerAppointmentPageState extends State<CustomerAppointmentPage> {
                       fontWeight: FontWeight.bold,
                     ),
                     controller: _timeController,
-                    decoration: const InputDecoration(
-                        labelText: 'Add Available Time (HH:mm)'),
+                    decoration:  InputDecoration(
+                        labelText: '${AppLocalizations.of(context)!.addAvailableTime} (HH:mm)'),
                     readOnly: true,
                     // Prevent manual typing
                     onTap: () => _selectTime(
@@ -347,8 +347,8 @@ class _CustomerAppointmentPageState extends State<CustomerAppointmentPage> {
                         backgroundColor: appColor, // Dynamic background color
                       ),
                       onPressed: _addAvailableTime,
-                      child: const Text(
-                        'Add',
+                      child:  Text(
+                        AppLocalizations.of(context)!.add,
                         style: TextStyle(
                           color: Colors.black,
                           // You can make this dynamic too if needed
@@ -370,7 +370,7 @@ class _CustomerAppointmentPageState extends State<CustomerAppointmentPage> {
                       fontWeight: FontWeight.bold,
                     ),
                     controller: _openingTimeController,
-                    decoration: const InputDecoration(labelText: 'Opening'),
+                    decoration:  InputDecoration(labelText: AppLocalizations.of(context)!.opening),
                     readOnly: true,
                     // Prevent manual typing
                     onTap: () => _selectTime(
@@ -385,7 +385,7 @@ class _CustomerAppointmentPageState extends State<CustomerAppointmentPage> {
                       fontWeight: FontWeight.bold,
                     ),
                     controller: _closingTimeController,
-                    decoration: InputDecoration(labelText: 'Closing'),
+                    decoration: InputDecoration(labelText: AppLocalizations.of(context)!.closing),
                     readOnly: true,
                     // Prevent manual typing
                     onTap: () => _selectTime(
@@ -400,7 +400,7 @@ class _CustomerAppointmentPageState extends State<CustomerAppointmentPage> {
                       fontWeight: FontWeight.bold,
                     ),
                     controller: _durationController,
-                    decoration: InputDecoration(labelText: 'Duration'),
+                    decoration: InputDecoration(labelText: AppLocalizations.of(context)!.duration),
                     keyboardType: TextInputType.number,
                   ),
                 ),
@@ -413,8 +413,8 @@ class _CustomerAppointmentPageState extends State<CustomerAppointmentPage> {
                         backgroundColor: appColor, // Dynamic background color
                       ),
                       onPressed: _addAvailableTimeSlots,
-                      child: const Text(
-                        'Add Slots',
+                      child:  Text(
+                        AppLocalizations.of(context)!.addSlots,
                         style: TextStyle(
                           color: Colors.black,
                           // You can make this dynamic too if needed
@@ -435,12 +435,12 @@ class _CustomerAppointmentPageState extends State<CustomerAppointmentPage> {
                       child: SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
                         child: DataTable(
-                          columns: const [
-                            DataColumn(label: Text('User')),
-                            DataColumn(label: Text('Time')),
-                            DataColumn(label: Text('Duration (min)')),
-                            DataColumn(label: Text('Status')),
-                            DataColumn(label: Text('Actions')),
+                          columns: [
+                            DataColumn(label: Text(AppLocalizations.of(context)!.user)),
+                            DataColumn(label: Text(AppLocalizations.of(context)!.time)),
+                            DataColumn(label: Text('${AppLocalizations.of(context)!.duration} (min)')),
+                            DataColumn(label: Text(AppLocalizations.of(context)!.status)),
+                            DataColumn(label: Text(AppLocalizations.of(context)!.actions)),
                           ],
                           rows: appointments.map((appointment) {
                             final bool isBooked =
@@ -448,7 +448,7 @@ class _CustomerAppointmentPageState extends State<CustomerAppointmentPage> {
                             return DataRow(cells: [
                               DataCell(Text(isBooked
                                   ? appointment['userName']
-                                  : "Available Slot")),
+                                  :AppLocalizations.of(context)!.availableSlot)),
                               DataCell(Text(
                                 _formatTimeWithAMPM(
                                     appointment['time'] ?? 'N/A'),
@@ -457,7 +457,7 @@ class _CustomerAppointmentPageState extends State<CustomerAppointmentPage> {
                                   Text(appointment['duration'].toString())),
                               DataCell(
                                 Text(
-                                  isBooked ? 'Booked' : 'Available',
+                                  isBooked ? AppLocalizations.of(context)!.booked : AppLocalizations.of(context)!.available,
                                   style: TextStyle(
                                       color:
                                           isBooked ? Colors.red : Colors.green,
