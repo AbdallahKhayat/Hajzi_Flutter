@@ -416,7 +416,8 @@ class _AddBlogState extends State<AddBlog> {
                               ),
                               if (selectedLat != null && selectedLng != null)
                                 Text(
-                                    "Location Selected: $selectedLat, $selectedLng"),
+                                  "${AppLocalizations.of(context)!.locationSelected}: $selectedLat, $selectedLng",
+                                ),
                               SizedBox(height: 30),
                               Center(
                                 child: addButton(),
@@ -565,7 +566,8 @@ class _AddBlogState extends State<AddBlog> {
                           ),
                           if (selectedLat != null && selectedLng != null)
                             Text(
-                                "Location Selected: $selectedLat, $selectedLng"),
+                              "${AppLocalizations.of(context)!.locationSelected}: $selectedLat, $selectedLng",
+                            ),
                           SizedBox(height: 30),
                           Center(
                             child: addButton(),
@@ -587,10 +589,11 @@ class _AddBlogState extends State<AddBlog> {
         controller: _titleController,
         validator: (value) {
           if (value!.isEmpty) {
-            return "Title can`t be empty";
+            return AppLocalizations.of(context)!.titleCannotBeEmpty;
           } else if (value.length > 100) {
-            return "Title can`t be more than 100 characters";
+            return AppLocalizations.of(context)!.titleCannotExceed100Chars;
           }
+
           return null;
         },
         decoration: InputDecoration(
@@ -636,7 +639,7 @@ class _AddBlogState extends State<AddBlog> {
         controller: _bodyController,
         validator: (value) {
           if (value!.isEmpty) {
-            return "Body can`t be empty";
+            return AppLocalizations.of(context)!.bodyCannotBeEmpty;
           }
           return null;
         },
@@ -713,7 +716,7 @@ class _AddBlogState extends State<AddBlog> {
         ),
         if (imageFiles.isEmpty)
           Text(
-            "No images selected",
+            AppLocalizations.of(context)!.noImagesSelected,
             style: TextStyle(color: Colors.grey),
           ),
       ],
@@ -729,20 +732,26 @@ class _AddBlogState extends State<AddBlog> {
             context: context,
             builder: (BuildContext context) {
               return AlertDialog(
-                title: const Text("Confirm Submission"),
-                content: const Text(
-                    "Are you sure you want to submit this Shop?"),
+                title: Text(AppLocalizations.of(context)!.confirmSubmission),
+                content: Text(AppLocalizations.of(context)!.areYouSureSubmitShop),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(false), // Cancel
-                    child: const Text("Cancel",style: TextStyle(color: Colors.black),),
+                    child: Text(
+                      AppLocalizations.of(context)!.cancel,
+                      style: const TextStyle(color: Colors.black),
+                    ),
                   ),
                   ElevatedButton(
                     onPressed: () => Navigator.of(context).pop(true), // Confirm
-                    child: const Text("Submit",style: TextStyle(color: Colors.red),),
+                    child: Text(
+                      AppLocalizations.of(context)!.submit,
+                      style: const TextStyle(color: Colors.red),
+                    ),
                   ),
                 ],
               );
+
             },
           );
           if (confirm == true) {
@@ -940,7 +949,8 @@ class _AddBlogState extends State<AddBlog> {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(
-                      'Please fill in all fields and select at least one image'),
+                    AppLocalizations.of(context)!.fillAllFieldsAndSelectImage,
+                  ),
                   backgroundColor: Colors.orange,
                 ),
               );

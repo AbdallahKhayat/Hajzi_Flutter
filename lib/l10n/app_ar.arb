@@ -93,7 +93,22 @@
   "provideBlogBody": "قدم محتوى المحل",
   "selectShopLocation": "اختر موقع المحل",
   "addShop": "إضافة المحل",
-  "selectRole": "اختر الدور"
+  "selectRole": "اختر الدور",
+  "fillAllFieldsAndSelectImage": "يرجى ملء جميع الحقول واختيار صورة واحدة على الأقل",
+  "noImagesSelected": "لم يتم اختيار صور",
+  "locationSelected": "الموقع المختار",
+  "titleCannotBeEmpty": "العنوان لا يمكن أن يكون فارغًا",
+  "titleCannotExceed100Chars": "العنوان لا يمكن أن يتجاوز 100 حرف",
+  "bodyCannotBeEmpty": "المحتوى لا يمكن أن يكون فارغًا",
+  "confirmSubmission": "تأكيد الإرسال",
+  "areYouSureSubmitShop": "هل أنت متأكد أنك تريد إرسال هذا المحل؟",
+  "cancel": "إلغاء",
+  "submit": "إرسال"
+
+
+
+
+
 
 
 

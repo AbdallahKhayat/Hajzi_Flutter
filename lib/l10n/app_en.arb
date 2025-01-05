@@ -94,7 +94,21 @@
   "provideBlogBody": "Provide Body of Your Blog",
   "selectShopLocation": "Select Shop Location",
   "addShop": "Add Shop",
-  "selectRole": "Select Role"
+  "selectRole": "Select Role",
+  "fillAllFieldsAndSelectImage": "Please fill in all fields and select at least one image",
+  "noImagesSelected": "No images selected",
+  "locationSelected": "Location Selected",
+  "titleCannotBeEmpty": "Title can't be empty",
+  "titleCannotExceed100Chars": "Title can't be more than 100 characters",
+  "bodyCannotBeEmpty": "Body can't be empty",
+  "confirmSubmission": "Confirm Submission",
+  "areYouSureSubmitShop": "Are you sure you want to submit this Shop?",
+  "cancel": "Cancel",
+  "submit": "Submit"
+
+
+
+
 
 
 
