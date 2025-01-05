@@ -588,6 +588,7 @@ class _ChatScreenWebState extends State<_ChatScreenWeb>
                       time: timeString,
                       messageColor: color.withOpacity(0.6),
                       textColor: Colors.black,
+                      onLongPress: () => debugPrint("Own message long press"),
                     );
                   },
                 );
@@ -598,6 +599,7 @@ class _ChatScreenWebState extends State<_ChatScreenWeb>
                   time: timeString,
                   messageColor: Colors.white,
                   textColor: Colors.black,
+                  onLongPress: () => debugPrint("Reply long press"),
                 );
               }
             },

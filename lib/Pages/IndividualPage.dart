@@ -12,6 +12,7 @@ import 'package:intl/intl.dart'; // 🔥 Make sure you import this at the top of
 import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:flutter/services.dart'; // For Clipboard
 
 class IndividualPage extends StatefulWidget {
   final String initialChatId; // ✅ Rename from chatId to initialChatId
@@ -259,6 +260,20 @@ class _IndividualPageState extends State<IndividualPage> {
     } else {
       print("🕒 Waiting for chatId to be created...");
     }
+
+    // Listen for 'update_message' events
+    NetworkHandler().socket!.on('update_message', (data) {
+      print("🔔 Update message event received: $data");
+      if (data['chatId'] == chatId) {
+        setState(() {
+          int index = messages.indexWhere((msg) => msg['_id'] == data['_id']);
+          if (index != -1) {
+            messages[index]['content'] = data['content'];
+          }
+        });
+        _scrollToBottom();
+      }
+    });
   }
 
   void _scrollToBottom() {
@@ -333,6 +348,8 @@ class _IndividualPageState extends State<IndividualPage> {
   @override
   void dispose() {
     _scrollController.dispose(); // 🔥 Don't forget to dispose
+    NetworkHandler().socket?.off('receive_message_individual');
+    NetworkHandler().socket?.off('update_message');
     super.dispose();
   }
 
@@ -556,6 +573,11 @@ class _IndividualPageState extends State<IndividualPage> {
                     final message = messages[index];
                     bool isOwnMessage = message['senderEmail'] ==
                         loggedInUserEmail; // Check if message is from the current user
+                    // Check if the message has been deleted
+                    String displayMessage = message['content'];
+                    if (message['content'] == 'Message has been deleted') {
+                      displayMessage = 'Message has been deleted';
+                    }
                     String formattedTime = formatTime(message['timestamp']);
                     String formattedDate = formatDate(message['timestamp']);
 
@@ -591,14 +613,26 @@ class _IndividualPageState extends State<IndividualPage> {
                                 time: formattedTime,
                                 // Still pass date if needed
                                 messageColor: lightenColor(mainColor, 0.2),
-                                textColor: Colors.black,
+                                textColor:
+                                    displayMessage == 'Message has been deleted'
+                                        ? Colors.grey
+                                        : Colors.black,
+                                onLongPress: () {
+                                  _showOwnMessageOptions(message);
+                                },
                               )
                             : ReplyCard(
                                 message: message['content'],
                                 time: formattedTime,
                                 // Still pass date if needed
                                 messageColor: Colors.white,
-                                textColor: Colors.black,
+                                textColor:
+                                    displayMessage == 'Message has been deleted'
+                                        ? Colors.grey
+                                        : Colors.black,
+                                onLongPress: () {
+                                  _showReplyMessageOptions(message);
+                                },
                               ),
                       ],
                     );
@@ -746,6 +780,109 @@ class _IndividualPageState extends State<IndividualPage> {
     );
   }
 
+// Method to show options for OwnMessageCard
+  void _showOwnMessageOptions(Map<String, dynamic> message) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return SafeArea(
+          child: Wrap(
+            children: [
+              ListTile(
+                leading: Icon(Icons.copy),
+                title: Text('Copy'),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  _copyToClipboard(message['content']);
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.delete),
+                title: Text('Delete'),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  _deleteOwnMessage(message['_id']);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+// Method to show options for ReplyCard
+  void _showReplyMessageOptions(Map<String, dynamic> message) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return SafeArea(
+          child: Wrap(
+            children: [
+              ListTile(
+                leading: Icon(Icons.copy),
+                title: Text('Copy'),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  _copyToClipboard(message['content']);
+                },
+              ),
+              // No delete option for ReplyCard
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+// Method to copy text to clipboard
+  void _copyToClipboard(String text) {
+    Clipboard.setData(ClipboardData(text: text));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Copied to clipboard')),
+    );
+  }
+
+// Method to "delete" a message by replacing its content
+
+  Future<void> _deleteOwnMessage(String messageId) async {
+    try {
+      final token = await storage.read(key: "token");
+      if (token == null) {
+        print("No token found; cannot delete message");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error deleting message')),
+        );
+        return;
+      }
+
+      final response = await networkHandler.patch('/chat/delete-message', {
+        'messageId': messageId,
+      });
+
+      if (response != null && response.statusCode == 200) {
+        setState(() {
+          int index = messages.indexWhere((msg) => msg['_id'] == messageId);
+          if (index != -1) {
+            messages[index]['content'] = 'Message has been deleted';
+          }
+        });
+        // ScaffoldMessenger.of(context).showSnackBar(
+        //   SnackBar(content: Text('Message deleted')),
+        // );
+      } else {
+        print("❌ Error deleting message: ${response?.body}");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to delete message')),
+        );
+      }
+    } catch (e) {
+      print("Error deleting message: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error deleting message')),
+      );
+    }
+  }
   Future<void> requestPermissions() async {
     if (await Permission.camera.request().isGranted &&
         await Permission.photos.request().isGranted) {
