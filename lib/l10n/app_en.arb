@@ -77,7 +77,9 @@
   "transferToCustomerHelp": "You can transfer to Customer by clicking on Customer from the App's menu. Then it will ask for the payment method. If you need any further help, let me know 😊",
   "appAssistanceHelp": "To get assistance with using the app, please visit our Help Center or contact support.",
   "contactAdminHelp": "You can contact the admin at: 0597754602",
-  "invalidOption": "Please select a valid option from the list provided."
+  "invalidOption": "Please select a valid option from the list provided.",
+  "me": "Me",
+  "hajziBot": "Hajzi Bot"
 
 
 

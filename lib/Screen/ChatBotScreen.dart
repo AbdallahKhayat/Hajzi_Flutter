@@ -332,7 +332,9 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 10),
                       child: Text(
-                        isUser ? "Me" : "Hajzi Bot",
+                        isUser
+                            ? AppLocalizations.of(context)!.me
+                            : AppLocalizations.of(context)!.hajziBot,
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           color: isUser ? Colors.green : Colors.grey,
