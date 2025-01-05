@@ -169,7 +169,7 @@ class _HomePageState extends State<HomePage>
       builder: (context) {
         Color tempColor = appColorNotifier.value;
         return AlertDialog(
-          title: const Text('Pick a Theme Color'),
+          title: Text(AppLocalizations.of(context)!.pickThemeColor),
           content: SingleChildScrollView(
             child: BlockPicker(
               pickerColor: tempColor,
@@ -180,11 +180,11 @@ class _HomePageState extends State<HomePage>
           ),
           actions: [
             TextButton(
-              child: const Text('Cancel'),
+              child: Text(AppLocalizations.of(context)!.cancel),
               onPressed: () => Navigator.of(context).pop(),
             ),
             TextButton(
-              child: const Text('Select'),
+              child: Text(AppLocalizations.of(context)!.select),
               onPressed: () {
                 setState(() {
                   appColorNotifier.value = tempColor;

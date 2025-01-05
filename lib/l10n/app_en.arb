@@ -79,7 +79,10 @@
   "contactAdminHelp": "You can contact the admin at: 0597754602",
   "invalidOption": "Please select a valid option from the list provided.",
   "me": "Me",
-  "hajziBot": "Hajzi Bot"
+  "hajziBot": "Hajzi Bot",
+  "pickThemeColor": "Pick a Theme Color",
+  "cancel": "Cancel",
+  "select": "Select"
 
 
 
