@@ -20,9 +20,9 @@ class IndividualPage extends StatefulWidget {
 
   const IndividualPage(
       {super.key,
-        required this.initialChatId,
-        required this.chatPartnerEmail,
-        required this.chatPartnerName}); // 🔥 Replace chatModel with chatId and chatPartnerEmail
+      required this.initialChatId,
+      required this.chatPartnerEmail,
+      required this.chatPartnerName}); // 🔥 Replace chatModel with chatId and chatPartnerEmail
 
   @override
   State<IndividualPage> createState() => _IndividualPageState();
@@ -34,10 +34,10 @@ class _IndividualPageState extends State<IndividualPage> {
   late IO.Socket socket;
   bool sendButton = false;
   TextEditingController _messageController =
-  TextEditingController(); // 🔥 Add this to track input
+      TextEditingController(); // 🔥 Add this to track input
   List messages = []; // 🔥 Create a list to store messages
   final FlutterSecureStorage storage =
-  const FlutterSecureStorage(); // 🔥 Add for user email storage
+      const FlutterSecureStorage(); // 🔥 Add for user email storage
   String? loggedInUserEmail; // 🔥 Store logged-in user's email
   String? chatPartnerImageUrl; // Add this line
   NetworkHandler networkHandler = NetworkHandler();
@@ -104,7 +104,7 @@ class _IndividualPageState extends State<IndividualPage> {
 
             // ✅ Decode the response body to JSON
             final Map<String, dynamic> responseData =
-            json.decode(response.body);
+                json.decode(response.body);
             print("📦 Decoded response data: $responseData");
 
             // ✅ Check for _id in the response
@@ -218,7 +218,7 @@ class _IndividualPageState extends State<IndividualPage> {
     }
     final hsl = HSLColor.fromColor(color);
     final lighterHSL =
-    hsl.withLightness((hsl.lightness + amount).clamp(0.0, 1.0));
+        hsl.withLightness((hsl.lightness + amount).clamp(0.0, 1.0));
     return lighterHSL.toColor();
   }
 
@@ -305,7 +305,7 @@ class _IndividualPageState extends State<IndividualPage> {
         print("🔥 IndividualPage event: $data");
 
         final bool messageAlreadyExists =
-        messages.any((msg) => msg['_id'] == data['_id']);
+            messages.any((msg) => msg['_id'] == data['_id']);
         if (!messageAlreadyExists) {
           // Convert timestamp to local time before formatting (in formatTime method)
           if (mounted)
@@ -415,15 +415,15 @@ class _IndividualPageState extends State<IndividualPage> {
       valueListenable: appColorNotifier, // Listen to appColorNotifier
       builder: (context, mainColor, child) {
         final messageBubbleColor =
-        lightenColor(mainColor, 0.2); // Slightly lighter than mainColor
+            lightenColor(mainColor, 0.2); // Slightly lighter than mainColor
         final backgroundColor =
-        lightenColor(mainColor, 0.4); // Much lighter than mainColor
+            lightenColor(mainColor, 0.4); // Much lighter than mainColor
 
         return Scaffold(
           backgroundColor: backgroundColor, // Lighter shade of mainColor
           appBar: PreferredSize(
             preferredSize:
-            Size.fromHeight(isWeb ? kToolbarHeight * 1.2 : kToolbarHeight),
+                Size.fromHeight(isWeb ? kToolbarHeight * 1.2 : kToolbarHeight),
             child: AppBar(
               backgroundColor: mainColor,
               // Main color used for AppBar
@@ -448,28 +448,28 @@ class _IndividualPageState extends State<IndividualPage> {
                         width: isWeb ? screenWidth * 0.02 : screenWidth * 0.03),
                     chatPartnerImageUrl != null
                         ? CircleAvatar(
-                      radius:
-                      isWeb ? screenWidth * 0.03 : screenWidth * 0.05,
-                      backgroundColor: Colors.transparent,
-                      backgroundImage: NetworkImage(chatPartnerImageUrl!),
-                    )
+                            radius:
+                                isWeb ? screenWidth * 0.03 : screenWidth * 0.05,
+                            backgroundColor: Colors.transparent,
+                            backgroundImage: NetworkImage(chatPartnerImageUrl!),
+                          )
                         : CircleAvatar(
-                      radius:
-                      isWeb ? screenWidth * 0.03 : screenWidth * 0.05,
-                      backgroundColor: Colors.white,
-                      child: Text(
-                        widget.chatPartnerName.isNotEmpty
-                            ? widget.chatPartnerName[0].toUpperCase()
-                            : 'U',
-                        style: TextStyle(
-                          color: mainColor,
-                          fontWeight: FontWeight.bold,
-                          fontSize: isWeb
-                              ? screenWidth * 0.03
-                              : screenWidth * 0.05,
-                        ),
-                      ),
-                    ),
+                            radius:
+                                isWeb ? screenWidth * 0.03 : screenWidth * 0.05,
+                            backgroundColor: Colors.white,
+                            child: Text(
+                              widget.chatPartnerName.isNotEmpty
+                                  ? widget.chatPartnerName[0].toUpperCase()
+                                  : 'U',
+                              style: TextStyle(
+                                color: mainColor,
+                                fontWeight: FontWeight.bold,
+                                fontSize: isWeb
+                                    ? screenWidth * 0.03
+                                    : screenWidth * 0.05,
+                              ),
+                            ),
+                          ),
                   ],
                 ),
               ),
@@ -480,7 +480,7 @@ class _IndividualPageState extends State<IndividualPage> {
                 child: Container(
                   margin: EdgeInsets.symmetric(
                       horizontal:
-                      isWeb ? screenWidth * 0.005 : screenWidth * 0.002),
+                          isWeb ? screenWidth * 0.005 : screenWidth * 0.002),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -556,35 +556,52 @@ class _IndividualPageState extends State<IndividualPage> {
                     final message = messages[index];
                     bool isOwnMessage = message['senderEmail'] ==
                         loggedInUserEmail; // Check if message is from the current user
+                    String formattedTime = formatTime(message['timestamp']);
+                    String formattedDate = formatDate(message['timestamp']);
 
-                    if (isOwnMessage) {
-                      return ValueListenableBuilder<Color>(
-                        valueListenable: appColorNotifier,
-                        builder: (context, appColor, child) {
-                          // Make the color lighter
-                          HSLColor hsl = HSLColor.fromColor(appColor);
-                          Color lighterHSLColor = hsl
-                              .withLightness(
-                              (hsl.lightness + 0.3).clamp(0.0, 1.0))
-                              .toColor();
-
-                          return OwnMessageCard(
-                            message: message['content'],
-                            time: formatTime(message['timestamp']),
-                            messageColor: lighterHSLColor,
-                            // Use the lighter version of appColor
-                            textColor: Colors.black,
-                          );
-                        },
-                      );
+                    bool showDateSeparator = false;
+                    if (index == 0) {
+                      showDateSeparator = true;
                     } else {
-                      return ReplyCard(
-                        message: message['content'],
-                        time: formatTime(message['timestamp']),
-                        messageColor: Colors.white,
-                        textColor: Colors.black,
-                      );
+                      final previousMessage = messages[index - 1];
+                      String previousDate =
+                          formatDate(previousMessage['timestamp']);
+                      if (previousDate != formattedDate) {
+                        showDateSeparator = true;
+                      }
                     }
+
+                    return Column(
+                      children: [
+                        if (showDateSeparator)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            child: Text(
+                              formattedDate,
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey[600],
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        isOwnMessage
+                            ? OwnMessageCard(
+                                message: message['content'],
+                                time: formattedTime,
+                                // Still pass date if needed
+                                messageColor: lightenColor(mainColor, 0.2),
+                                textColor: Colors.black,
+                              )
+                            : ReplyCard(
+                                message: message['content'],
+                                time: formattedTime,
+                                // Still pass date if needed
+                                messageColor: Colors.white,
+                                textColor: Colors.black,
+                              ),
+                      ],
+                    );
                   },
                 ),
               ),
@@ -624,46 +641,46 @@ class _IndividualPageState extends State<IndividualPage> {
                           hintText: "Type a message",
                           contentPadding: isWeb
                               ? EdgeInsets.symmetric(
-                              horizontal: 20, vertical: 15)
+                                  horizontal: 20, vertical: 15)
                               : const EdgeInsets.only(
-                              left: 20, top: 10, bottom: 10),
+                                  left: 20, top: 10, bottom: 10),
                           prefix: _imageFile != null
                               ? Container(
-                            margin: EdgeInsets.only(right: 8),
-                            child: Stack(
-                              children: [
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(8),
-                                  child: Image.file(
-                                    File(_imageFile!.path),
-                                    width: 60,
-                                    height: 60,
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
-                                Positioned(
-                                  right: -10,
-                                  top: -10,
-                                  child: GestureDetector(
-                                    onTap: () {
-                                      setState(() {
-                                        _imageFile = null;
-                                      });
-                                    },
-                                    child: CircleAvatar(
-                                      radius: 10,
-                                      backgroundColor: Colors.red,
-                                      child: Icon(
-                                        Icons.close,
-                                        size: 12,
-                                        color: Colors.white,
+                                  margin: EdgeInsets.only(right: 8),
+                                  child: Stack(
+                                    children: [
+                                      ClipRRect(
+                                        borderRadius: BorderRadius.circular(8),
+                                        child: Image.file(
+                                          File(_imageFile!.path),
+                                          width: 60,
+                                          height: 60,
+                                          fit: BoxFit.cover,
+                                        ),
                                       ),
-                                    ),
+                                      Positioned(
+                                        right: -10,
+                                        top: -10,
+                                        child: GestureDetector(
+                                          onTap: () {
+                                            setState(() {
+                                              _imageFile = null;
+                                            });
+                                          },
+                                          child: CircleAvatar(
+                                            radius: 10,
+                                            backgroundColor: Colors.red,
+                                            child: Icon(
+                                              Icons.close,
+                                              size: 12,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                ),
-                              ],
-                            ),
-                          )
+                                )
                               : null,
                           suffixIcon: Row(
                             mainAxisSize: MainAxisSize.min,
@@ -678,7 +695,7 @@ class _IndividualPageState extends State<IndividualPage> {
                                 },
                                 icon: Icon(Icons.attach_file),
                                 padding:
-                                const EdgeInsets.only(right: 0, left: 30),
+                                    const EdgeInsets.only(right: 0, left: 30),
                               ),
                               IconButton(
                                 onPressed: () {
@@ -711,9 +728,9 @@ class _IndividualPageState extends State<IndividualPage> {
                           duration: Duration(milliseconds: 200),
                           child: sendButton || _imageFile != null
                               ? Icon(Icons.send,
-                              key: ValueKey('send'), color: Colors.black)
+                                  key: ValueKey('send'), color: Colors.black)
                               : Icon(Icons.mic,
-                              key: ValueKey('mic'), color: Colors.black),
+                                  key: ValueKey('mic'), color: Colors.black),
                         ),
                         splashColor: mainColor
                             .withOpacity(0.3), // Slight splash on click
@@ -805,6 +822,18 @@ class _IndividualPageState extends State<IndividualPage> {
     );
   }
 
+  String formatDate(String timestamp) {
+    try {
+      DateTime dateTime = DateTime.parse(timestamp).toLocal();
+      // You can customize the date format as needed
+      String formattedDate = DateFormat('MMM d, yyyy').format(dateTime);
+      return formattedDate;
+    } catch (e) {
+      print('❌ Error formatting date: $e');
+      return '';
+    }
+  }
+
   void takePhoto(ImageSource source) async {
     await requestPermissions(); // Request permissions
 
@@ -884,7 +913,7 @@ class _IndividualPageState extends State<IndividualPage> {
   void handleFileSelection(String type) async {
     if (type == "Document") {
       FilePickerResult? result =
-      await FilePicker.platform.pickFiles(type: FileType.any);
+          await FilePicker.platform.pickFiles(type: FileType.any);
       if (result != null) {
         String filePath = result.files.single.path!;
         print("Document selected: $filePath");
@@ -892,21 +921,21 @@ class _IndividualPageState extends State<IndividualPage> {
       }
     } else if (type == "Camera") {
       final pickedFile =
-      await ImagePicker().pickImage(source: ImageSource.camera);
+          await ImagePicker().pickImage(source: ImageSource.camera);
       if (pickedFile != null) {
         print("Image captured: ${pickedFile.path}");
         // TODO: Send image to server
       }
     } else if (type == "Gallery") {
       final pickedFile =
-      await ImagePicker().pickImage(source: ImageSource.gallery);
+          await ImagePicker().pickImage(source: ImageSource.gallery);
       if (pickedFile != null) {
         print("Image selected: ${pickedFile.path}");
         // TODO: Send image to server
       }
     } else if (type == "Audio") {
       FilePickerResult? result =
-      await FilePicker.platform.pickFiles(type: FileType.audio);
+          await FilePicker.platform.pickFiles(type: FileType.audio);
       if (result != null) {
         String filePath = result.files.single.path!;
         print("Audio selected: $filePath");
