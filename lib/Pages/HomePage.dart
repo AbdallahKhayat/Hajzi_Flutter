@@ -202,12 +202,12 @@ class _HomePageState extends State<HomePage>
   // Language dialog
   // -----------------------------------------
   void _showLanguageDialog(BuildContext context) {
-    List<String> languages = ["English", "Arabic"];
+    List<String> languages = ["English", "العربية"];
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text("Select Language"),
+          title: Text(AppLocalizations.of(context)!.selectLanguage),
           content: SingleChildScrollView(
             child: Column(
               children: languages.map((language) {
@@ -218,7 +218,7 @@ class _HomePageState extends State<HomePage>
                   onChanged: (value) {
                     setState(() {
                       selectedLanguage = value!;
-                      Locale newLocale = (selectedLanguage == "Arabic")
+                      Locale newLocale = (selectedLanguage == "العربية")
                           ? const Locale('ar', 'AE')
                           : const Locale('en', 'US');
                       widget.setLocale(newLocale);

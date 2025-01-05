@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../constants.dart';
 
@@ -67,15 +68,15 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
 
   // Welcome messages
   String _getWelcomeMessageAI() {
-    return "Welcome to Hajzi Bot! How can I assist you today?";
+    return AppLocalizations.of(context)!.welcomeToHajziBot;
   }
 
   String _getWelcomeMessageHajzi() {
-    return "Welcome to Hajzi Bot! Please choose from the following options:\n\n"
-        "1. Book an appointment\n"
-        "2. Transfer to a Customer\n"
-        "3. Get assistance with using the app\n"
-        "4. Contact admin";
+    return "${AppLocalizations.of(context)!.welcomeToHajziBot}\n\n"
+        "1. ${AppLocalizations.of(context)!.bookAnAppointment}\n"
+        "2. ${AppLocalizations.of(context)!.transferToCustomer}\n"
+        "3. ${AppLocalizations.of(context)!.getAppAssistance}\n"
+        "4. ${AppLocalizations.of(context)!.contactAdmin}";
   }
 
   // Send welcome message
@@ -106,24 +107,21 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
       // Handle predefined Hajzi questions
       switch (userMessage.trim()) {
         case "1":
-          _addAssistantMessage(
-              "You can book an appointment by pressing on a specific shop from the Home page and press Book Appointment. Then choose the available times. If you need any further help, let me know 😊");
+          _addAssistantMessage(AppLocalizations.of(context)!.bookAppointmentHelp);
           break;
         case "2":
-          _addAssistantMessage(
-              "You can transfer to Customer by clicking on Customer from the App's menu. Then it will ask for the payment method. If you need any further help, let me know 😊");
+          _addAssistantMessage(AppLocalizations.of(context)!.transferToCustomerHelp);
           break;
         case "3":
-          _addAssistantMessage(
-              "To get assistance with using the app, please visit our Help Center or contact support.");
+          _addAssistantMessage(AppLocalizations.of(context)!.appAssistanceHelp);
           break;
         case "4":
-          _addAssistantMessage("You can contact the admin at: 0597754602");
+          _addAssistantMessage(AppLocalizations.of(context)!.contactAdminHelp);
           break;
         default:
-          _addAssistantMessage(
-              "Please select a valid option from the list provided.");
+          _addAssistantMessage(AppLocalizations.of(context)!.invalidOption);
       }
+
       setState(() {
         isLoading = false;
       });
@@ -282,7 +280,9 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
           },
         ),
         title: Text(
-          isAIMode ? 'Hajzi Bot - AI Mode' : 'Hajzi Bot - Help Mode',
+          isAIMode
+              ? AppLocalizations.of(context)!.hajziBotAIMode
+              : AppLocalizations.of(context)!.hajziBotHelpMode,
           style: const TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 15,
@@ -368,8 +368,8 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
                 Expanded(
                   child: TextField(
                     controller: _controller,
-                    decoration: const InputDecoration(
-                      hintText: "Type your message...",
+                    decoration: InputDecoration(
+                      hintText: AppLocalizations.of(context)!.typeYourMessage,
                     ),
                   ),
                 ),
