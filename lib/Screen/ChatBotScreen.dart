@@ -137,17 +137,27 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
         url,
         headers: {
           'Authorization': 'Bearer $apiKey',
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json; charset=utf-8',
         },
         body: json.encode({
-          "model": "gpt-3.5-turbo",
-          "messages": messages, // Entire chat history
+          "model": "gpt-3.5-turbo", // Specify GPT-4 here
+          "messages": messages, // Include your conversation history
+          "temperature": 0.7,   // Optional: Adjust creativity level
         }),
       );
 
+      debugPrint('Raw Response: ${response.body}'); // Log the raw response
+
+
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        String botMessage = data['choices'][0]['message']['content'];
+
+
+        // Decode the Arabic content
+        String botMessage = utf8.decode(data['choices'][0]['message']['content']
+            .toString()
+            .runes
+            .toList());
 
         setState(() {
           messages.add({"role": "assistant", "content": botMessage});
@@ -168,6 +178,7 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
       });
     }
   }
+
 
   // Add assistant message
   void _addAssistantMessage(String message) {
