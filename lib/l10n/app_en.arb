@@ -82,7 +82,28 @@
   "hajziBot": "Hajzi Bot",
   "pickThemeColor": "Pick a Theme Color",
   "cancel": "Cancel",
-  "select": "Select"
+  "select": "Select",
+  "createPost": "Create Post",
+  "preview": "Preview",
+  "postTitle": "Post Title",
+  "general": "General",
+  "barbershop": "Barbershop",
+  "hospital": "Hospital",
+  "addImageAndTitle": "Add Image and Title",
+  "postContent": "Post Content",
+  "provideBlogBody": "Provide Body of Your Blog",
+  "selectShopLocation": "Select Shop Location",
+  "addShop": "Add Shop",
+  "selectRole": "Select Role"
+
+
+
+
+
+
+
+
+
 
 
 

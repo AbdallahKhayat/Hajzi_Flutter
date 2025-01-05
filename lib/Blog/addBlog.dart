@@ -18,6 +18,8 @@ import 'package:jwt_decoder/jwt_decoder.dart';
 import '../Notifications/push_notifications.dart';
 import '../SelectLocationPage.dart';
 import '../constants.dart'; // Ensure this uses google_maps_flutter's LatLng
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
 
 class AddBlog extends StatefulWidget {
   const AddBlog({super.key});
@@ -225,14 +227,14 @@ class _AddBlogState extends State<AddBlog> {
             Navigator.pop(context);
           },
         ),
-        title: Text(
-          "Create Post",
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 20,
-            color: Colors.black,
+          title: Text(
+            AppLocalizations.of(context)!.createPost,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 20,
+              color: Colors.black,
+            ),
           ),
-        ),
         actions: [
           TextButton(
             onPressed: () {
@@ -254,8 +256,8 @@ class _AddBlogState extends State<AddBlog> {
               }
             },
             child: Text(
-              "Preview",
-              style: TextStyle(
+              AppLocalizations.of(context)!.preview,
+              style: const TextStyle(
                 fontSize: 16,
                 color: Colors.black,
                 fontWeight: FontWeight.bold,
@@ -298,7 +300,7 @@ class _AddBlogState extends State<AddBlog> {
                                       ).createShader(bounds);
                                     },
                                     child: Text(
-                                      "Post Title",
+                                      AppLocalizations.of(context)!.postTitle,
                                       style: const TextStyle(
                                         fontWeight: FontWeight.bold,
                                         fontSize: 18,
@@ -319,16 +321,20 @@ class _AddBlogState extends State<AddBlog> {
                                 },
                                 items: [
                                   DropdownMenuItem(
-                                      value: "general", child: Text("General")),
+                                    value: "general",
+                                    child: Text(AppLocalizations.of(context)!.general),
+                                  ),
                                   DropdownMenuItem(
-                                      value: "barbershop",
-                                      child: Text("Barbershop")),
+                                    value: "barbershop",
+                                    child: Text(AppLocalizations.of(context)!.barbershop),
+                                  ),
                                   DropdownMenuItem(
-                                      value: "hospital",
-                                      child: Text("Hospital")),
+                                    value: "hospital",
+                                    child: Text(AppLocalizations.of(context)!.hospital),
+                                  ),
                                 ],
                                 decoration: InputDecoration(
-                                  labelText: "Select Role",
+                                  labelText: AppLocalizations.of(context)!.selectRole,
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(10),
                                   ),
@@ -349,7 +355,7 @@ class _AddBlogState extends State<AddBlog> {
                                   ).createShader(bounds);
                                 },
                                 child: Text(
-                                  "Post Content",
+                                  AppLocalizations.of(context)!.postContent,
                                   style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 18,
@@ -357,6 +363,7 @@ class _AddBlogState extends State<AddBlog> {
                                         .white, // Required but overridden by the shader
                                   ),
                                 ),
+
                               );
                             },
                           ),
@@ -397,12 +404,12 @@ class _AddBlogState extends State<AddBlog> {
                                         ).createShader(bounds);
                                       },
                                       child: Text(
-                                        "Select Shop Location",
+                                        AppLocalizations.of(context)!.selectShopLocation,
                                         style: const TextStyle(
-                                          color: Colors
-                                              .white, // Required but overridden by the shader
+                                          color: Colors.white, // Required but overridden by the shader
                                         ),
                                       ),
+
                                     );
                                   },
                                 ),
@@ -442,7 +449,7 @@ class _AddBlogState extends State<AddBlog> {
                                   ).createShader(bounds);
                                 },
                                 child: Text(
-                                  "Post Title",
+                                  AppLocalizations.of(context)!.postTitle,
                                   style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 18,
@@ -463,15 +470,20 @@ class _AddBlogState extends State<AddBlog> {
                             },
                             items: [
                               DropdownMenuItem(
-                                  value: "general", child: Text("General")),
+                                value: "general",
+                                child: Text(AppLocalizations.of(context)!.general),
+                              ),
                               DropdownMenuItem(
-                                  value: "barbershop",
-                                  child: Text("Barbershop")),
+                                value: "barbershop",
+                                child: Text(AppLocalizations.of(context)!.barbershop),
+                              ),
                               DropdownMenuItem(
-                                  value: "hospital", child: Text("Hospital")),
+                                value: "hospital",
+                                child: Text(AppLocalizations.of(context)!.hospital),
+                              ),
                             ],
                             decoration: InputDecoration(
-                              labelText: "Select Role",
+                              labelText: AppLocalizations.of(context)!.selectRole,
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
@@ -492,7 +504,7 @@ class _AddBlogState extends State<AddBlog> {
                                   ).createShader(bounds);
                                 },
                                 child: Text(
-                                  "Post Content",
+                                  AppLocalizations.of(context)!.postContent,
                                   style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 18,
@@ -500,6 +512,7 @@ class _AddBlogState extends State<AddBlog> {
                                         .white, // Required but overridden by the shader
                                   ),
                                 ),
+
                               );
                             },
                           ),
@@ -540,12 +553,12 @@ class _AddBlogState extends State<AddBlog> {
                                     ).createShader(bounds);
                                   },
                                   child: Text(
-                                    "Select Shop Location",
+                                    AppLocalizations.of(context)!.selectShopLocation,
                                     style: const TextStyle(
-                                      color: Colors
-                                          .white, // Required but overridden by the shader
+                                      color: Colors.white, // Required but overridden by the shader
                                     ),
                                   ),
+
                                 );
                               },
                             ),
@@ -592,7 +605,7 @@ class _AddBlogState extends State<AddBlog> {
                 width: 2,
               ),
             ),
-            labelText: "Add Image and Title",
+            labelText: AppLocalizations.of(context)!.addImageAndTitle,
             labelStyle: TextStyle(
               color: Colors.black,
             ),
@@ -639,7 +652,7 @@ class _AddBlogState extends State<AddBlog> {
               width: 2,
             ),
           ),
-          labelText: "Provide Body of Your Blog",
+          labelText: AppLocalizations.of(context)!.provideBlogBody,
           labelStyle: TextStyle(
             color: Colors.black,
           ),
@@ -951,14 +964,14 @@ class _AddBlogState extends State<AddBlog> {
             ),
             child: Center(
               child: Text(
-                "Add Shop",
+                AppLocalizations.of(context)!.addShop,
                 style: const TextStyle(
                   color: Colors.white,
-                  // You can change this to be dynamic if needed
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
                 ),
               ),
+
             ),
           );
         },

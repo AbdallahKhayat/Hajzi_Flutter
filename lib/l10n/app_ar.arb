@@ -81,7 +81,28 @@
   "hajziBot": "روبوت حجزي",
   "pickThemeColor": "اختر لون الواجهة",
   "cancel": "إلغاء",
-  "select": "اختيار"
+  "select": "اختيار",
+  "createPost": "إنشاء منشور",
+  "preview": "عرض المحل",
+  "postTitle": "عنوان المنشور",
+  "general": "عام",
+  "barbershop": "محل حلاقة",
+  "hospital": "مستشفى",
+  "addImageAndTitle": "أضف صورة وعنوان",
+  "postContent": "محتوى المنشور",
+  "provideBlogBody": "قدم محتوى المحل",
+  "selectShopLocation": "اختر موقع المحل",
+  "addShop": "إضافة المحل",
+  "selectRole": "اختر الدور"
+
+
+
+
+
+
+
+
+
 
 
 }
