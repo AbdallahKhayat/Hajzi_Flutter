@@ -104,7 +104,11 @@
   "confirmSubmission": "Confirm Submission",
   "areYouSureSubmitShop": "Are you sure you want to submit this Shop?",
   "cancel": "Cancel",
-  "submit": "Submit"
+  "submit": "Submit",
+  "editEmail": "Edit Email",
+  "email": "Email",
+  "save": "Save",
+  "min": "(min)"
 
 
 

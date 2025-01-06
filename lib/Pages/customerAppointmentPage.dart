@@ -1,9 +1,12 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import '../NetworkHandler.dart';
 import 'package:intl/intl.dart';
 
 import '../constants.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
 class CustomerAppointmentPage extends StatefulWidget {
   final NetworkHandler networkHandler;
   final String blogId;
@@ -190,21 +193,27 @@ class _CustomerAppointmentPageState extends State<CustomerAppointmentPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title:  Text(AppLocalizations.of(context)!.confirmDeletion),
+          title: Text(AppLocalizations.of(context)!.confirmDeletion),
           content: Text("${AppLocalizations.of(context)!.sureDelete} $time?"),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop(); // Close the dialog
               },
-              child:  Text(AppLocalizations.of(context)!.cancel,style: TextStyle(color: Colors.black),),
+              child: Text(
+                AppLocalizations.of(context)!.cancel,
+                style: TextStyle(color: Colors.black),
+              ),
             ),
             ElevatedButton(
               onPressed: () {
                 Navigator.of(context).pop(); // Close the dialog
                 _confirmDeleteSlot(time); // Proceed with deletion
               },
-              child:  Text(AppLocalizations.of(context)!.delete,style: TextStyle(color: Colors.red),),
+              child: Text(
+                AppLocalizations.of(context)!.delete,
+                style: TextStyle(color: Colors.red),
+              ),
             ),
           ],
         );
@@ -293,11 +302,108 @@ class _CustomerAppointmentPageState extends State<CustomerAppointmentPage> {
     }
   }
 
+  // New method to update user email
+  // Method to update user email for both booked and available slots
+  Future<void> _updateUserEmail(
+      String blogId, String time, String currentUserName, String status) async {
+    final TextEditingController _emailController = TextEditingController(
+        text: currentUserName != "Available Slot" ? currentUserName : "");
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(AppLocalizations.of(context)!.editEmail),
+          content: TextField(
+            controller: _emailController,
+            decoration: InputDecoration(
+              labelText: AppLocalizations.of(context)!.email,
+              hintText: "example@example.com",
+            ),
+            keyboardType: TextInputType.emailAddress,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: Text(
+                AppLocalizations.of(context)!.cancel,
+                style: TextStyle(color: Colors.black),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                String newEmail = _emailController.text.trim();
+                // Basic email validation
+                if (newEmail.isNotEmpty &&
+                    !RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(newEmail)) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("Invalid Email")),
+                  );
+                  return;
+                }
+
+                try {
+                  // If the slot is available and email is provided, booking the slot
+                  // If the slot is booked and email is provided, updating the email
+                  // If the slot is booked and email is cleared, making it available
+                  // If the slot is available and email is cleared, no action
+
+                  Map<String, dynamic> body = {};
+                  if (newEmail.isNotEmpty) {
+                    body['newUserName'] = newEmail;
+                  } else {
+                    body['newUserName'] = "Available Slot";
+                  }
+
+                  final response = await widget.networkHandler.patch(
+                    "/appointment/updateUser/${widget.blogId}/$time",
+                    body,
+                  );
+
+                  // Parse the response body
+                  final responseData = json.decode(response.body);
+
+                  if (response.statusCode == 200) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                          content: Text(responseData['message'] ??
+                              "Email updated successfully")),
+                    );
+                    _fetchAppointments(); // Refresh the appointments
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                          content:
+                              Text(responseData['message'] ?? "Update Failed")),
+                    );
+                  }
+                } catch (error) {
+                  debugPrint("Error updating email: $error");
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("Update Error")),
+                  );
+                } finally {
+                  Navigator.of(context).pop(); // Close the dialog
+                }
+              },
+              child: Text(
+                AppLocalizations.of(context)!.save,
+                style: TextStyle(color: Colors.black),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title:  Text(
+        title: Text(
           AppLocalizations.of(context)!.manageAppointments,
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
@@ -330,8 +436,9 @@ class _CustomerAppointmentPageState extends State<CustomerAppointmentPage> {
                       fontWeight: FontWeight.bold,
                     ),
                     controller: _timeController,
-                    decoration:  InputDecoration(
-                        labelText: '${AppLocalizations.of(context)!.addAvailableTime} (HH:mm)'),
+                    decoration: InputDecoration(
+                        labelText:
+                            '${AppLocalizations.of(context)!.addAvailableTime} (HH:mm)'),
                     readOnly: true,
                     // Prevent manual typing
                     onTap: () => _selectTime(
@@ -347,7 +454,7 @@ class _CustomerAppointmentPageState extends State<CustomerAppointmentPage> {
                         backgroundColor: appColor, // Dynamic background color
                       ),
                       onPressed: _addAvailableTime,
-                      child:  Text(
+                      child: Text(
                         AppLocalizations.of(context)!.add,
                         style: TextStyle(
                           color: Colors.black,
@@ -370,7 +477,8 @@ class _CustomerAppointmentPageState extends State<CustomerAppointmentPage> {
                       fontWeight: FontWeight.bold,
                     ),
                     controller: _openingTimeController,
-                    decoration:  InputDecoration(labelText: AppLocalizations.of(context)!.opening),
+                    decoration: InputDecoration(
+                        labelText: AppLocalizations.of(context)!.opening),
                     readOnly: true,
                     // Prevent manual typing
                     onTap: () => _selectTime(
@@ -385,7 +493,8 @@ class _CustomerAppointmentPageState extends State<CustomerAppointmentPage> {
                       fontWeight: FontWeight.bold,
                     ),
                     controller: _closingTimeController,
-                    decoration: InputDecoration(labelText: AppLocalizations.of(context)!.closing),
+                    decoration: InputDecoration(
+                        labelText: AppLocalizations.of(context)!.closing),
                     readOnly: true,
                     // Prevent manual typing
                     onTap: () => _selectTime(
@@ -400,7 +509,8 @@ class _CustomerAppointmentPageState extends State<CustomerAppointmentPage> {
                       fontWeight: FontWeight.bold,
                     ),
                     controller: _durationController,
-                    decoration: InputDecoration(labelText: AppLocalizations.of(context)!.duration),
+                    decoration: InputDecoration(
+                        labelText: AppLocalizations.of(context)!.duration),
                     keyboardType: TextInputType.number,
                   ),
                 ),
@@ -413,7 +523,7 @@ class _CustomerAppointmentPageState extends State<CustomerAppointmentPage> {
                         backgroundColor: appColor, // Dynamic background color
                       ),
                       onPressed: _addAvailableTimeSlots,
-                      child:  Text(
+                      child: Text(
                         AppLocalizations.of(context)!.addSlots,
                         style: TextStyle(
                           color: Colors.black,
@@ -436,11 +546,21 @@ class _CustomerAppointmentPageState extends State<CustomerAppointmentPage> {
                         scrollDirection: Axis.horizontal,
                         child: DataTable(
                           columns: [
-                            DataColumn(label: Text(AppLocalizations.of(context)!.user)),
-                            DataColumn(label: Text(AppLocalizations.of(context)!.time)),
-                            DataColumn(label: Text('${AppLocalizations.of(context)!.duration} (min)')),
-                            DataColumn(label: Text(AppLocalizations.of(context)!.status)),
-                            DataColumn(label: Text(AppLocalizations.of(context)!.actions)),
+                            DataColumn(
+                                label:
+                                    Text(AppLocalizations.of(context)!.user)),
+                            DataColumn(
+                                label:
+                                    Text(AppLocalizations.of(context)!.time)),
+                            DataColumn(
+                                label: Text(
+                                    '${AppLocalizations.of(context)!.duration} ${AppLocalizations.of(context)!.min}')),
+                            DataColumn(
+                                label:
+                                    Text(AppLocalizations.of(context)!.status)),
+                            DataColumn(
+                                label: Text(
+                                    AppLocalizations.of(context)!.actions)),
                           ],
                           rows: appointments.map((appointment) {
                             final bool isBooked =
@@ -448,7 +568,8 @@ class _CustomerAppointmentPageState extends State<CustomerAppointmentPage> {
                             return DataRow(cells: [
                               DataCell(Text(isBooked
                                   ? appointment['userName']
-                                  :AppLocalizations.of(context)!.availableSlot)),
+                                  : AppLocalizations.of(context)!
+                                      .availableSlot)),
                               DataCell(Text(
                                 _formatTimeWithAMPM(
                                     appointment['time'] ?? 'N/A'),
@@ -457,7 +578,9 @@ class _CustomerAppointmentPageState extends State<CustomerAppointmentPage> {
                                   Text(appointment['duration'].toString())),
                               DataCell(
                                 Text(
-                                  isBooked ? AppLocalizations.of(context)!.booked : AppLocalizations.of(context)!.available,
+                                  isBooked
+                                      ? AppLocalizations.of(context)!.booked
+                                      : AppLocalizations.of(context)!.available,
                                   style: TextStyle(
                                       color:
                                           isBooked ? Colors.red : Colors.green,
@@ -465,11 +588,27 @@ class _CustomerAppointmentPageState extends State<CustomerAppointmentPage> {
                                 ),
                               ),
                               DataCell(
-                                IconButton(
-                                  icon: const Icon(Icons.delete,
-                                      color: Colors.red),
-                                  onPressed: () =>
-                                      _deleteSlot(appointment['time']),
+                                Row(
+                                  children: [
+                                    // Delete Icon
+                                    IconButton(
+                                      icon: const Icon(Icons.delete,
+                                          color: Colors.red),
+                                      onPressed: () =>
+                                          _deleteSlot(appointment['time']),
+                                    ),
+                                    // Edit Icon (only for booked slots)
+                                    // Edit Icon (for both booked and available slots)
+                                    IconButton(
+                                      icon: const Icon(Icons.edit,
+                                          color: Colors.blue),
+                                      onPressed: () => _updateUserEmail(
+                                          widget.blogId,
+                                          appointment['time'],
+                                          appointment['userName'],
+                                          appointment['status']),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ]);
