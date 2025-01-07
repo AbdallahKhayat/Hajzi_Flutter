@@ -450,6 +450,8 @@ class _HomePageState extends State<HomePage>
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
                         ),
+                        overflow: TextOverflow.ellipsis, // Adds ellipsis when text overflows
+                        maxLines: 1, // Restricts the text to a single line
                       ),
                     ],
                   ),

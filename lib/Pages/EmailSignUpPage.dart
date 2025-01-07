@@ -144,59 +144,59 @@ class _EmailSignUpPageState extends State<EmailSignUpPage> {
                   passwordTextField(),
                   const SizedBox(height: 30),
 
-                  kIsWeb
-                      ? Center(
-                          //web part//////////////////////////
-                          child: SizedBox(
-                            width: 400,
-                            child: DropdownButtonFormField<String>(
-                              padding: EdgeInsets.only(bottom: 15),
-                              value: selectedRole,
-                              onChanged: (value) {
-                                setState(() {
-                                  selectedRole = value;
-                                });
-                              },
-                              items: [
-                                DropdownMenuItem(
-                                    value: "user", child: Text("User")),
-                                DropdownMenuItem(
-                                    value: "customer", child: Text("Customer")),
-                                DropdownMenuItem(
-                                    value: "admin", child: Text("Admin")),
-                              ],
-                              decoration: InputDecoration(
-                                labelText: "Select Role",
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                              ),
-                            ),
-                          ),
-                        )
-                      : DropdownButtonFormField<String>(
-                          padding: EdgeInsets.only(bottom: 15),
-                          value: selectedRole,
-                          onChanged: (value) {
-                            setState(() {
-                              selectedRole = value;
-                            });
-                          },
-                          items: [
-                            DropdownMenuItem(
-                                value: "user", child: Text("User")),
-                            DropdownMenuItem(
-                                value: "customer", child: Text("Customer")),
-                            DropdownMenuItem(
-                                value: "admin", child: Text("Admin")),
-                          ],
-                          decoration: InputDecoration(
-                            labelText: "Select Role",
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                        ),
+                  // kIsWeb
+                  //     ? Center(
+                  //         //web part//////////////////////////
+                  //         child: SizedBox(
+                  //           width: 400,
+                  //           child: DropdownButtonFormField<String>(
+                  //             padding: EdgeInsets.only(bottom: 15),
+                  //             value: selectedRole,
+                  //             onChanged: (value) {
+                  //               setState(() {
+                  //                 selectedRole = value;
+                  //               });
+                  //             },
+                  //             items: [
+                  //               DropdownMenuItem(
+                  //                   value: "user", child: Text("User")),
+                  //               DropdownMenuItem(
+                  //                   value: "customer", child: Text("Customer")),
+                  //               DropdownMenuItem(
+                  //                   value: "admin", child: Text("Admin")),
+                  //             ],
+                  //             decoration: InputDecoration(
+                  //               labelText: "Select Role",
+                  //               border: OutlineInputBorder(
+                  //                 borderRadius: BorderRadius.circular(8),
+                  //               ),
+                  //             ),
+                  //           ),
+                  //         ),
+                  //       )
+                  //     : DropdownButtonFormField<String>(
+                  //         padding: EdgeInsets.only(bottom: 15),
+                  //         value: selectedRole,
+                  //         onChanged: (value) {
+                  //           setState(() {
+                  //             selectedRole = value;
+                  //           });
+                  //         },
+                  //         items: [
+                  //           DropdownMenuItem(
+                  //               value: "user", child: Text("User")),
+                  //           DropdownMenuItem(
+                  //               value: "customer", child: Text("Customer")),
+                  //           DropdownMenuItem(
+                  //               value: "admin", child: Text("Admin")),
+                  //         ],
+                  //         decoration: InputDecoration(
+                  //           labelText: "Select Role",
+                  //           border: OutlineInputBorder(
+                  //             borderRadius: BorderRadius.circular(8),
+                  //           ),
+                  //         ),
+                  //       ),
 
                   // Sign-Up Button
                   InkWell(
