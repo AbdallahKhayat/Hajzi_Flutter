@@ -6,6 +6,7 @@ import 'package:blogapp/Models/profileModel.dart';
 import 'package:blogapp/Screen/chatscreen.dart';
 import 'package:blogapp/Screen/usersScreen.dart';
 import 'package:blogapp/services/stripe_service.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -79,12 +80,13 @@ class _HomePageState extends State<HomePage>
   //        3 => ShopsScreen() OR UsersScreen() depending on userRole
   //        4 => RequestsScreen()
   List<Widget> widgets = [];
-
+  ProfileModel profileModel = ProfileModel();
   @override
   void initState() {
     super.initState();
     _loadUserRole();
     checkProfile();
+    //fetchData();
 
     // Poll for counts every 20 seconds
     _timer = Timer.periodic(const Duration(seconds: 20), (timer) {
@@ -141,24 +143,51 @@ class _HomePageState extends State<HomePage>
     });
   }
 
+  // void fetchData() async {
+  //   var response = await networkHandler.get("/profile/getData");
+  //   if(mounted)
+  //     setState(() {
+  //       profileModel =
+  //           ProfileModel.fromJson(response["data"]); // Data within 'data'
+  //     });
+  // }
+
   // -----------------------------------------
   // Check profile (email + photo)
   // -----------------------------------------
   void checkProfile() async {
     var response = await networkHandler.get("/profile/checkProfile");
-    setState(() {
-      email = response["email"] ?? "email";
-      profilePhoto = CircleAvatar(
-        radius: 50,
-        backgroundImage: response["email"] != null
-            ? NetworkHandler().getImage(response["email"])
-            : null,
-        child: response["email"] == null
-            ? const Icon(Icons.person, size: 50, color: Colors.grey)
-            : null,
-      );
-    });
+
+    // Ensure the response is a Map and contains the necessary fields
+    if (response is Map<String, dynamic> && response['Status'] == true) {
+      setState(() {
+        email = response["email"] ?? "email";
+
+        // Update profileModel with the img field
+       profileModel.img = response["img"]; // Ensure ProfileModel has an 'img' field
+
+        profilePhoto = CircleAvatar(
+          radius: 50,
+          backgroundImage: (profileModel.img != null && profileModel.img!.isNotEmpty)
+              ? CachedNetworkImageProvider(profileModel.img!)
+              : AssetImage('assets/images/placeholder.png') as ImageProvider,
+          child: (profileModel.img == null || profileModel.img!.isEmpty)
+              ? const Icon(Icons.person, size: 50, color: Colors.grey)
+              : null,
+        );
+      });
+    } else {
+      setState(() {
+        email = "email";
+        profilePhoto = CircleAvatar(
+          radius: 50,
+          backgroundImage: AssetImage('assets/images/placeholder.png') as ImageProvider,
+          child: const Icon(Icons.person, size: 50, color: Colors.grey),
+        );
+      });
+    }
   }
+
 
   // -----------------------------------------
   // Theme color picker
@@ -496,6 +525,7 @@ class _HomePageState extends State<HomePage>
                     Navigator.pop(context);
                   },
                 ),
+
                 // "New Story" (if userRole != "user")
                 if (userRole != "user")
                   _drawerItem(

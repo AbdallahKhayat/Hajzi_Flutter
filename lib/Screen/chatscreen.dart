@@ -234,10 +234,10 @@ class _ChatScreenWebState extends State<_ChatScreenWeb>
     } catch (e) {
       debugPrint("Error in _fetchChats: $e");
     } finally {
-      if(mounted)
-      setState(() {
-        _isLoadingChats = false;
-      });
+      if (mounted)
+        setState(() {
+          _isLoadingChats = false;
+        });
     }
   }
 
@@ -477,8 +477,7 @@ class _ChatScreenWebState extends State<_ChatScreenWeb>
           setState(() {
             final timestamp = DateTime.now().millisecondsSinceEpoch;
             // Construct the full URL
-            _selectedPartnerImg =
-                'https://hajzi-6883b1f029cf.herokuapp.com/$imgPath?v=$timestamp';
+            _selectedPartnerImg = '$imgPath?v=$timestamp';
           });
         } else {
           debugPrint("Profile image is empty for $email");
@@ -826,25 +825,28 @@ class _ChatScreenWebState extends State<_ChatScreenWeb>
   @override
   Widget build(BuildContext context) {
     final appBar = AppBar(
-        flexibleSpace: ValueListenableBuilder<Color>(
-          valueListenable: appColorNotifier,
-          builder: (context, appColor, child) {
-            return Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [appColor.withOpacity(1), appColor],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
+      flexibleSpace: ValueListenableBuilder<Color>(
+        valueListenable: appColorNotifier,
+        builder: (context, appColor, child) {
+          return Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [appColor.withOpacity(1), appColor],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
-            );
-          },
-        ),
+            ),
+          );
+        },
+      ),
       title: const Text("Hajzi Chats (Web)",
           style: TextStyle(color: Colors.white)),
       actions: [
         IconButton(
-          icon: const Icon(Icons.search,color: Colors.white,),
+          icon: const Icon(
+            Icons.search,
+            color: Colors.white,
+          ),
           onPressed: () {
             Navigator.push(
               context,
@@ -853,7 +855,7 @@ class _ChatScreenWebState extends State<_ChatScreenWeb>
           },
         ),
         PopupMenuButton<String>(
-          icon: const Icon(Icons.more_vert,color: Colors.white),
+          icon: const Icon(Icons.more_vert, color: Colors.white),
           onSelected: (value) => debugPrint("Action: $value"),
           itemBuilder: (_) => const [
             PopupMenuItem(value: "New group", child: Text("New group")),

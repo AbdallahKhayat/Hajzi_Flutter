@@ -1,5 +1,6 @@
 import 'package:blogapp/Models/profileModel.dart';
 import 'package:blogapp/NetworkHandler.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -65,13 +66,13 @@ class _MainProfileState extends State<MainProfile> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    background: profileModel.email != null
-                        ? Image(
-                            image:
-                                networkHandler.getImage(profileModel.email!)
-                                    as NetworkImage,
-                            fit: BoxFit.cover,
-                          )
+                    background: profileModel.img != null
+                        ? CachedNetworkImage(
+                      imageUrl: profileModel.img!,
+                      placeholder: (context, url) => CircularProgressIndicator(),
+                      errorWidget: (context, url, error) => Icon(Icons.error),
+                      fit: BoxFit.cover,
+                    )
                         : Container(
                             color: Colors.grey,
                             child: Center(
@@ -97,7 +98,10 @@ class _MainProfileState extends State<MainProfile> {
                           setState(() {
                             profileModel = ProfileModel.fromJson(updatedData);
                           });
+                          fetchData();
+
                         }
+
                       },
                       color: Colors.white,
                     ),
@@ -160,9 +164,9 @@ class _MainProfileState extends State<MainProfile> {
           children: [
             CircleAvatar(
               radius: 50,
-              backgroundImage: profileModel.email == null
-                  ? null
-                  : NetworkHandler().getImage(profileModel.email!),
+              backgroundImage: profileModel.img != null
+                  ? CachedNetworkImageProvider(profileModel.img!)
+                  : AssetImage('assets/images/placeholder.png') as ImageProvider, // Use a placeholder image
               backgroundColor: Colors.grey.shade300,
             ),
             SizedBox(height: 10),

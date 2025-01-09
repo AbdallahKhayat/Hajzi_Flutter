@@ -72,6 +72,8 @@ class _BlogCardState extends State<BlogCard> {
 
   @override
   Widget build(BuildContext context) {
+    // Debugging: Print the previewImage URL
+    print("Preview Image URL: ${widget.addBlogModel.previewImage}");
     return GestureDetector(
       onTap: () {
         // Navigate to the BlogAfterClick page to show all slide images

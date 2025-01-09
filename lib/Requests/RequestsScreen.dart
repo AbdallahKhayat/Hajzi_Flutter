@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:blogapp/Models/addBlogApproval.dart';
 import 'package:blogapp/Models/addBlogModel.dart';
 import 'package:blogapp/NetworkHandler.dart';
-
+import 'package:http/http.dart' as http;
 import '../constants.dart';
 
 class RequestsScreen extends StatefulWidget {
@@ -162,11 +162,26 @@ class _RequestsScreenState extends State<RequestsScreen> {
         final coverImages =
             (blogData["coverImages"] as List?)?.cast<String>() ?? [];
 
+        // Log the images for debugging
+        print("Preview Image: $previewImage");
+        print("Cover Images: $coverImages");
+
         // Combine previewImage and coverImages into a single list with the full URL
-        return [
-          if (previewImage != null) "${networkHandler.baseurl}/$previewImage",
-          ...coverImages.map((image) => "${networkHandler.baseurl}/$image")
+        final urls = [
+          if (previewImage != null) networkHandler.formater(previewImage),
+          ...coverImages.map((image) => networkHandler.formater(image)),
         ];
+
+        // Check if the images are accessible
+        for (var url in urls) {
+          print("Checking URL: $url");
+          final isAccessible = await _isImageAccessible(url);
+          if (!isAccessible) {
+            print("⚠️ Image URL is not accessible: $url");
+          }
+        }
+
+        return urls;
       } else {
         return [];
       }
@@ -175,6 +190,17 @@ class _RequestsScreenState extends State<RequestsScreen> {
       return [];
     }
   }
+
+  Future<bool> _isImageAccessible(String url) async {
+    try {
+      final response = await http.head(Uri.parse(url));
+      return response.statusCode == 200 && response.headers['content-length'] != '0';
+    } catch (e) {
+      print("Error checking image accessibility: $e");
+      return false;
+    }
+  }
+
 
   Future<void> _showDetails(AddBlogApproval blog) async {
     // Fetch all images associated with this blog request

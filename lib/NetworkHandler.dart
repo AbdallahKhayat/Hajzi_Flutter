@@ -342,7 +342,7 @@ class NetworkHandler{
     request.files.add(await http.MultipartFile.fromPath('img',filePath));
     request.headers.addAll({
       "Authorization":"Bearer $token",
-      "Content-Type": "multipart/form-data"
+    //  "Content-Type": "multipart/form-data"
 
     });
     //send it
@@ -368,11 +368,28 @@ class NetworkHandler{
 
 
 
-  String formater(String url){
-    return baseurl+url;
+  // String formater(String url){
+  //   return baseurl+url;
+  // }
+  String formater(String url) {
+    if (url.startsWith("http://") || url.startsWith("https://")) {
+      // If the URL is already a full URL, return it as-is
+      print("Full URL: $url"); // Debug log
+      return url;
+    }
+    // Otherwise, prepend the baseurl
+    String fullUrl = baseurl + url;
+    print("Formatted URL: $fullUrl"); // Debug log
+    return fullUrl;
+
   }
 
+
   String formater2(String url){
+    if (url.startsWith("http://") || url.startsWith("https://")) {
+      // If the URL is already a full URL, return it as-is
+      return url;
+    }
     return baseurl2+url;
   }
 
@@ -402,25 +419,36 @@ class NetworkHandler{
     }
   }
   //get the image for MainProfile
-  NetworkImage getImage(String imageName){
-    String url=formater("/uploads/$imageName.jpg?${DateTime.now().millisecondsSinceEpoch}"); // Append timestamp");// if u notice the image name in backend is the same as username
+  // NetworkImage getImage(String imageName){
+  //   String url=formater("/uploads/$imageName.jpg?${DateTime.now().millisecondsSinceEpoch}"); // Append timestamp");// if u notice the image name in backend is the same as username
+  //   return NetworkImage(url);
+  // }
+
+  // For single images
+  NetworkImage getImage(String imageName) {
+    String url = formater(imageName); // `formater` will handle full URLs correctly
     return NetworkImage(url);
   }
 
-  NetworkImage getImageBlog(String imageName){
-    String url=formater("/$imageName");// if u notice the image name in backend is the same as username
-    return NetworkImage(url);
-  }
-
+// For multiple images
   List<NetworkImage> getImages(List<String> imagePaths) {
-    return imagePaths.map((imagePath) {
-      // Use `formater` to build the full URL, ensuring no duplicate "uploads/"
-      String url = imagePath.startsWith("/uploads/")
-          ? formater(imagePath) // If the path already includes "/uploads/", use it as-is
-          : formater("/$imagePath"); // Otherwise, prepend "/uploads/"
-      return NetworkImage(url); // Create the NetworkImage
-    }).toList();
+    return imagePaths.map((path) => NetworkImage(formater(path))).toList();
   }
+
+  NetworkImage getImageBlog(String imageUrl){
+    return NetworkImage(imageUrl);
+  }
+
+
+// List<NetworkImage> getImages(List<String> imagePaths) {
+  //   return imagePaths.map((imagePath) {
+  //     // Use `formater` to build the full URL, ensuring no duplicate "uploads/"
+  //     String url = imagePath.startsWith("/uploads/")
+  //         ? formater(imagePath) // If the path already includes "/uploads/", use it as-is
+  //         : formater("/$imagePath"); // Otherwise, prepend "/uploads/"
+  //     return NetworkImage(url); // Create the NetworkImage
+  //   }).toList();
+  // }
 
 // List<NetworkImage> getImages(List<String> imageNames) {
   //   return imageNames.map((imageName) {

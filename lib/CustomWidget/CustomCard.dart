@@ -14,13 +14,14 @@ class CustomCard extends StatelessWidget {
   final NetworkHandler networkHandler = NetworkHandler();
   final void Function(Map<String, dynamic>)? onChatSelected;
   final int chatFlag;
-  CustomCard({
-    Key? key,
-    required this.chat,
-    required this.currentUserEmail,
-    required this.chatFlag,
-    this.onChatSelected
-  }) : super(key: key);
+
+  CustomCard(
+      {Key? key,
+      required this.chat,
+      required this.currentUserEmail,
+      required this.chatFlag,
+      this.onChatSelected})
+      : super(key: key);
 
   Future<String?> fetchProfileImage(String chatPartnerEmail) async {
     try {
@@ -39,9 +40,7 @@ class CustomCard extends StatelessWidget {
         if (imgPath != null && imgPath.isNotEmpty) {
           // Append a timestamp to bust the cache
           String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
-          return 'https://hajzi-6883b1f029cf.herokuapp.com/' +
-              imgPath +
-              '?v=$timestamp';
+          return imgPath + '?v=$timestamp';
         }
       } else {
         print('Error fetching profile data');
@@ -73,13 +72,12 @@ class CustomCard extends StatelessWidget {
 
         return InkWell(
           onTap: () {
-
-            if(kIsWeb) {
+            if (kIsWeb) {
               // Instead, call the parent callback if provided.
               if (onChatSelected != null) {
                 onChatSelected!(chat);
               }
-              if(chatFlag == 1){
+              if (chatFlag == 1) {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -91,17 +89,17 @@ class CustomCard extends StatelessWidget {
                   ),
                 );
               }
-            }else
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => IndividualPage(
-                  initialChatId: chat['_id'],
-                  chatPartnerEmail: chatPartnerEmail,
-                  chatPartnerName: chatPartnerName,
+            } else
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => IndividualPage(
+                    initialChatId: chat['_id'],
+                    chatPartnerEmail: chatPartnerEmail,
+                    chatPartnerName: chatPartnerName,
+                  ),
                 ),
-              ),
-            );
+              );
           },
           child: Column(
             children: [

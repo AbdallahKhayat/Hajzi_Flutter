@@ -14,7 +14,8 @@ class SearchPage extends StatefulWidget {
 class _SearchPageState extends State<SearchPage> {
   List<dynamic> customers = []; // 🔥 List of all customers
   List<dynamic> filteredCustomers = []; // 🔥 Filtered list of customers
-  TextEditingController searchController = TextEditingController(); // 🔥 For search bar input
+  TextEditingController searchController =
+      TextEditingController(); // 🔥 For search bar input
 
   @override
   void initState() {
@@ -45,7 +46,6 @@ class _SearchPageState extends State<SearchPage> {
     }
   }
 
-
   /// 🔥 Filter the customer list based on search input
   void filterCustomers(String query) {
     setState(() {
@@ -63,7 +63,8 @@ class _SearchPageState extends State<SearchPage> {
 
   Future<String?> fetchExistingChatId(String partnerEmail) async {
     try {
-      final response = await NetworkHandler().get('/chat/existing?partnerEmail=$partnerEmail');
+      final response = await NetworkHandler()
+          .get('/chat/existing?partnerEmail=$partnerEmail');
       // Ensure `NetworkHandler().get()` returns the decoded JSON. If it returns a raw response, decode it here.
       if (response != null && response is Map) {
         // If the response contains '_id', it means chat exists
@@ -77,7 +78,6 @@ class _SearchPageState extends State<SearchPage> {
       return null;
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -99,7 +99,8 @@ class _SearchPageState extends State<SearchPage> {
         ),
         title: TextField(
           controller: searchController,
-          onChanged: (value) => filterCustomers(value), // 🔥 Call filter as user types
+          onChanged: (value) => filterCustomers(value),
+          // 🔥 Call filter as user types
           decoration: const InputDecoration(
             hintText: 'Search for customers...',
             border: InputBorder.none,
@@ -107,46 +108,55 @@ class _SearchPageState extends State<SearchPage> {
         ),
       ),
       body: customers.isEmpty
-          ? const Center( child: Text(
-        'No shops found',
-        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey),
-      ),
-      )
-          : filteredCustomers.isEmpty
           ? const Center(
-        child: Text(
-          'No matching shops',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey),
-        ),) // Loading state
-          : ListView.builder(
-        itemCount: filteredCustomers.length,
-        itemBuilder: (context, index) {
-          final customer = filteredCustomers[index];
-          return UserCard(
-            email: customer['email'],
-            username: customer['username'],
-            imgPath: customer['profile']?['img'] ?? '',
-            onTap: () async {
-              final existingChatId = await fetchExistingChatId(customer['email']);
-
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => IndividualPage(
-                    initialChatId: existingChatId ?? '',
-                    chatPartnerEmail: customer['email'],
-                    chatPartnerName: customer['username'],
+              child: Text(
+                'No shops found',
+                style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey),
+              ),
+            )
+          : filteredCustomers.isEmpty
+              ? const Center(
+                  child: Text(
+                    'No matching shops',
+                    style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey),
                   ),
+                ) // Loading state
+              : ListView.builder(
+                  itemCount: filteredCustomers.length,
+                  itemBuilder: (context, index) {
+                    final customer = filteredCustomers[index];
+                    return UserCard(
+                      email: customer['email'],
+                      username: customer['username'],
+                      imgPath: customer['profile']?['img'] ?? '',
+                      onTap: () async {
+                        final existingChatId =
+                            await fetchExistingChatId(customer['email']);
+
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => IndividualPage(
+                              initialChatId: existingChatId ?? '',
+                              chatPartnerEmail: customer['email'],
+                              chatPartnerName: customer['username'],
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  },
                 ),
-              );
-            }
-            ,
-          );
-        },
-      ),
     );
   }
 }
+
 /// Custom Widget to Display User Information with Profile Image
 class UserCard extends StatelessWidget {
   final String email;
@@ -165,9 +175,8 @@ class UserCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
-    final String? profileImageUrl = imgPath.isNotEmpty
-        ? 'https://hajzi-6883b1f029cf.herokuapp.com/' + imgPath+ '?v=$timestamp'
-        : null;
+    final String? profileImageUrl =
+        imgPath.isNotEmpty ? imgPath + '?v=$timestamp' : null;
 
     return InkWell(
       onTap: onTap,
@@ -176,30 +185,31 @@ class UserCard extends StatelessWidget {
           ListTile(
             leading: profileImageUrl != null
                 ? CircleAvatar(
-              radius: 30,
-              backgroundImage: CachedNetworkImageProvider(profileImageUrl),
-              backgroundColor: Colors.transparent,
-              onBackgroundImageError: (_, __) {
-                // Handle image load error if necessary
-              },
-            )
+                    radius: 30,
+                    backgroundImage:
+                        CachedNetworkImageProvider(profileImageUrl),
+                    backgroundColor: Colors.transparent,
+                    onBackgroundImageError: (_, __) {
+                      // Handle image load error if necessary
+                    },
+                  )
                 : ValueListenableBuilder<Color>(
-              valueListenable: appColorNotifier,
-              builder: (context, currentColor, child) {
-                return CircleAvatar(
-                  radius: 30,
-                  backgroundColor: currentColor,
-                  child: Text(
-                    username.isNotEmpty ? username[0].toUpperCase() : 'U',
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
+                    valueListenable: appColorNotifier,
+                    builder: (context, currentColor, child) {
+                      return CircleAvatar(
+                        radius: 30,
+                        backgroundColor: currentColor,
+                        child: Text(
+                          username.isNotEmpty ? username[0].toUpperCase() : 'U',
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      );
+                    },
                   ),
-                );
-              },
-            ),
             title: Text(
               username,
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),

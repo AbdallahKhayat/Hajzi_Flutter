@@ -57,6 +57,48 @@ class _AddBlogState extends State<AddBlog> {
     return null;
   }
 
+  // Function to upload preview image to BlogPost
+  Future<void> uploadPreviewImageToBlogPost(String blogId, String filePath) async {
+    try {
+      String url = "/blogpost/update/previewImage/$blogId"; // Correct Endpoint
+      var response = await networkHandler.patchImage(url, filePath);
+
+      if (response.statusCode == 200) {
+        print("Preview image uploaded successfully to BlogPost");
+      } else {
+        print(
+            "Failed to upload preview image to BlogPost: ${response.statusCode}, Reason: ${await response.stream.bytesToString()}");
+      }
+    } catch (e) {
+      print("Error uploading preview image to BlogPost: $e");
+    }
+  }
+
+// Function to upload cover images to BlogPost
+  Future<void> uploadCoverImagesToBlogPost(String blogId, List<XFile> images) async {
+    for (XFile image in images) {
+      try {
+        String url = "/blogpost/add/coverImages/$blogId"; // Correct Endpoint
+        var imageResponse = await networkHandler.patchImage(url, image.path);
+
+        if (imageResponse.statusCode != 200 &&
+            imageResponse.statusCode != 201) {
+          if (mounted)
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                  content:
+                  Text('Failed to upload image: ${image.name}'),
+                  backgroundColor: Colors.red),
+            );
+          return;
+        }
+      } catch (e) {
+        print("Error uploading cover image ${image.name} to BlogPost: $e");
+      }
+    }
+  }
+
+
   Future<String> checkBlogStatus(String blogId) async {
     var response = await networkHandler.get("/blogpost/status/$blogId");
 
@@ -845,6 +887,7 @@ class _AddBlogState extends State<AddBlog> {
                 await uploadCoverImages(blogId, imageFiles.sublist(1));
               }
 
+              if(mounted)
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text('Blog submitted for approval!')),
               );
@@ -891,27 +934,15 @@ class _AddBlogState extends State<AddBlog> {
 
                 if (addResponse.statusCode == 200 ||
                     addResponse.statusCode == 201) {
-                  String blogId = json.decode(addResponse.body)["data"];
+                  String newBlogId = json.decode(addResponse.body)["data"];
+                  print("New BlogPost ID: $newBlogId");
 
-                  // Step 6: Upload multiple images
-                  for (var image in imageFiles) {
-                    var imageResponse = await networkHandler.patchImage(
-                      "/blogpost/add/coverImages/$blogId",
-                      image.path,
-                    );
-
-                    if (imageResponse.statusCode != 200 &&
-                        imageResponse.statusCode != 201) {
-                      if (mounted)
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                              content:
-                              Text('Failed to upload image: ${image.name}'),
-                              backgroundColor: Colors.red),
-                        );
-                      return;
-                    }
+                  // Step 6: Upload preview image to BlogPost
+                  if (imageFiles.isNotEmpty) {
+                    await uploadPreviewImageToBlogPost(newBlogId, imageFiles.first.path);
+                    await uploadCoverImagesToBlogPost(newBlogId, imageFiles.sublist(1));
                   }
+
                   if (mounted)
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(

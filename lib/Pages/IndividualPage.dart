@@ -72,8 +72,7 @@ class _IndividualPageState extends State<IndividualPage> {
         String? imgPath = response['data']['img'];
         if (imgPath != null && imgPath.isNotEmpty) {
           setState(() {
-            chatPartnerImageUrl =
-                'https://hajzi-6883b1f029cf.herokuapp.com/' + imgPath;
+            chatPartnerImageUrl = imgPath;
           });
         }
       } else {
@@ -883,6 +882,7 @@ class _IndividualPageState extends State<IndividualPage> {
       );
     }
   }
+
   Future<void> requestPermissions() async {
     if (await Permission.camera.request().isGranted &&
         await Permission.photos.request().isGranted) {

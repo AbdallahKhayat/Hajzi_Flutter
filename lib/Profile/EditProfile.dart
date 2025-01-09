@@ -149,13 +149,13 @@ class _EditProfileState extends State<EditProfile> {
                 ? (_webImage != null
                 ? MemoryImage(_webImage!) as ImageProvider
                 : (widget.profileModel.img != null
-                ? NetworkHandler().getImage(widget.profileModel.email!)
+                ? NetworkHandler().getImage(widget.profileModel.img!)
                 : AssetImage('')))
                 : (_selectedImage != null
                 ? FileImage(_selectedImage!) as ImageProvider
                 : (widget.profileModel.img != null
-                ? NetworkHandler().getImage(widget.profileModel.email!)
-                : NetworkHandler().getImage(widget.profileModel.email!))),
+                ? NetworkHandler().getImage(widget.profileModel.img!)
+                : NetworkHandler().getImage(widget.profileModel.img!))),
             backgroundColor: Colors.grey.shade300,
           ),
         ),
