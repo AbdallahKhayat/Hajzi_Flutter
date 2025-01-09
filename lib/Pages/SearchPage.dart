@@ -101,9 +101,10 @@ class _SearchPageState extends State<SearchPage> {
           controller: searchController,
           onChanged: (value) => filterCustomers(value),
           // 🔥 Call filter as user types
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             hintText: 'Search for customers...',
             border: InputBorder.none,
+            hintStyle: TextStyle(color: Colors.white70),
           ),
         ),
       ),

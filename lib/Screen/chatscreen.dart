@@ -1,6 +1,7 @@
 // ChatScreen.dart
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:blogapp/constants.dart';
 
@@ -398,6 +399,16 @@ class _ChatScreenWebState extends State<_ChatScreenWeb>
       return '';
     }
   }
+  String _formatDate(String timestamp) {
+    try {
+      DateTime dateTime = DateTime.parse(timestamp).toLocal();
+      // Customize the date format as needed
+      return DateFormat('MMM d, yyyy').format(dateTime);
+    } catch (e) {
+      print('❌ Error formatting date: $e');
+      return '';
+    }
+  }
 
   // ------------------- BUILD THE "CHATS" TAB -------------------
   Widget _buildChatsTab(BuildContext context) {
@@ -576,31 +587,54 @@ class _ChatScreenWebState extends State<_ChatScreenWeb>
               final msg = _messages[index];
               final isOwnMessage = msg['senderEmail'] == _loggedInUserEmail;
               final timeString = _formatTime(msg['timestamp']);
+              final formattedDate = _formatDate(msg['timestamp']);
 
-              if (isOwnMessage) {
-                // OwnMessageCard
-                return ValueListenableBuilder<Color>(
-                  valueListenable: appColorNotifier,
-                  builder: (context, color, child) {
-                    return OwnMessageCard(
-                      message: msg['content'] ?? '',
-                      time: timeString,
-                      messageColor: color.withOpacity(0.6),
-                      textColor: Colors.black,
-                      onLongPress: () => debugPrint("Own message long press"),
-                    );
-                  },
-                );
+              bool showDateSeparator = false;
+              if (index == 0) {
+                showDateSeparator = true;
               } else {
-                // ReplyCard
-                return ReplyCard(
-                  message: msg['content'] ?? '',
-                  time: timeString,
-                  messageColor: Colors.white,
-                  textColor: Colors.black,
-                  onLongPress: () => debugPrint("Reply long press"),
-                );
+                final previousMessage = _messages[index - 1];
+                String previousDate = _formatDate(previousMessage['timestamp']);
+                if (previousDate != formattedDate) {
+                  showDateSeparator = true;
+                }
               }
+
+              return Column(
+                  children: [
+                  if (showDateSeparator)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                child: Text(
+                  formattedDate,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey[600],
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              isOwnMessage
+              ? OwnMessageCard(
+              message: msg['content'] ?? '',
+              time: timeString,
+              messageColor: appColorNotifier.value.withOpacity(0.6),
+              textColor: msg['content'] == 'Message has been deleted'
+              ? Colors.grey
+                  : Colors.black,
+              onLongPress: () => _showOwnMessageOptions(msg),
+              )
+                  : ReplyCard(
+              message: msg['content'] ?? '',
+              time: timeString,
+              messageColor: Colors.white,
+              textColor: msg['content'] == 'Message has been deleted'
+              ? Colors.grey
+                  : Colors.black,
+              onLongPress: () => _showReplyMessageOptions(msg),
+              ),
+              ],
+              );
             },
           ),
         ),
@@ -681,6 +715,108 @@ class _ChatScreenWebState extends State<_ChatScreenWeb>
         ),
       ],
     );
+  }
+  // Method to show options for OwnMessageCard
+  void _showOwnMessageOptions(Map<String, dynamic> message) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return SafeArea(
+          child: Wrap(
+            children: [
+              ListTile(
+                leading: Icon(Icons.copy),
+                title: Text('Copy'),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  _copyToClipboard(message['content']);
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.delete),
+                title: Text('Delete'),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  _deleteOwnMessage(message['_id']);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+// Method to show options for ReplyCard
+  void _showReplyMessageOptions(Map<String, dynamic> message) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return SafeArea(
+          child: Wrap(
+            children: [
+              ListTile(
+                leading: Icon(Icons.copy),
+                title: Text('Copy'),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  _copyToClipboard(message['content']);
+                },
+              ),
+              // You can add more options here if needed
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+// Method to copy text to clipboard
+  void _copyToClipboard(String text) {
+    Clipboard.setData(ClipboardData(text: text));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Copied to clipboard')),
+    );
+  }
+
+// Method to delete a message by replacing its content
+  Future<void> _deleteOwnMessage(String messageId) async {
+    try {
+      final token = await _storage.read(key: "token");
+      if (token == null) {
+        print("No token found; cannot delete message");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error deleting message')),
+        );
+        return;
+      }
+
+      final response = await _networkHandler.patch('/chat/delete-message', {
+        'messageId': messageId,
+      });
+
+      if (response != null && response.statusCode == 200) {
+        setState(() {
+          int index = _messages.indexWhere((msg) => msg['_id'] == messageId);
+          if (index != -1) {
+            _messages[index]['content'] = 'Message has been deleted';
+          }
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Message deleted')),
+        );
+      } else {
+        print("❌ Error deleting message: ${response?.body}");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to delete message')),
+        );
+      }
+    } catch (e) {
+      print("Error deleting message: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error deleting message')),
+      );
+    }
   }
 
   // ------------------- ATTACHMENT BOTTOM SHEET -------------------
