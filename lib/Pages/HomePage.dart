@@ -119,7 +119,10 @@ class _HomePageState extends State<HomePage>
       DashboardScreen(),
       HomeScreen(filterState: widget.filterState), // Index 0
       ProfileScreen(), // Index 1
+
+      if(userRole != "admin")
       ChatScreen(), // Index 2
+
       ShopsScreen(), // Index 3 (if customer), or UsersScreen() if admin
       UsersScreen(),
       RequestsScreen(), // Index 4 (admin only)
@@ -354,6 +357,7 @@ class _HomePageState extends State<HomePage>
 
     visibleWidgets.add(widgets[1]); // HomeScreen with filterState
     visibleWidgets.add(widgets[2]); // ProfileScreen
+    if(userRole != "admin")
     visibleWidgets.add(widgets[3]); // ChatScreen
 
     if (userRole == "customer") {
@@ -381,6 +385,7 @@ class _HomePageState extends State<HomePage>
         icon: const Icon(Icons.person),
         label: AppLocalizations.of(context)!.profile,
       ),
+      if(userRole != "admin")
       BottomNavigationBarItem(
         icon: const Icon(Icons.chat),
         label: AppLocalizations.of(context)!.chat,
@@ -717,8 +722,8 @@ class _HomePageState extends State<HomePage>
                 checkProfile();
                 // If admin in "Users" or "Requests" tab
                 if (userRole == "admin" &&
-                    (currentState == 3 ||
-                        currentState == 4 ||
+                    (currentState == 2 ||
+                        currentState == 3 ||
                         currentState == 0)) {
                   fetchCounts();
                 }
@@ -746,9 +751,9 @@ class _HomePageState extends State<HomePage>
         return AppLocalizations.of(context)!.home;
       } else if (currentState == 2) {
         return AppLocalizations.of(context)!.profile;
+      // } else if (currentState == 3) {
+      //   return AppLocalizations.of(context)!.chat;
       } else if (currentState == 3) {
-        return AppLocalizations.of(context)!.chat;
-      } else if (currentState == 4) {
         return AppLocalizations.of(context)!.users;
       } else {
         // admin & currentState == 5
@@ -916,6 +921,7 @@ class _HomePageState extends State<HomePage>
                                     },
                                   ),
                                   // Chat => currentState=2
+                                  if(userRole!="admin")
                                   _webNavItem(
                                     icon: Icons.chat,
                                     label: AppLocalizations.of(context)!.chat,

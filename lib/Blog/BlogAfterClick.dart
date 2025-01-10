@@ -283,6 +283,7 @@ class _BlogAfterClickState extends State<BlogAfterClick> {
                         ),
                       ),
 
+                      if(userRole != "admin")
                       // Chat Button with Label
                       Expanded(
                         child: Column(
