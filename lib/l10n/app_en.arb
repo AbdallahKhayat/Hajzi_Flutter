@@ -108,7 +108,18 @@
   "editEmail": "Edit Email",
   "email": "Email",
   "save": "Save",
-  "min": "(min)"
+  "min": "(min)",
+  "dashboard": "Dashboard",
+  "totalUsers": "Total Users",
+  "totalCustomers": "Total Customers",
+  "revenue": "Revenue",
+  "usersAndCustomers": "Users and Customers",
+  "username": "Username",
+  "role": "Role",
+  "createdAt": "Created At",
+  "translateRole": "{role, select, customer {Customer} user {User} other {Unknown}}"
+
+
 
 
 

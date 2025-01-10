@@ -107,7 +107,16 @@
   "editEmail": "تعديل البريد الإلكتروني",
   "email": "البريد الإلكتروني",
   "save": "حفظ",
-  "min": "(دقائق)"
+  "min": "(دقائق)",
+  "dashboard": "لوحة المعلومات",
+  "totalUsers": "إجمالي المستخدمين",
+  "totalCustomers": "إجمالي العملاء",
+  "revenue": "الأرباح",
+  "usersAndCustomers": "المستخدمين والعملاء",
+  "username": "اسم المستخدم",
+  "role": "الدور",
+  "createdAt": "تاريخ الإنشاء",
+  "translateRole": "{role, select, customer {عميل} user {مستخدم} other {غير معروف}}"
 
 
 

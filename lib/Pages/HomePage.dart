@@ -17,6 +17,7 @@ import '../NetworkHandler.dart';
 import '../Notifications/push_notifications.dart';
 import '../Requests/RequestsScreen.dart';
 import '../Screen/ChatBotScreen.dart';
+import '../Screen/DashboardScreen.dart';
 import '../Screen/HomeScreen.dart';
 import '../Profile/ProfileScreen.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -81,6 +82,7 @@ class _HomePageState extends State<HomePage>
   //        4 => RequestsScreen()
   List<Widget> widgets = [];
   ProfileModel profileModel = ProfileModel();
+
   @override
   void initState() {
     super.initState();
@@ -114,10 +116,12 @@ class _HomePageState extends State<HomePage>
 
     // Initialize the screen list
     widgets = [
+      DashboardScreen(),
       HomeScreen(filterState: widget.filterState), // Index 0
       ProfileScreen(), // Index 1
       ChatScreen(), // Index 2
       ShopsScreen(), // Index 3 (if customer), or UsersScreen() if admin
+      UsersScreen(),
       RequestsScreen(), // Index 4 (admin only)
     ];
   }
@@ -164,11 +168,13 @@ class _HomePageState extends State<HomePage>
         email = response["email"] ?? "email";
 
         // Update profileModel with the img field
-       profileModel.img = response["img"]; // Ensure ProfileModel has an 'img' field
+        profileModel.img =
+            response["img"]; // Ensure ProfileModel has an 'img' field
 
         profilePhoto = CircleAvatar(
           radius: 50,
-          backgroundImage: (profileModel.img != null && profileModel.img!.isNotEmpty)
+          backgroundImage: (profileModel.img != null &&
+                  profileModel.img!.isNotEmpty)
               ? CachedNetworkImageProvider(profileModel.img!)
               : AssetImage('assets/images/placeholder.png') as ImageProvider,
           child: (profileModel.img == null || profileModel.img!.isEmpty)
@@ -181,13 +187,13 @@ class _HomePageState extends State<HomePage>
         email = "email";
         profilePhoto = CircleAvatar(
           radius: 50,
-          backgroundImage: AssetImage('assets/images/placeholder.png') as ImageProvider,
+          backgroundImage:
+              AssetImage('assets/images/placeholder.png') as ImageProvider,
           child: const Icon(Icons.person, size: 50, color: Colors.grey),
         );
       });
     }
   }
-
 
   // -----------------------------------------
   // Theme color picker
@@ -344,13 +350,15 @@ class _HomePageState extends State<HomePage>
       // index 2 => Chat
       // then conditional:
     ];
-    visibleWidgets.add(widgets[0]); // HomeScreen with filterState
-    visibleWidgets.add(widgets[1]); // ProfileScreen
-    visibleWidgets.add(widgets[2]); // ChatScreen
+    if (userRole == "admin") visibleWidgets.add(DashboardScreen());
+
+    visibleWidgets.add(widgets[1]); // HomeScreen with filterState
+    visibleWidgets.add(widgets[2]); // ProfileScreen
+    visibleWidgets.add(widgets[3]); // ChatScreen
 
     if (userRole == "customer") {
       // index 3 => Shops
-      visibleWidgets.add(widgets[3]);
+      visibleWidgets.add(widgets[4]);
     } else if (userRole == "admin") {
       // index 3 => Users
       // index 4 => Requests
@@ -360,6 +368,11 @@ class _HomePageState extends State<HomePage>
 
     // Build nav items
     List<BottomNavigationBarItem> navItems = [
+      if (userRole == "admin")
+        BottomNavigationBarItem(
+          icon: const Icon(Icons.dashboard),
+          label: AppLocalizations.of(context)!.dashboard,
+        ),
       BottomNavigationBarItem(
         icon: const Icon(Icons.home),
         label: AppLocalizations.of(context)!.home,
@@ -479,7 +492,8 @@ class _HomePageState extends State<HomePage>
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
                         ),
-                        overflow: TextOverflow.ellipsis, // Adds ellipsis when text overflows
+                        overflow: TextOverflow.ellipsis,
+                        // Adds ellipsis when text overflows
                         maxLines: 1, // Restricts the text to a single line
                       ),
                     ],
@@ -494,7 +508,7 @@ class _HomePageState extends State<HomePage>
                     setState(() {
                       widget.filterState = 0;
                       // Rebuild the home screen with new filter
-                      widgets[0] = HomeScreen(filterState: widget.filterState);
+                      widgets[1] = HomeScreen(filterState: widget.filterState);
                     });
                     Navigator.pop(context);
                   },
@@ -507,7 +521,7 @@ class _HomePageState extends State<HomePage>
                   onTap: () {
                     setState(() {
                       widget.filterState = 1;
-                      widgets[0] = HomeScreen(filterState: widget.filterState);
+                      widgets[1] = HomeScreen(filterState: widget.filterState);
                     });
                     Navigator.pop(context);
                   },
@@ -520,7 +534,7 @@ class _HomePageState extends State<HomePage>
                   onTap: () {
                     setState(() {
                       widget.filterState = 2;
-                      widgets[0] = HomeScreen(filterState: widget.filterState);
+                      widgets[1] = HomeScreen(filterState: widget.filterState);
                     });
                     Navigator.pop(context);
                   },
@@ -693,6 +707,8 @@ class _HomePageState extends State<HomePage>
             selectedItemColor: Colors.white,
             unselectedItemColor: Colors.black,
             backgroundColor: appColor,
+            selectedFontSize: 14, // Adjust font size
+            unselectedFontSize: 12, // Adjust font size
             type: BottomNavigationBarType.fixed,
             items: navItems,
             onTap: (index) {
@@ -701,7 +717,9 @@ class _HomePageState extends State<HomePage>
                 checkProfile();
                 // If admin in "Users" or "Requests" tab
                 if (userRole == "admin" &&
-                    (currentState == 3 || currentState == 4)) {
+                    (currentState == 3 ||
+                        currentState == 4 ||
+                        currentState == 0)) {
                   fetchCounts();
                 }
               });
@@ -721,22 +739,36 @@ class _HomePageState extends State<HomePage>
 
   // The mobile app bar title, based on currentState and userRole
   String _getMobileAppBarTitle() {
-    if (currentState == 0) {
-      // Home (but possibly filtered)
-      // You can further refine if you want to show "All Posts", "BarberShop", "Hospital"
-      // For now, just show "Home"
-      return AppLocalizations.of(context)!.home;
-    } else if (currentState == 1) {
-      return AppLocalizations.of(context)!.profile;
-    } else if (currentState == 2) {
-      return AppLocalizations.of(context)!.chat;
-    } else if (userRole == "customer" && currentState == 3) {
-      return AppLocalizations.of(context)!.myshops;
-    } else if (userRole == "admin" && currentState == 3) {
-      return AppLocalizations.of(context)!.users;
+    if (userRole == "admin") {
+      if (currentState == 0) {
+        return AppLocalizations.of(context)!.dashboard;
+      } else if (currentState == 1) {
+        return AppLocalizations.of(context)!.home;
+      } else if (currentState == 2) {
+        return AppLocalizations.of(context)!.profile;
+      } else if (currentState == 3) {
+        return AppLocalizations.of(context)!.chat;
+      } else if (currentState == 4) {
+        return AppLocalizations.of(context)!.users;
+      } else {
+        // admin & currentState == 5
+        return AppLocalizations.of(context)!.requests;
+      }
     } else {
-      // admin & currentState == 4
-      return AppLocalizations.of(context)!.requests;
+      if (currentState == 0) {
+        return AppLocalizations.of(context)!.home;
+      } else if (currentState == 1) {
+        return AppLocalizations.of(context)!.profile;
+      } else if (currentState == 2) {
+        return AppLocalizations.of(context)!.chat;
+      } else if (userRole == "customer" && currentState == 3) {
+        return AppLocalizations.of(context)!.myshops;
+      } else if (userRole == "admin" && currentState == 3) {
+        return AppLocalizations.of(context)!.users;
+      } else {
+        // admin & currentState == 5
+        return AppLocalizations.of(context)!.requests;
+      }
     }
   }
 
@@ -812,174 +844,371 @@ class _HomePageState extends State<HomePage>
                     // Nav items
                     Expanded(
                       child: SingleChildScrollView(
-                        child: Column(
-                          children: [
-                            // All Posts => filter=0, currentState=0
-                            _webNavItem(
-                              icon: Icons.list,
-                              label: AppLocalizations.of(context)!.allposts,
-                              // We consider isActive if filterState=0 & currentState=0
-                              isActive: (currentState == 0 &&
-                                  widget.filterState == 0),
-                              onTap: () {
-                                setState(() {
-                                  currentState = 0;
-                                  widget.filterState = 0;
-                                  widgets[0] = HomeScreen(filterState: 0);
-                                });
-                              },
-                            ),
-                            // BarberShop => filter=1, still index=0
-                            _webNavItem(
-                              icon: Icons.content_cut,
-                              label:
-                                  AppLocalizations.of(context)!.barberShopPosts,
-                              isActive: (currentState == 0 &&
-                                  widget.filterState == 1),
-                              onTap: () {
-                                setState(() {
-                                  currentState = 0;
-                                  widget.filterState = 1;
-                                  widgets[0] = HomeScreen(filterState: 1);
-                                });
-                              },
-                            ),
-                            // Hospital => filter=2, still index=0
-                            _webNavItem(
-                              icon: Icons.local_hospital,
-                              label:
-                                  AppLocalizations.of(context)!.hospitalPosts,
-                              isActive: (currentState == 0 &&
-                                  widget.filterState == 2),
-                              onTap: () {
-                                setState(() {
-                                  currentState = 0;
-                                  widget.filterState = 2;
-                                  widgets[0] = HomeScreen(filterState: 2);
-                                });
-                              },
-                            ),
-                            // Profile => currentState=1
-                            _webNavItem(
-                              icon: Icons.person,
-                              label: AppLocalizations.of(context)!.profile,
-                              isActive: currentState == 1,
-                              onTap: () {
-                                setState(() {
-                                  currentState = 1;
-                                });
-                              },
-                            ),
-                            // Chat => currentState=2
-                            _webNavItem(
-                              icon: Icons.chat,
-                              label: AppLocalizations.of(context)!.chat,
-                              isActive: currentState == 2,
-                              onTap: () {
-                                setState(() {
-                                  currentState = 2;
-                                });
-                              },
-                            ),
-                            // If customer => MyShops => index=3
-                            if (userRole == "customer")
-                              _webNavItem(
-                                icon: Icons.shop_two,
-                                label: AppLocalizations.of(context)!.myshops,
-                                isActive: currentState == 3,
-                                onTap: () {
-                                  setState(() {
-                                    currentState = 3;
-                                  });
-                                },
+                        child: userRole == "admin"
+                            ? Column(
+                                children: [
+                                  _webNavItem(
+                                    icon: Icons.dashboard,
+                                    label: AppLocalizations.of(context)!.dashboard,
+                                    isActive: currentState == 0,
+                                    onTap: () {
+                                      setState(() {
+                                        currentState = 0;
+                                      });
+                                    },
+                                  ),
+                                  // All Posts => filter=0, currentState=0
+                                  _webNavItem(
+                                    icon: Icons.list,
+                                    label:
+                                        AppLocalizations.of(context)!.allposts,
+                                    // We consider isActive if filterState=0 & currentState=0
+                                    isActive: (currentState == 1 &&
+                                        widget.filterState == 0),
+                                    onTap: () {
+                                      setState(() {
+                                        currentState = 1;
+                                        widget.filterState = 0;
+                                        widgets[1] = HomeScreen(filterState: 0);
+                                      });
+                                    },
+                                  ),
+                                  // BarberShop => filter=1, still index=0
+                                  _webNavItem(
+                                    icon: Icons.content_cut,
+                                    label: AppLocalizations.of(context)!
+                                        .barberShopPosts,
+                                    isActive: (currentState == 1 &&
+                                        widget.filterState == 1),
+                                    onTap: () {
+                                      setState(() {
+                                        currentState = 1;
+                                        widget.filterState = 1;
+                                        widgets[1] = HomeScreen(filterState: 1);
+                                      });
+                                    },
+                                  ),
+                                  // Hospital => filter=2, still index=0
+                                  _webNavItem(
+                                    icon: Icons.local_hospital,
+                                    label: AppLocalizations.of(context)!
+                                        .hospitalPosts,
+                                    isActive: (currentState == 1 &&
+                                        widget.filterState == 2),
+                                    onTap: () {
+                                      setState(() {
+                                        currentState = 1;
+                                        widget.filterState = 2;
+                                        widgets[1] = HomeScreen(filterState: 2);
+                                      });
+                                    },
+                                  ),
+                                  // Profile => currentState=1
+                                  _webNavItem(
+                                    icon: Icons.person,
+                                    label:
+                                        AppLocalizations.of(context)!.profile,
+                                    isActive: currentState == 2,
+                                    onTap: () {
+                                      setState(() {
+                                        currentState = 2;
+                                      });
+                                    },
+                                  ),
+                                  // Chat => currentState=2
+                                  _webNavItem(
+                                    icon: Icons.chat,
+                                    label: AppLocalizations.of(context)!.chat,
+                                    isActive: currentState == 3,
+                                    onTap: () {
+                                      setState(() {
+                                        currentState = 3;
+                                      });
+                                    },
+                                  ),
+                                  // If customer => MyShops => index=3
+                                  if (userRole == "customer")
+                                    _webNavItem(
+                                      icon: Icons.shop_two,
+                                      label:
+                                          AppLocalizations.of(context)!.myshops,
+                                      isActive: currentState == 4,
+                                      onTap: () {
+                                        setState(() {
+                                          currentState = 4;
+                                        });
+                                      },
+                                    ),
+                                  // If admin => Users (3), Requests (4)
+                                  if (userRole == "admin") ...[
+                                    _webNavItem(
+                                      icon: Icons.people,
+                                      label:
+                                          AppLocalizations.of(context)!.users,
+                                      isActive: currentState == 4,
+                                      countBadge: userCount,
+                                      onTap: () {
+                                        setState(() {
+                                          currentState = 4;
+                                          fetchCounts();
+                                        });
+                                      },
+                                    ),
+                                    _webNavItem(
+                                      icon: Icons.add_business,
+                                      label: AppLocalizations.of(context)!
+                                          .requests,
+                                      isActive: currentState == 5,
+                                      countBadge: requestCount,
+                                      onTap: () {
+                                        setState(() {
+                                          currentState = 5;
+                                          fetchCounts();
+                                        });
+                                      },
+                                    ),
+                                  ],
+                                  // new story if userRole != "user"
+                                  if (userRole != "user")
+                                    _webNavItem(
+                                      icon: Icons.add,
+                                      label: AppLocalizations.of(context)!
+                                          .newstory,
+                                      isActive: false,
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (context) => AddBlog()),
+                                        );
+                                      },
+                                    ),
+                                  // settings
+                                  _webNavItem(
+                                    icon: Icons.settings,
+                                    label:
+                                        AppLocalizations.of(context)!.settings,
+                                    isActive: false,
+                                    onTap: () => pickColor(context),
+                                  ),
+                                  // language
+                                  _webNavItem(
+                                    icon: Icons.language,
+                                    label: AppLocalizations.of(context)!
+                                        .changelanguage,
+                                    isActive: false,
+                                    onTap: () => _showLanguageDialog(context),
+                                  ),
+                                  // upgrade to customer if userRole=="user"
+                                  if (userRole == "user")
+                                    _webNavItem(
+                                      icon: Icons.credit_card,
+                                      label: AppLocalizations.of(context)!
+                                          .customer,
+                                      isActive: false,
+                                      onTap: _upgradeToCustomer,
+                                    ),
+                                  // feedback
+                                  _webNavItem(
+                                    icon: FontAwesomeIcons.robot,
+                                    label:
+                                        AppLocalizations.of(context)!.feedback,
+                                    isActive: false,
+                                    onTap: _showChatBotModeDialog,
+                                  ),
+                                  // Logout
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 8.0),
+                                    child: Divider(color: Colors.white70),
+                                  ),
+                                  _webNavItem(
+                                    icon: Icons.power_settings_new,
+                                    label: AppLocalizations.of(context)!.logout,
+                                    isActive: false,
+                                    iconColor: Colors.red,
+                                    textColor: Colors.red,
+                                    onTap: logout,
+                                  ),
+                                ],
+                              )
+                            : Column(
+                                children: [
+                                  // All Posts => filter=0, currentState=0
+                                  _webNavItem(
+                                    icon: Icons.list,
+                                    label:
+                                        AppLocalizations.of(context)!.allposts,
+                                    // We consider isActive if filterState=0 & currentState=0
+                                    isActive: (currentState == 0 &&
+                                        widget.filterState == 0),
+                                    onTap: () {
+                                      setState(() {
+                                        currentState = 0;
+                                        widget.filterState = 0;
+                                        widgets[1] = HomeScreen(filterState: 0);
+                                      });
+                                    },
+                                  ),
+                                  // BarberShop => filter=1, still index=0
+                                  _webNavItem(
+                                    icon: Icons.content_cut,
+                                    label: AppLocalizations.of(context)!
+                                        .barberShopPosts,
+                                    isActive: (currentState == 0 &&
+                                        widget.filterState == 1),
+                                    onTap: () {
+                                      setState(() {
+                                        currentState = 0;
+                                        widget.filterState = 1;
+                                        widgets[1] = HomeScreen(filterState: 1);
+                                      });
+                                    },
+                                  ),
+                                  // Hospital => filter=2, still index=0
+                                  _webNavItem(
+                                    icon: Icons.local_hospital,
+                                    label: AppLocalizations.of(context)!
+                                        .hospitalPosts,
+                                    isActive: (currentState == 0 &&
+                                        widget.filterState == 2),
+                                    onTap: () {
+                                      setState(() {
+                                        currentState = 0;
+                                        widget.filterState = 2;
+                                        widgets[1] = HomeScreen(filterState: 2);
+                                      });
+                                    },
+                                  ),
+                                  // Profile => currentState=1
+                                  _webNavItem(
+                                    icon: Icons.person,
+                                    label:
+                                        AppLocalizations.of(context)!.profile,
+                                    isActive: currentState == 1,
+                                    onTap: () {
+                                      setState(() {
+                                        currentState = 1;
+                                      });
+                                    },
+                                  ),
+                                  // Chat => currentState=2
+                                  _webNavItem(
+                                    icon: Icons.chat,
+                                    label: AppLocalizations.of(context)!.chat,
+                                    isActive: currentState == 2,
+                                    onTap: () {
+                                      setState(() {
+                                        currentState = 2;
+                                      });
+                                    },
+                                  ),
+                                  // If customer => MyShops => index=3
+                                  if (userRole == "customer")
+                                    _webNavItem(
+                                      icon: Icons.shop_two,
+                                      label:
+                                          AppLocalizations.of(context)!.myshops,
+                                      isActive: currentState == 3,
+                                      onTap: () {
+                                        setState(() {
+                                          currentState = 3;
+                                        });
+                                      },
+                                    ),
+                                  // If admin => Users (3), Requests (4)
+                                  if (userRole == "admin") ...[
+                                    _webNavItem(
+                                      icon: Icons.people,
+                                      label:
+                                          AppLocalizations.of(context)!.users,
+                                      isActive: currentState == 3,
+                                      countBadge: userCount,
+                                      onTap: () {
+                                        setState(() {
+                                          currentState = 3;
+                                          fetchCounts();
+                                        });
+                                      },
+                                    ),
+                                    _webNavItem(
+                                      icon: Icons.add_business,
+                                      label: AppLocalizations.of(context)!
+                                          .requests,
+                                      isActive: currentState == 4,
+                                      countBadge: requestCount,
+                                      onTap: () {
+                                        setState(() {
+                                          currentState = 4;
+                                          fetchCounts();
+                                        });
+                                      },
+                                    ),
+                                  ],
+                                  // new story if userRole != "user"
+                                  if (userRole != "user")
+                                    _webNavItem(
+                                      icon: Icons.add,
+                                      label: AppLocalizations.of(context)!
+                                          .newstory,
+                                      isActive: false,
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (context) => AddBlog()),
+                                        );
+                                      },
+                                    ),
+                                  // settings
+                                  _webNavItem(
+                                    icon: Icons.settings,
+                                    label:
+                                        AppLocalizations.of(context)!.settings,
+                                    isActive: false,
+                                    onTap: () => pickColor(context),
+                                  ),
+                                  // language
+                                  _webNavItem(
+                                    icon: Icons.language,
+                                    label: AppLocalizations.of(context)!
+                                        .changelanguage,
+                                    isActive: false,
+                                    onTap: () => _showLanguageDialog(context),
+                                  ),
+                                  // upgrade to customer if userRole=="user"
+                                  if (userRole == "user")
+                                    _webNavItem(
+                                      icon: Icons.credit_card,
+                                      label: AppLocalizations.of(context)!
+                                          .customer,
+                                      isActive: false,
+                                      onTap: _upgradeToCustomer,
+                                    ),
+                                  // feedback
+                                  _webNavItem(
+                                    icon: FontAwesomeIcons.robot,
+                                    label:
+                                        AppLocalizations.of(context)!.feedback,
+                                    isActive: false,
+                                    onTap: _showChatBotModeDialog,
+                                  ),
+                                  // Logout
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 8.0),
+                                    child: Divider(color: Colors.white70),
+                                  ),
+                                  _webNavItem(
+                                    icon: Icons.power_settings_new,
+                                    label: AppLocalizations.of(context)!.logout,
+                                    isActive: false,
+                                    iconColor: Colors.red,
+                                    textColor: Colors.red,
+                                    onTap: logout,
+                                  ),
+                                ],
                               ),
-                            // If admin => Users (3), Requests (4)
-                            if (userRole == "admin") ...[
-                              _webNavItem(
-                                icon: Icons.people,
-                                label: AppLocalizations.of(context)!.users,
-                                isActive: currentState == 3,
-                                countBadge: userCount,
-                                onTap: () {
-                                  setState(() {
-                                    currentState = 3;
-                                    fetchCounts();
-                                  });
-                                },
-                              ),
-                              _webNavItem(
-                                icon: Icons.add_business,
-                                label: AppLocalizations.of(context)!.requests,
-                                isActive: currentState == 4,
-                                countBadge: requestCount,
-                                onTap: () {
-                                  setState(() {
-                                    currentState = 4;
-                                    fetchCounts();
-                                  });
-                                },
-                              ),
-                            ],
-                            // new story if userRole != "user"
-                            if (userRole != "user")
-                              _webNavItem(
-                                icon: Icons.add,
-                                label: AppLocalizations.of(context)!.newstory,
-                                isActive: false,
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) => AddBlog()),
-                                  );
-                                },
-                              ),
-                            // settings
-                            _webNavItem(
-                              icon: Icons.settings,
-                              label: AppLocalizations.of(context)!.settings,
-                              isActive: false,
-                              onTap: () => pickColor(context),
-                            ),
-                            // language
-                            _webNavItem(
-                              icon: Icons.language,
-                              label:
-                                  AppLocalizations.of(context)!.changelanguage,
-                              isActive: false,
-                              onTap: () => _showLanguageDialog(context),
-                            ),
-                            // upgrade to customer if userRole=="user"
-                            if (userRole == "user")
-                              _webNavItem(
-                                icon: Icons.credit_card,
-                                label: AppLocalizations.of(context)!.customer,
-                                isActive: false,
-                                onTap: _upgradeToCustomer,
-                              ),
-                            // feedback
-                            _webNavItem(
-                              icon: FontAwesomeIcons.robot,
-                              label: AppLocalizations.of(context)!.feedback,
-                              isActive: false,
-                              onTap: _showChatBotModeDialog,
-                            ),
-                            // Logout
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 8.0),
-                              child: Divider(color: Colors.white70),
-                            ),
-                            _webNavItem(
-                              icon: Icons.power_settings_new,
-                              label: AppLocalizations.of(context)!.logout,
-                              isActive: false,
-                              iconColor: Colors.red,
-                              textColor: Colors.red,
-                              onTap: logout,
-                            ),
-                          ],
-                        ),
                       ),
                     ),
                   ],
@@ -1101,6 +1330,32 @@ class _HomePageState extends State<HomePage>
 
   /// Decide which screen to show in main content on web (based on currentState + userRole)
   Widget buildMainContentWeb() {
+    if (userRole == "admin") {
+      if (userRole == "admin" && currentState == 0) {
+        return const DashboardScreen();
+      } else if (currentState == 1) {
+        // HomeScreen with the chosen filter
+        return HomeScreen(filterState: widget.filterState);
+      } else if (currentState == 2) {
+        return ProfileScreen();
+      } else if (currentState == 3) {
+        return ChatScreen();
+      } else if (userRole == "customer" && currentState == 4) {
+        return ShopsScreen();
+      } else if (userRole == "admin") {
+        if (currentState == 4) {
+          return UsersScreen();
+        } else if (currentState == 5) {
+          return RequestsScreen();
+        }
+      }
+      if (userRole == "admin") {
+        return const DashboardScreen();
+      } else {
+        // fallback
+        return HomeScreen(filterState: widget.filterState);
+      }
+    }
     if (currentState == 0) {
       // HomeScreen with the chosen filter
       return HomeScreen(filterState: widget.filterState);
@@ -1123,6 +1378,37 @@ class _HomePageState extends State<HomePage>
 
   /// The web top AppBar title
   String _getWebAppBarTitle() {
+    if ( userRole == "admin"){
+
+      if (currentState == 0) {
+        return AppLocalizations.of(context)!.dashboard;
+      }
+
+     else if (currentState == 1) {
+        // Might refine the title based on widget.filterState
+        switch (widget.filterState) {
+          case 0:
+            return AppLocalizations.of(context)!.allposts;
+          case 1:
+            return AppLocalizations.of(context)!.barberShopPosts;
+          case 2:
+            return AppLocalizations.of(context)!.hospitalPosts;
+        }
+        return AppLocalizations.of(context)!.home;
+      } else if (currentState == 2) {
+        return AppLocalizations.of(context)!.profile;
+      } else if (currentState == 3) {
+        return AppLocalizations.of(context)!.chat;
+      } else if (userRole == "customer" && currentState == 4) {
+        return AppLocalizations.of(context)!.myshops;
+      } else if (userRole == "admin" && currentState == 4) {
+        return AppLocalizations.of(context)!.users;
+      } else if (userRole == "admin" && currentState == 5) {
+        return AppLocalizations.of(context)!.requests;
+      }
+      return AppLocalizations.of(context)!.home;
+    }
+
     if (currentState == 0) {
       // Might refine the title based on widget.filterState
       switch (widget.filterState) {
@@ -1145,7 +1431,7 @@ class _HomePageState extends State<HomePage>
     } else if (userRole == "admin" && currentState == 4) {
       return AppLocalizations.of(context)!.requests;
     }
-    return AppLocalizations.of(context)!.home;
+      return AppLocalizations.of(context)!.home;
   }
 
   // -----------------------------------------

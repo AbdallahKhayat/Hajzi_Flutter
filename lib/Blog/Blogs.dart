@@ -72,6 +72,7 @@ class _BlogsState extends State<Blogs> {
         _isLoading = false;
       });
     } catch (e) {
+      if(mounted)
       setState(() {
         errorMessage = "Failed to load blogs. Please try again.";
         _isLoading = false;
