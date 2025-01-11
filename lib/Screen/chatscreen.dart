@@ -76,8 +76,16 @@ class _ChatScreenMobileState extends State<_ChatScreenMobile>
               style: const TextStyle(color: Colors.white),
             ),
             actions: [
-              IconButton(
-                icon: const Icon(Icons.search),
+            Padding(
+              padding: const EdgeInsets.only(left: 20, right: 20), // Add padding to the left
+              child: CircleAvatar(
+              radius: 25, // Increase or decrease this value to control the size
+              backgroundColor: Colors.white.withOpacity(0.2), // Background color
+              child: IconButton(
+                icon: const Icon(
+                  Icons.search,
+                  size: 28, // Icon size
+                ),
                 color: Colors.white,
                 onPressed: () {
                   Navigator.push(
@@ -86,6 +94,8 @@ class _ChatScreenMobileState extends State<_ChatScreenMobile>
                   );
                 },
               ),
+                        ),
+            ),
               // Unimplemented feature 🔴
               // PopupMenuButton<String>(
               //   icon: const Icon(Icons.more_vert, color: Colors.white),

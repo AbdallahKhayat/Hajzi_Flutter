@@ -720,27 +720,28 @@ class _IndividualPageState extends State<IndividualPage> {
                           suffixIcon: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              IconButton(
-                                onPressed: () {
-                                  showModalBottomSheet(
-                                    backgroundColor: Colors.transparent,
-                                    context: context,
-                                    builder: (builder) => CustomBottomSheet(),
-                                  );
-                                },
-                                icon: Icon(Icons.attach_file),
-                                padding:
-                                    const EdgeInsets.only(right: 0, left: 30),
-                              ),
-                              IconButton(
-                                onPressed: () {
-                                  showModalBottomSheet(
-                                    context: context,
-                                    builder: ((builder) => buttonSheet()),
-                                  );
-                                },
-                                icon: Icon(Icons.camera_alt),
-                              ),
+                              // 🔴 Unimplemented feature: Attach file icon and functionality
+                              // IconButton(
+                              //   onPressed: () {
+                              //     showModalBottomSheet(
+                              //       backgroundColor: Colors.transparent,
+                              //       context: context,
+                              //       builder: (builder) => CustomBottomSheet(),
+                              //     );
+                              //   },
+                              //   icon: Icon(Icons.attach_file),
+                              //   padding:
+                              //       const EdgeInsets.only(right: 0, left: 30),
+                              // ),
+                              // IconButton(
+                              //   onPressed: () {
+                              //     showModalBottomSheet(
+                              //       context: context,
+                              //       builder: ((builder) => buttonSheet()),
+                              //     );
+                              //   },
+                              //   icon: Icon(Icons.camera_alt),
+                              // ),
                             ],
                           ),
                         ),
