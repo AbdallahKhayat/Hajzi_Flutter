@@ -546,7 +546,7 @@ class _HomePageState extends State<HomePage>
                 ),
 
                 // "New Story" (if userRole != "user")
-                if (userRole != "user")
+                if (userRole == "customer")
                   _drawerItem(
                     title: AppLocalizations.of(context)!.newstory,
                     icon: Icons.add,
@@ -678,7 +678,7 @@ class _HomePageState extends State<HomePage>
             ],
           ),
           floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
-          floatingActionButton: (userRole != "user")
+          floatingActionButton: (userRole == "customer")
               ? FloatingActionButton(
                   backgroundColor: appColor,
                   onPressed: () {
@@ -975,7 +975,7 @@ class _HomePageState extends State<HomePage>
                                     ),
                                   ],
                                   // new story if userRole != "user"
-                                  if (userRole != "user")
+                                  if (userRole == "customer")
                                     _webNavItem(
                                       icon: Icons.add,
                                       label: AppLocalizations.of(context)!
@@ -1152,7 +1152,7 @@ class _HomePageState extends State<HomePage>
                                     ),
                                   ],
                                   // new story if userRole != "user"
-                                  if (userRole != "user")
+                                  if (userRole == "customer")
                                     _webNavItem(
                                       icon: Icons.add,
                                       label: AppLocalizations.of(context)!
@@ -1317,7 +1317,7 @@ class _HomePageState extends State<HomePage>
           ),
           // Optionally add floatingActionButton on web
           floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
-          floatingActionButton: (userRole != "user")
+          floatingActionButton: (userRole == "customer")
               ? FloatingActionButton(
                   backgroundColor: appColor,
                   onPressed: () {
