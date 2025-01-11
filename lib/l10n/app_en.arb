@@ -117,7 +117,19 @@
   "username": "Username",
   "role": "Role",
   "createdAt": "Created At",
-  "translateRole": "{role, select, customer {Customer} user {User} other {Unknown}}"
+  "translateRole": "{role, select, customer {Customer} user {User} other {Unknown}}",
+  "typeMessage": "Type a message",
+  "hajziChatsWeb": "Hajzi Chats (Web)",
+  "hajziChats": "Hajzi Chats",
+  "chats": "CHATS",
+  "searchForCustomers": "Search for customers...",
+  "noShopsFound": "No shops found",
+  "noMatchingShops": "No matching shops"
+
+
+
+
+
 
 
 

@@ -13,6 +13,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter/services.dart'; // For Clipboard
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
 
 class IndividualPage extends StatefulWidget {
   final String initialChatId; // ✅ Rename from chatId to initialChatId
@@ -671,12 +673,12 @@ class _IndividualPageState extends State<IndividualPage> {
                         // 🔥 Use the sendMessage method here
                         decoration: InputDecoration(
                           border: InputBorder.none,
-                          hintText: "Type a message",
+                          hintText: AppLocalizations.of(context)!.typeMessage,
                           contentPadding: isWeb
                               ? EdgeInsets.symmetric(
                                   horizontal: 20, vertical: 15)
                               : const EdgeInsets.only(
-                                  left: 20, top: 10, bottom: 10),
+                                  left: 20, top: 10, bottom: 10, right: 20),
                           prefix: _imageFile != null
                               ? Container(
                                   margin: EdgeInsets.only(right: 8),

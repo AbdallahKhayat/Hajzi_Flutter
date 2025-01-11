@@ -19,6 +19,7 @@ import 'package:blogapp/NetworkHandler.dart';
 import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 /// The SINGLE entry point for ChatScreen.
 /// We use `kIsWeb` to decide which layout/class to show.
@@ -70,8 +71,10 @@ class _ChatScreenMobileState extends State<_ChatScreenMobile>
         return Scaffold(
           appBar: AppBar(
             backgroundColor: appColor,
-            title: const Text("Hajzi Chats",
-                style: TextStyle(color: Colors.white)),
+            title: Text(
+              AppLocalizations.of(context)!.hajziChats,
+              style: const TextStyle(color: Colors.white),
+            ),
             actions: [
               IconButton(
                 icon: const Icon(Icons.search),
@@ -106,10 +109,14 @@ class _ChatScreenMobileState extends State<_ChatScreenMobile>
               indicatorColor: Colors.white,
               labelColor: Colors.white,
               unselectedLabelColor: Colors.white70,
-              tabs: const [
+              labelStyle: const TextStyle(fontSize: 20),
+
+              tabs: [
                 // 🔴 Unimplemented feature: Camera Tab
                 // Tab(icon: Icon(Icons.camera_alt)),
-                Tab(text: "CHATS"),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 30),
+                    child: Tab(text: AppLocalizations.of(context)!.chats)),
                 // 🔴 Unimplemented feature: Status Tab
                 // Tab(text: "STATUS"),
                 // 🔴 Unimplemented feature: Calls Tab
@@ -985,8 +992,10 @@ class _ChatScreenWebState extends State<_ChatScreenWeb>
           );
         },
       ),
-      title: const Text("Hajzi Chats (Web)",
-          style: TextStyle(color: Colors.white)),
+      title: Text(
+        AppLocalizations.of(context)!.hajziChatsWeb,
+        style: const TextStyle(color: Colors.white),
+      ),
       actions: [
         IconButton(
           icon: const Icon(

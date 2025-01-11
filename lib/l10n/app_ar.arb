@@ -116,7 +116,19 @@
   "username": "اسم المستخدم",
   "role": "الدور",
   "createdAt": "تاريخ الإنشاء",
-  "translateRole": "{role, select, customer {عميل} user {مستخدم} other {غير معروف}}"
+  "translateRole": "{role, select, customer {عميل} user {مستخدم} other {غير معروف}}",
+  "typeMessage": "اكتب رسالة",
+  "hajziChatsWeb": "محادثات حجزي (ويب)",
+  "hajziChats": "محادثات حجزي",
+  "chats": "الدردشات",
+  "searchForCustomers": "ابحث عن العملاء...",
+  "noShopsFound": "لم يتم العثور على محلات",
+  "noMatchingShops": "لا توجد محلات مطابقة"
+
+
+
+
+
 
 
 

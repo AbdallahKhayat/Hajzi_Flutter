@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../NetworkHandler.dart';
 import '../constants.dart';
 import 'IndividualPage.dart'; // 🔥 Import your network handler
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({Key? key}) : super(key: key);
@@ -102,27 +103,27 @@ class _SearchPageState extends State<SearchPage> {
           onChanged: (value) => filterCustomers(value),
           // 🔥 Call filter as user types
           decoration: InputDecoration(
-            hintText: 'Search for customers...',
+            hintText: AppLocalizations.of(context)!.searchForCustomers,
             border: InputBorder.none,
             hintStyle: TextStyle(color: Colors.white70),
           ),
         ),
       ),
       body: customers.isEmpty
-          ? const Center(
+          ? Center(
               child: Text(
-                'No shops found',
-                style: TextStyle(
+                AppLocalizations.of(context)!.noShopsFound,
+                style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                     color: Colors.grey),
               ),
             )
           : filteredCustomers.isEmpty
-              ? const Center(
+              ? Center(
                   child: Text(
-                    'No matching shops',
-                    style: TextStyle(
+                    AppLocalizations.of(context)!.noMatchingShops,
+                    style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                         color: Colors.grey),
