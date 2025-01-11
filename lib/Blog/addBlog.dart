@@ -97,6 +97,72 @@ class _AddBlogState extends State<AddBlog> {
       }
     }
   }
+  void showLoadingDialog(BuildContext context, String message) {
+    showDialog(
+      context: context,
+      barrierDismissible: false, // User cannot dismiss the dialog manually
+      builder: (BuildContext context) {
+        return Dialog(
+          elevation: 10,
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Top Icon section
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    Icon(
+                      Icons.sentiment_satisfied_alt,
+                      size: 36,
+                      color: Colors.deepPurple,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                // Message text
+                Text(
+                  message,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                // Progress indicator with some fun customization
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CircularProgressIndicator(
+                      strokeWidth: 3,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.deepPurple),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                // Optional playful footer
+                const Text(
+                  "Hang tight, magic is happening...",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.black54,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
 
   Future<String> checkBlogStatus(String blogId) async {
     var response = await networkHandler.get("/blogpost/status/$blogId");
@@ -808,6 +874,10 @@ class _AddBlogState extends State<AddBlog> {
             },
           );
           if (confirm == true) {
+            // -------------------------------------------------------------
+            // NEW CODE: Show the loading dialog immediately before upload
+            // -------------------------------------------------------------
+            showLoadingDialog(context, "Your Shop is Uploading...");
             // Step 1: Get the email from the token
             String? customerEmail = await extractEmailFromToken();
             if (customerEmail == null || customerEmail.isEmpty) {
@@ -878,6 +948,8 @@ class _AddBlogState extends State<AddBlog> {
             } else {
               print("Failed to notify admins");
             }
+
+
             if (approvalResponse.statusCode == 200 ||
                 approvalResponse.statusCode == 201) {
               String blogId = json.decode(approvalResponse.body)["data"];
@@ -894,6 +966,11 @@ class _AddBlogState extends State<AddBlog> {
                 await uploadPreviewImage(blogId, imageFiles.first.path);
                 await uploadCoverImages(blogId, imageFiles.sublist(1));
               }
+
+              // -------------------------------------------------------------
+              // CLOSE LOADING DIALOG before showing next dialog
+              // -------------------------------------------------------------
+              Navigator.of(context).pop(); // close loading dialog
 
               if (mounted) {
                 showDialog(
@@ -975,6 +1052,7 @@ class _AddBlogState extends State<AddBlog> {
                         newBlogId, imageFiles.sublist(1));
                   }
 
+                  if (mounted) Navigator.pop(context);
                   if (mounted) {
                     showDialog<void>(
                       context: context,
@@ -1004,7 +1082,6 @@ class _AddBlogState extends State<AddBlog> {
                       },
                     );
                   }
-                // if (mounted) Navigator.pop(context);
                 } else {
                   if (mounted)
                     ScaffoldMessenger.of(context).showSnackBar(

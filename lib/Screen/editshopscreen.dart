@@ -44,6 +44,68 @@ class _EditShopScreenState extends State<EditShopScreen> {
     existingCoverImages = widget.addBlogModel.coverImages ?? [];
   }
 
+  /// A fun, stylish loading dialog method.
+  void showLoadingDialog(BuildContext context, String message) {
+    showDialog(
+      context: context,
+      barrierDismissible: false, // User cannot dismiss the dialog manually
+      builder: (BuildContext context) {
+        return Dialog(
+          elevation: 10,
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Icon at the top
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    Icon(
+                      Icons.sentiment_satisfied_alt,
+                      size: 36,
+                      color: Colors.deepPurple,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                // Message text
+                Text(
+                  message,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                // Circular progress indicator
+                CircularProgressIndicator(
+                  strokeWidth: 3,
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.deepPurple),
+                ),
+                const SizedBox(height: 20),
+                // Optional tagline
+                const Text(
+                  "Please wait, magic is happening...",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.black54,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
 
   Future<void> sendNotification({
     required String title,
@@ -75,6 +137,8 @@ class _EditShopScreenState extends State<EditShopScreen> {
   }
   Future<void> _submitChanges() async {
     if (_formKey.currentState!.validate()) {
+      // Show the loading dialog before starting network operations
+      showLoadingDialog(context, "Updating Shop...");
       try {
         AddBlogModel updatedBlog = AddBlogModel(
           id: widget.addBlogModel.id, // Retain the same blog ID
@@ -131,13 +195,56 @@ class _EditShopScreenState extends State<EditShopScreen> {
             title: "Shop Modifications",
             body: "${widget.addBlogModel.email} has modified on his shop with the title: ${widget.addBlogModel.title}...",
           );
-
+          // Dismiss the loading dialog before showing the success dialog
+          Navigator.pop(context);
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text("Blog updated successfully!")),
+            showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  title: const Row(
+                    children: [
+                      Icon(
+                        Icons.check_circle_outline,
+                        color: Colors.green,
+                      ),
+                      SizedBox(width: 8), // Spacing between icon and text
+                      Text(
+                        'Shop Updated',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                  content: const Row(
+                    children: [
+                      Icon(
+                        Icons.store_outlined,
+                        color: Colors.green,
+                        size: 36,
+                      ),
+                      SizedBox(width: 10), // Spacing between icon and message
+                      Expanded(
+                        child: Text("Shop updated successfully!"),
+                      ),
+                    ],
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pop(context); // Close the dialog
+                        Navigator.pop(context); // Navigate back
+                      },
+                      child: Text(
+                        'OK',
+                        style: TextStyle(color: Colors.green),
+                      ),
+                    ),
+                  ],
+                );
+              },
             );
-            Navigator.pop(context);
           }
+
         } else {
           throw Exception("Failed to update blog");
         }
