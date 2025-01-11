@@ -148,7 +148,7 @@ class _EmailSignInPageState extends State<EmailSignInPage> {
 
                           if (output.containsKey('token')) {
                             String jwtToken = output['token'];
-
+                            int profileFlag = output['profileFlag'] ?? 0; // Default to 0 if not provided
                             // Store the JWT token in secure storage
                             await storage.write(key: "token", value: jwtToken);
                             await storage.write(
@@ -179,15 +179,15 @@ class _EmailSignInPageState extends State<EmailSignInPage> {
                               widget.setLocale(newLocale);
                             }
                             // Check if profile exists
-                            bool hasProfile = await checkProfileFlag();
+                           // bool hasProfile = await checkProfileFlag();
                             setState(() {
                               circular = false;
                             });
 
-                            if(kIsWeb)
-                              hasProfile=true;
+                            // if(kIsWeb)
+                            //   hasProfile=true;
 
-                            if (hasProfile) {
+                            if (profileFlag == 1) {
                               // Navigate to SlideshowPage or HomePage
                               Navigator.pushAndRemoveUntil(
                                 context,

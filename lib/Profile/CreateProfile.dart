@@ -118,7 +118,7 @@ class _CreateProfileState extends State<CreateProfile> {
                               var imageResponse = await networkHandler.patchImage(
                                   "/profile/add/image", _imageFile!.path);
                               if (imageResponse.statusCode == 200) {
-                                await storage.write(key: "profileFlag", value: "1");
+                            //    await storage.write(key: "profileFlag", value: "1");
                                 setState(() {
                                   circular = false; // Hide the loading indicator
                                 });
@@ -141,7 +141,7 @@ class _CreateProfileState extends State<CreateProfile> {
                               }
                             } else {
                               // Set profileFlag to 1 even if no image is uploaded
-                              await storage.write(key: "profileFlag", value: "1");
+                           //   await storage.write(key: "profileFlag", value: "1");
                               setState(() {
                                 circular = false; // Hide the loading indicator
                               });
