@@ -77,11 +77,49 @@ class _NotificationScreenState extends State<NotificationScreen> {
           notifications
               .removeWhere((notification) => notification.id == notificationId);
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Notification deleted successfully!"),
-            backgroundColor: Colors.green,
-          ),
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Row(
+                children: [
+                  Icon(
+                    Icons.notifications_off_outlined,
+                    color: Colors.green,
+                  ),
+                  SizedBox(width: 8), // Spacing between icon and text
+                  Text(
+                    'Notification Deleted',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+              content: const Row(
+                children: [
+                  Icon(
+                    Icons.delete_outline,
+                    color: Colors.green,
+                    size: 36,
+                  ),
+                  SizedBox(width: 10), // Spacing between icon and message
+                  Expanded(
+                    child: Text("Notification deleted successfully!"),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(); // Close the dialog
+                  },
+                  child: const Text(
+                    'OK',
+                    style: TextStyle(color: Colors.green),
+                  ),
+                ),
+              ],
+            );
+          },
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -106,7 +144,10 @@ class _NotificationScreenState extends State<NotificationScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Notifications",style: TextStyle(fontWeight: FontWeight.bold),),
+        title: const Text(
+          "Notifications",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         flexibleSpace: ValueListenableBuilder<Color>(
           valueListenable: appColorNotifier,
           builder: (context, appColor, child) {
@@ -122,46 +163,73 @@ class _NotificationScreenState extends State<NotificationScreen> {
           },
         ),
       ),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : notifications.isEmpty
-              ? const Center(
-                  child: Text(
-                    "No notifications available",
-                    style: TextStyle(fontSize: 18, color: Colors.grey),
+      // Using LayoutBuilder to create a responsive layout
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          Widget content;
+
+          // Show a loader while data is loading.
+          if (isLoading) {
+            content = const Center(child: CircularProgressIndicator());
+          }
+          // Handle the case when there are no notifications.
+          else if (notifications.isEmpty) {
+            content = const Center(
+              child: Text(
+                "No notifications available",
+                style: TextStyle(fontSize: 18, color: Colors.grey),
+              ),
+            );
+          }
+          // Build the list of notifications.
+          else {
+            content = ListView.builder(
+              itemCount: notifications.length,
+              itemBuilder: (context, index) {
+                final notification = notifications[index];
+                return ListTile(
+                  title: Text(notification.title),
+                  subtitle: Text(notification.body),
+                  leading: Icon(
+                    notification.isRead
+                        ? Icons.notifications_none
+                        : Icons.notifications_active,
+                    color: notification.isRead ? Colors.grey : Colors.black,
                   ),
-                )
-              : ListView.builder(
-                  itemCount: notifications.length,
-                  itemBuilder: (context, index) {
-                    final notification = notifications[index];
-                    return ListTile(
-                      title: Text(notification.title),
-                      subtitle: Text(notification.body),
-                      leading: Icon(
-                        notification.isRead
-                            ? Icons.notifications_none
-                            : Icons.notifications_active,
-                        color: notification.isRead ? Colors.grey : Colors.black,
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (!notification.isRead)
+                        IconButton(
+                          icon: const Icon(Icons.mark_as_unread),
+                          onPressed: () => markAsRead(notification.id),
+                        ),
+                      IconButton(
+                        icon: const Icon(Icons.delete, color: Colors.black),
+                        onPressed: () => deleteNotification(notification.id),
                       ),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (!notification.isRead)
-                            IconButton(
-                              icon: const Icon(Icons.mark_as_unread),
-                              onPressed: () => markAsRead(notification.id),
-                            ),
-                          IconButton(
-                            icon: const Icon(Icons.delete, color: Colors.black),
-                            onPressed: () =>
-                                deleteNotification(notification.id),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
+                    ],
+                  ),
+                );
+              },
+            );
+          }
+
+          // If the available width is large (e.g., web), center the content in a fixed-width container.
+          if (constraints.maxWidth > 600) {
+            return Center(
+              child: Container(
+                width: 600,
+                child: content,
+              ),
+            );
+          } else {
+            // On smaller screens (mobile), just return the content.
+            return content;
+          }
+        },
+      ),
     );
   }
+
 }

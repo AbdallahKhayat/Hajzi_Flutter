@@ -117,11 +117,53 @@ class _UsersScreenState extends State<UsersScreen> {
           }
         });
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text(responseData['message'] ??
-                  "User status updated successfully!")),
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Row(
+                children: [
+                  Icon(
+                    Icons.block,
+                    color: Colors.red,
+                  ),
+                  SizedBox(width: 8), // Spacing between icon and text
+                  Text(
+                    'User Status Update',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+              content: Row(
+                children: [
+                  Icon(
+                    Icons.person_off_outlined,
+                    color: Colors.red,
+                    size: 36,
+                  ),
+                  SizedBox(width: 10), // Spacing between icon and message
+                  Expanded(
+                    child: Text(
+                      "$email status updated successfully!",
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(); // Close the dialog
+                  },
+                  child: Text(
+                    'OK',
+                    style: TextStyle(color: Colors.red),
+                  ),
+                ),
+              ],
+            );
+          },
         );
+
       } else {
         debugPrint("Failed to ban/unban user: ${responseData['message']}");
         ScaffoldMessenger.of(context).showSnackBar(
@@ -180,11 +222,53 @@ class _UsersScreenState extends State<UsersScreen> {
       var responseData = json.decode(response.body);
 
       if (response.statusCode == 200) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text(
-                  responseData['msg'] ?? "User role updated successfully!")),
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Row(
+                children: [
+                  Icon(
+                    Icons.check_circle_outline,
+                    color: Colors.blue,
+                  ),
+                  SizedBox(width: 8), // Spacing between icon and text
+                  Text(
+                    'Role Update',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+              content:  Row(
+                children: [
+                  const Icon(
+                    Icons.person_outline,
+                    color: Colors.blue,
+                    size: 36,
+                  ),
+                  SizedBox(width: 10), // Spacing between icon and message
+                  Expanded(
+                    child: Text(
+                     "${email} role updated successfully!",
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(); // Close the dialog
+                  },
+                  child: Text(
+                    'OK',
+                    style: TextStyle(color: Colors.blue),
+                  ),
+                ),
+              ],
+            );
+          },
         );
+
 
         setState(() {
           int userIndex = users.indexWhere((user) => user['email'] == email);

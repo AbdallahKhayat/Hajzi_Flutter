@@ -186,12 +186,51 @@ class _BlogCardState extends State<BlogCard> {
                                     ),
                                   );
                                 } else {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content:
-                                          Text("Blog deleted successfully!"),
-                                    ),
+                                  showDialog(
+                                    context: context,
+                                    builder: (BuildContext context) {
+                                      return AlertDialog(
+                                        title: const Row(
+                                          children: [
+                                            Icon(
+                                              Icons.check_circle_outline,
+                                              color: Colors.green,
+                                            ),
+                                            SizedBox(width: 8), // Spacing between icon and text
+                                            Text(
+                                              'Deletion Successful',
+                                              style: TextStyle(fontWeight: FontWeight.bold),
+                                            ),
+                                          ],
+                                        ),
+                                        content:  Row(
+                                          children: [
+                                            Icon(
+                                              Icons.delete_outline,
+                                              color: Colors.green,
+                                              size: 36,
+                                            ),
+                                            SizedBox(width: 10), // Spacing between icon and message
+                                            Expanded(
+                                              child: Text('The Shop with title: ${widget.addBlogModel.title} has been deleted successfully!'),
+                                            ),
+                                          ],
+                                        ),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () {
+                                              Navigator.of(context).pop(); // Close the dialog
+                                            },
+                                            child: const Text(
+                                              'OK',
+                                              style: TextStyle(color: Colors.green),
+                                            ),
+                                          ),
+                                        ],
+                                      );
+                                    },
                                   );
+
 
                                   widget.onDelete();
                                 }

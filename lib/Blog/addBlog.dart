@@ -20,7 +20,6 @@ import '../SelectLocationPage.dart';
 import '../constants.dart'; // Ensure this uses google_maps_flutter's LatLng
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-
 class AddBlog extends StatefulWidget {
   const AddBlog({super.key});
 
@@ -58,7 +57,8 @@ class _AddBlogState extends State<AddBlog> {
   }
 
   // Function to upload preview image to BlogPost
-  Future<void> uploadPreviewImageToBlogPost(String blogId, String filePath) async {
+  Future<void> uploadPreviewImageToBlogPost(
+      String blogId, String filePath) async {
     try {
       String url = "/blogpost/update/previewImage/$blogId"; // Correct Endpoint
       var response = await networkHandler.patchImage(url, filePath);
@@ -75,7 +75,8 @@ class _AddBlogState extends State<AddBlog> {
   }
 
 // Function to upload cover images to BlogPost
-  Future<void> uploadCoverImagesToBlogPost(String blogId, List<XFile> images) async {
+  Future<void> uploadCoverImagesToBlogPost(
+      String blogId, List<XFile> images) async {
     for (XFile image in images) {
       try {
         String url = "/blogpost/add/coverImages/$blogId"; // Correct Endpoint
@@ -86,8 +87,7 @@ class _AddBlogState extends State<AddBlog> {
           if (mounted)
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                  content:
-                  Text('Failed to upload image: ${image.name}'),
+                  content: Text('Failed to upload image: ${image.name}'),
                   backgroundColor: Colors.red),
             );
           return;
@@ -97,7 +97,6 @@ class _AddBlogState extends State<AddBlog> {
       }
     }
   }
-
 
   Future<String> checkBlogStatus(String blogId) async {
     var response = await networkHandler.get("/blogpost/status/$blogId");
@@ -208,6 +207,7 @@ class _AddBlogState extends State<AddBlog> {
       print("Error sending notification: $error");
     }
   }
+
   // Updated function to upload a preview image using patchImage
   Future<void> uploadPreviewImage(String blogId, String filePath) async {
     try {
@@ -269,14 +269,14 @@ class _AddBlogState extends State<AddBlog> {
             Navigator.pop(context);
           },
         ),
-          title: Text(
-            AppLocalizations.of(context)!.createPost,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 20,
-              color: Colors.black,
-            ),
+        title: Text(
+          AppLocalizations.of(context)!.createPost,
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+            color: Colors.black,
           ),
+        ),
         actions: [
           TextButton(
             onPressed: () {
@@ -364,19 +364,23 @@ class _AddBlogState extends State<AddBlog> {
                                 items: [
                                   DropdownMenuItem(
                                     value: "general",
-                                    child: Text(AppLocalizations.of(context)!.general),
+                                    child: Text(
+                                        AppLocalizations.of(context)!.general),
                                   ),
                                   DropdownMenuItem(
                                     value: "barbershop",
-                                    child: Text(AppLocalizations.of(context)!.barbershop),
+                                    child: Text(AppLocalizations.of(context)!
+                                        .barbershop),
                                   ),
                                   DropdownMenuItem(
                                     value: "hospital",
-                                    child: Text(AppLocalizations.of(context)!.hospital),
+                                    child: Text(
+                                        AppLocalizations.of(context)!.hospital),
                                   ),
                                 ],
                                 decoration: InputDecoration(
-                                  labelText: AppLocalizations.of(context)!.selectRole,
+                                  labelText:
+                                      AppLocalizations.of(context)!.selectRole,
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(10),
                                   ),
@@ -385,30 +389,32 @@ class _AddBlogState extends State<AddBlog> {
                               SizedBox(height: 10),
                               titleTextField(),
                               SizedBox(height: 20),
-                          ValueListenableBuilder<Color>(
-                            valueListenable: appColorNotifier,
-                            builder: (context, appColor, child) {
-                              return ShaderMask(
-                                shaderCallback: (bounds) {
-                                  return LinearGradient(
-                                    colors: [appColor.withOpacity(1), appColor],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                  ).createShader(bounds);
+                              ValueListenableBuilder<Color>(
+                                valueListenable: appColorNotifier,
+                                builder: (context, appColor, child) {
+                                  return ShaderMask(
+                                    shaderCallback: (bounds) {
+                                      return LinearGradient(
+                                        colors: [
+                                          appColor.withOpacity(1),
+                                          appColor
+                                        ],
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                      ).createShader(bounds);
+                                    },
+                                    child: Text(
+                                      AppLocalizations.of(context)!.postContent,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 18,
+                                        color: Colors
+                                            .white, // Required but overridden by the shader
+                                      ),
+                                    ),
+                                  );
                                 },
-                                child: Text(
-                                  AppLocalizations.of(context)!.postContent,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 18,
-                                    color: Colors
-                                        .white, // Required but overridden by the shader
-                                  ),
-                                ),
-
-                              );
-                            },
-                          ),
+                              ),
                               SizedBox(height: 10),
                               bodyTextField(),
                               SizedBox(height: 20),
@@ -421,7 +427,7 @@ class _AddBlogState extends State<AddBlog> {
                                     context,
                                     MaterialPageRoute(
                                         builder: (context) =>
-                                        const SelectLocationPage()),
+                                            const SelectLocationPage()),
                                   );
                                   if (chosenLocation != null) {
                                     LatLng loc = chosenLocation;
@@ -446,12 +452,13 @@ class _AddBlogState extends State<AddBlog> {
                                         ).createShader(bounds);
                                       },
                                       child: Text(
-                                        AppLocalizations.of(context)!.selectShopLocation,
+                                        AppLocalizations.of(context)!
+                                            .selectShopLocation,
                                         style: const TextStyle(
-                                          color: Colors.white, // Required but overridden by the shader
+                                          color: Colors
+                                              .white, // Required but overridden by the shader
                                         ),
                                       ),
-
                                     );
                                   },
                                 ),
@@ -514,19 +521,23 @@ class _AddBlogState extends State<AddBlog> {
                             items: [
                               DropdownMenuItem(
                                 value: "general",
-                                child: Text(AppLocalizations.of(context)!.general),
+                                child:
+                                    Text(AppLocalizations.of(context)!.general),
                               ),
                               DropdownMenuItem(
                                 value: "barbershop",
-                                child: Text(AppLocalizations.of(context)!.barbershop),
+                                child: Text(
+                                    AppLocalizations.of(context)!.barbershop),
                               ),
                               DropdownMenuItem(
                                 value: "hospital",
-                                child: Text(AppLocalizations.of(context)!.hospital),
+                                child: Text(
+                                    AppLocalizations.of(context)!.hospital),
                               ),
                             ],
                             decoration: InputDecoration(
-                              labelText: AppLocalizations.of(context)!.selectRole,
+                              labelText:
+                                  AppLocalizations.of(context)!.selectRole,
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
@@ -555,7 +566,6 @@ class _AddBlogState extends State<AddBlog> {
                                         .white, // Required but overridden by the shader
                                   ),
                                 ),
-
                               );
                             },
                           ),
@@ -596,12 +606,13 @@ class _AddBlogState extends State<AddBlog> {
                                     ).createShader(bounds);
                                   },
                                   child: Text(
-                                    AppLocalizations.of(context)!.selectShopLocation,
+                                    AppLocalizations.of(context)!
+                                        .selectShopLocation,
                                     style: const TextStyle(
-                                      color: Colors.white, // Required but overridden by the shader
+                                      color: Colors
+                                          .white, // Required but overridden by the shader
                                     ),
                                   ),
-
                                 );
                               },
                             ),
@@ -775,7 +786,8 @@ class _AddBlogState extends State<AddBlog> {
             builder: (BuildContext context) {
               return AlertDialog(
                 title: Text(AppLocalizations.of(context)!.confirmSubmission),
-                content: Text(AppLocalizations.of(context)!.areYouSureSubmitShop),
+                content:
+                    Text(AppLocalizations.of(context)!.areYouSureSubmitShop),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(false), // Cancel
@@ -793,7 +805,6 @@ class _AddBlogState extends State<AddBlog> {
                   ),
                 ],
               );
-
             },
           );
           if (confirm == true) {
@@ -827,8 +838,8 @@ class _AddBlogState extends State<AddBlog> {
             final serviceId = 'service_lap99wb';
             final templateId = 'template_fon03t7';
             final userId = 'tPJQRVN9PQ2jjZ_6C';
-            final url = Uri.parse(
-                'https://api.emailjs.com/api/v1.0/email/send');
+            final url =
+                Uri.parse('https://api.emailjs.com/api/v1.0/email/send');
 
             final emailResponse = await http.post(
               url,
@@ -858,8 +869,7 @@ class _AddBlogState extends State<AddBlog> {
             );
 
             print(
-                "Notification Response Code: ${notificationResponse
-                    .statusCode}");
+                "Notification Response Code: ${notificationResponse.statusCode}");
             print("Notification Response Body: ${notificationResponse.body}");
 
             if (notificationResponse.statusCode == 200) {
@@ -875,9 +885,7 @@ class _AddBlogState extends State<AddBlog> {
               await sendNotification(
                 title: "New Shop Approval Request",
                 body:
-                "${addBlogApproval
-                    .email} has applied for a shop with the title: ${addBlogApproval
-                    .title}. Please review it.",
+                    "${addBlogApproval.email} has applied for a shop with the title: ${addBlogApproval.title}. Please review it.",
               );
 
               // Upload images
@@ -887,10 +895,32 @@ class _AddBlogState extends State<AddBlog> {
                 await uploadCoverImages(blogId, imageFiles.sublist(1));
               }
 
-              if(mounted)
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Blog submitted for approval!')),
-              );
+              if (mounted) {
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: Text(
+                        'Submission Successful',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      content: Text('Your shop has been submitted for approval!'),
+                      actions: [
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(context).pop(); // Close the dialog
+                          },
+                          child: Text(
+                            'OK',
+                            style: TextStyle(color: Colors.green),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                );
+              }
+
 
               // Step 4: Periodically check approval status
               String status = "pending";
@@ -898,7 +928,7 @@ class _AddBlogState extends State<AddBlog> {
                 await Future.delayed(
                     Duration(seconds: 5)); // Wait before checking
                 var statusResponse =
-                await networkHandler.get("/AddBlogApproval/status/$blogId");
+                    await networkHandler.get("/AddBlogApproval/status/$blogId");
 
                 if (statusResponse is Map<String, dynamic> &&
                     statusResponse.containsKey("status")) {
@@ -939,54 +969,119 @@ class _AddBlogState extends State<AddBlog> {
 
                   // Step 6: Upload preview image to BlogPost
                   if (imageFiles.isNotEmpty) {
-                    await uploadPreviewImageToBlogPost(newBlogId, imageFiles.first.path);
-                    await uploadCoverImagesToBlogPost(newBlogId, imageFiles.sublist(1));
+                    await uploadPreviewImageToBlogPost(
+                        newBlogId, imageFiles.first.path);
+                    await uploadCoverImagesToBlogPost(
+                        newBlogId, imageFiles.sublist(1));
                   }
 
-                  if (mounted)
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                          content:
-                          Text('Blog approved and published successfully!')),
+                  if (mounted) {
+                    showDialog<void>(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15.0),
+                          ),
+                          title: const Row(
+                            children: [
+                              Icon(Icons.check_circle, color: Colors.green),
+                              SizedBox(width: 8),
+                              Text('Success'),
+                            ],
+                          ),
+                          content: const Text(
+                              'Shop approved and published successfully!'),
+                          actions: <Widget>[
+                            TextButton(
+                              child: const Text('OK',style: TextStyle(color: Colors.black),),
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                            ),
+                          ],
+                        );
+                      },
                     );
-                  if (mounted) Navigator.pop(context);
+                  }
+                // if (mounted) Navigator.pop(context);
                 } else {
                   if (mounted)
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                          content: Text(
-                              'Failed to add blog to blogpost schema'),
+                          content:
+                              Text('Failed to add blog to blogpost schema'),
                           backgroundColor: Colors.red),
                     );
                 }
               } else {
-                if (mounted)
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                        content: Text('Blog was not approved by admin'),
-                        backgroundColor: Colors.orange),
+                if (mounted) {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: Text(
+                          'Approval Pending',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        content: Text('The Shop was not approved by the admin.'),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop(); // Close the dialog
+                            },
+                            child: Text(
+                              'OK',
+                              style: TextStyle(color: Colors.orange),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
                   );
+                }
+
               }
             } else {
-              if (mounted)
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                      content: Text('Blog Already Submitted'),
-                      backgroundColor: Colors.red),
+              if (mounted) {
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: const Text(
+                        'Submission Error',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      content: Text('Shop has already been submitted.'),
+                      actions: [
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(context).pop(); // Close the dialog
+                          },
+                          child: const Text(
+                            'OK',
+                            style: TextStyle(color: Colors.red),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
                 );
-            }
-          }} else {
-            if (mounted)
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    AppLocalizations.of(context)!.fillAllFieldsAndSelectImage,
-                  ),
-                  backgroundColor: Colors.orange,
-                ),
-              );
-          }
+              }
 
+            }
+          }
+        } else {
+          if (mounted)
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  AppLocalizations.of(context)!.fillAllFieldsAndSelectImage,
+                ),
+                backgroundColor: Colors.orange,
+              ),
+            );
+        }
       },
       child: Center(
           child: ValueListenableBuilder<Color>(
@@ -1012,7 +1107,6 @@ class _AddBlogState extends State<AddBlog> {
                   fontSize: 16,
                 ),
               ),
-
             ),
           );
         },

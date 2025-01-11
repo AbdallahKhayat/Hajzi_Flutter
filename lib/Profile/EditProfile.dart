@@ -30,6 +30,7 @@ class _EditProfileState extends State<EditProfile> {
   File? _selectedImage; // For mobile platforms
   Uint8List? _webImage; // For web platforms
   final ImagePicker _picker = ImagePicker();
+
   @override
   void initState() {
     super.initState();
@@ -51,6 +52,7 @@ class _EditProfileState extends State<EditProfile> {
     _aboutController.dispose();
     super.dispose();
   }
+
   Future<void> _pickImage() async {
     if (kIsWeb) {
       final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
@@ -69,7 +71,6 @@ class _EditProfileState extends State<EditProfile> {
       }
     }
   }
-
 
   void _updateProfile() async {
     if (_formKey.currentState!.validate()) {
@@ -101,12 +102,15 @@ class _EditProfileState extends State<EditProfile> {
               // Currently, patchImage expects a file path, which isn't available on web
               // Consider modifying patchImage to accept bytes or handle differently
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text("Image upload on web is not supported yet.")),
+                SnackBar(
+                    content: Text("Image upload on web is not supported yet.")),
               );
             } else if (_selectedImage != null) {
               // For mobile
-              imageResponse = await networkHandler.patchImage("/profile/add/image", _selectedImage!.path);
-              if (imageResponse.statusCode == 200 || imageResponse.statusCode == 201) {
+              imageResponse = await networkHandler.patchImage(
+                  "/profile/add/image", _selectedImage!.path);
+              if (imageResponse.statusCode == 200 ||
+                  imageResponse.statusCode == 201) {
                 print("Image uploaded successfully.");
               } else {
                 print("Image upload failed.");
@@ -121,9 +125,48 @@ class _EditProfileState extends State<EditProfile> {
 
           // After successful update, pop with updated data
           Navigator.pop(context, data);
+
+          // Show success dialog
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Text('Profile Updated'),
+                content: Text('Your profile has been updated successfully!'),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context); // Close dialog
+                    },
+                    child: Text('OK'),
+                  ),
+                ],
+              );
+            },
+          );
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Update failed! Please try again.")),
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Text(
+                  'Update Failed',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                content: Text('Update failed! Please try again.'),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop(); // Close the dialog
+                    },
+                    child: Text(
+                      'OK',
+                      style: TextStyle(color: Colors.red),
+                    ),
+                  ),
+                ],
+              );
+            },
           );
         }
       } catch (e) {
@@ -138,6 +181,7 @@ class _EditProfileState extends State<EditProfile> {
       }
     }
   }
+
   Widget _buildImagePicker() {
     return Column(
       children: [
@@ -147,15 +191,15 @@ class _EditProfileState extends State<EditProfile> {
             radius: 50,
             backgroundImage: kIsWeb
                 ? (_webImage != null
-                ? MemoryImage(_webImage!) as ImageProvider
-                : (widget.profileModel.img != null
-                ? NetworkHandler().getImage(widget.profileModel.img!)
-                : AssetImage('')))
+                    ? MemoryImage(_webImage!) as ImageProvider
+                    : (widget.profileModel.img != null
+                        ? NetworkHandler().getImage(widget.profileModel.img!)
+                        : AssetImage('')))
                 : (_selectedImage != null
-                ? FileImage(_selectedImage!) as ImageProvider
-                : (widget.profileModel.img != null
-                ? NetworkHandler().getImage(widget.profileModel.img!)
-                : NetworkHandler().getImage(widget.profileModel.img!))),
+                    ? FileImage(_selectedImage!) as ImageProvider
+                    : (widget.profileModel.img != null
+                        ? NetworkHandler().getImage(widget.profileModel.img!)
+                        : NetworkHandler().getImage(widget.profileModel.img!))),
             backgroundColor: Colors.grey.shade300,
           ),
         ),
@@ -192,113 +236,121 @@ class _EditProfileState extends State<EditProfile> {
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: kIsWeb
-              ? Center(
-            child: SizedBox(
-              width: 800,
-              child: Card(
-                elevation: 3,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: ListView(
-                    shrinkWrap: true,
-                    children: [
-                      _buildImagePicker(),
-                      _buildTextField("Titleline", _titlelineController),
-                      _buildTextField("Name", _nameController),
-                      _buildTextField("Profession", _professionController),
-                      _buildTextField("Date of Birth", _dobController),
-                      _buildTextField(
-                        "About",
-                        _aboutController,
-                        maxLines: 5,
-                      ),
-                      const SizedBox(height: 30),
-                      Center(
-                        child: ElevatedButton(
-                          onPressed: _updateProfile,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.teal,
+              padding: const EdgeInsets.all(16.0),
+              child: Form(
+                key: _formKey,
+                child: kIsWeb
+                    ? Center(
+                        child: SizedBox(
+                          width: 800,
+                          child: Card(
+                            elevation: 3,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
+                              borderRadius: BorderRadius.circular(15),
                             ),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 40, vertical: 15),
-                          ),
-                          child: const Text(
-                            "Save Changes",
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                            child: Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: ListView(
+                                shrinkWrap: true,
+                                children: [
+                                  _buildImagePicker(),
+                                  _buildTextField(
+                                      "Titleline", _titlelineController),
+                                  _buildTextField("Name", _nameController),
+                                  _buildTextField(
+                                      "Profession", _professionController),
+                                  _buildTextField(
+                                      "Date of Birth", _dobController),
+                                  _buildTextField(
+                                    "About",
+                                    _aboutController,
+                                    maxLines: 5,
+                                  ),
+                                  const SizedBox(height: 30),
+                                  Center(
+                                    child: ElevatedButton(
+                                      onPressed: _updateProfile,
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.teal,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(20),
+                                        ),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 40, vertical: 15),
+                                      ),
+                                      child: const Text(
+                                        "Save Changes",
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
+                      )
+                    : Card(
+                        elevation: 3,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: ListView(
+                            shrinkWrap: true,
+                            children: [
+                              _buildImagePicker(),
+                              _buildTextField(
+                                  "Titleline", _titlelineController),
+                              _buildTextField("Name", _nameController),
+                              _buildTextField(
+                                  "Profession", _professionController),
+                              _buildTextField("Date of Birth", _dobController),
+                              _buildTextField(
+                                "About",
+                                _aboutController,
+                                maxLines: 5,
+                              ),
+                              const SizedBox(height: 30),
+                              Center(
+                                child: ValueListenableBuilder<Color>(
+                                  valueListenable: appColorNotifier,
+                                  builder: (context, color, child) {
+                                    return ElevatedButton(
+                                      onPressed: _updateProfile,
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: color,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(20),
+                                        ),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 40, vertical: 15),
+                                      ),
+                                      child: const Text(
+                                        "Save Changes",
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
-                    ],
-                  ),
-                ),
               ),
             ),
-          )
-              : Card(
-            elevation: 3,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(15),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: ListView(
-                shrinkWrap: true,
-                children: [
-                  _buildImagePicker(),
-                  _buildTextField("Titleline", _titlelineController),
-                  _buildTextField("Name", _nameController),
-                  _buildTextField("Profession", _professionController),
-                  _buildTextField("Date of Birth", _dobController),
-                  _buildTextField(
-                    "About",
-                    _aboutController,
-                    maxLines: 5,
-                  ),
-                  const SizedBox(height: 30),
-                  Center(
-                    child: ValueListenableBuilder<Color>(
-                      valueListenable: appColorNotifier,
-                      builder: (context, color, child) {
-                        return ElevatedButton(
-                          onPressed: _updateProfile,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: color,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-                          ),
-                          child: const Text(
-                            "Save Changes",
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
     );
   }
 

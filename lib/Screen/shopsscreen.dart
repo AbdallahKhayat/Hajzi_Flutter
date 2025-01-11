@@ -12,8 +12,13 @@ class ShopsScreen extends StatefulWidget {
 class _ShopsScreenState extends State<ShopsScreen> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-     body:  Blogs(url: "/blogpost/getOwnBlog",flag: 1,),
+    return const Scaffold(
+      body: SingleChildScrollView(
+        child: Blogs(
+          url: "/blogpost/getOwnBlog",
+          flag: 1,
+        ),
+      ),
     );
   }
 }

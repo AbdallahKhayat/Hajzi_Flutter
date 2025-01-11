@@ -107,12 +107,38 @@ class _RequestsScreenState extends State<RequestsScreen> {
             "Your Shop with title: ${blog.title} has been $status by the admin.",
       );
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Shop status updated to $status"),
-          backgroundColor: status == "approved" ? Colors.green : Colors.red,
-        ),
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text(
+              'Shop Status Updated',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: status == "approved" ? Colors.green : Colors.red,
+              ),
+            ),
+            content: Text(
+              "The shop status has been updated to $status.",
+              style: TextStyle(color: Colors.black),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop(); // Close the dialog
+                },
+                child: Text(
+                  'OK',
+                  style: TextStyle(
+                    color: status == "approved" ? Colors.green : Colors.red,
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
       );
+
       setState(() {
         blogRequests.removeWhere((request) => request.id == blogId);
         filteredRequests.removeWhere((request) => request.id == blogId);
