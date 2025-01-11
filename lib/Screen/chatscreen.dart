@@ -6,7 +6,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:blogapp/constants.dart';
 
 // Import your other pages
-import 'package:blogapp/Screen/CameraFiles/CameraScreen.dart';
+// import 'package:blogapp/Screen/CameraFiles/CameraScreen.dart'; // 🔴 Unimplemented feature: Camera
 import 'package:blogapp/Pages/SearchPage.dart';
 import 'package:blogapp/Pages/ChatPage.dart';
 
@@ -49,17 +49,17 @@ class _ChatScreenMobileState extends State<_ChatScreenMobile>
   @override
   void initState() {
     super.initState();
-    _controller = TabController(length: 4, vsync: this, initialIndex: 1);
+    _controller = TabController(length: 1, vsync: this);
 
-    // Navigate to camera instantly if tab index is 0 (camera tab)
-    _controller.addListener(() {
-      if (_controller.index == 0) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const CameraScreen()),
-        );
-      }
-    });
+    // Navigate to camera instantly if tab index is 0 (camera tab) 🔴
+    // _controller.addListener(() {
+    //   if (_controller.index == 0) {
+    //     Navigator.push(
+    //       context,
+    //       MaterialPageRoute(builder: (context) => const CameraScreen()),
+    //     );
+    //   }
+    // });
   }
 
   @override
@@ -83,22 +83,23 @@ class _ChatScreenMobileState extends State<_ChatScreenMobile>
                   );
                 },
               ),
-              PopupMenuButton<String>(
-                icon: const Icon(Icons.more_vert, color: Colors.white),
-                onSelected: (value) {},
-                itemBuilder: (BuildContext context) {
-                  return const [
-                    PopupMenuItem(value: "New group", child: Text("New group")),
-                    PopupMenuItem(
-                        value: "New broadcast", child: Text("New broadcast")),
-                    PopupMenuItem(value: "Hajzi web", child: Text("Hajzi web")),
-                    PopupMenuItem(
-                        value: "Starred messages",
-                        child: Text("Starred messages")),
-                    PopupMenuItem(value: "Settings", child: Text("Settings")),
-                  ];
-                },
-              )
+              // Unimplemented feature 🔴
+              // PopupMenuButton<String>(
+              //   icon: const Icon(Icons.more_vert, color: Colors.white),
+              //   onSelected: (value) {},
+              //   itemBuilder: (BuildContext context) {
+              //     return const [
+              //       PopupMenuItem(value: "New group", child: Text("New group")),
+              //       PopupMenuItem(
+              //           value: "New broadcast", child: Text("New broadcast")),
+              //       PopupMenuItem(value: "Hajzi web", child: Text("Hajzi web")),
+              //       PopupMenuItem(
+              //           value: "Starred messages",
+              //           child: Text("Starred messages")),
+              //       PopupMenuItem(value: "Settings", child: Text("Settings")),
+              //     ];
+              //   },
+              // )
             ],
             bottom: TabBar(
               controller: _controller,
@@ -106,23 +107,27 @@ class _ChatScreenMobileState extends State<_ChatScreenMobile>
               labelColor: Colors.white,
               unselectedLabelColor: Colors.white70,
               tabs: const [
-                Tab(icon: Icon(Icons.camera_alt)),
+                // 🔴 Unimplemented feature: Camera Tab
+                // Tab(icon: Icon(Icons.camera_alt)),
                 Tab(text: "CHATS"),
-                Tab(text: "STATUS"),
-                Tab(text: "CALLS"),
+                // 🔴 Unimplemented feature: Status Tab
+                // Tab(text: "STATUS"),
+                // 🔴 Unimplemented feature: Calls Tab
+                // Tab(text: "CALLS"),
               ],
+
             ),
           ),
           body: TabBarView(
             controller: _controller,
             children: [
-              const SizedBox.shrink(),
+             // const SizedBox.shrink(), 🔴
               // The old approach: ChatPage handles logic
               const ChatPage(chatId: '', chatPartnerEmail: '', appBarFlag: 0),
-              const Center(
-                  child: Text("Status", style: TextStyle(fontSize: 18))),
-              const Center(
-                  child: Text("Calls", style: TextStyle(fontSize: 18))),
+              // const Center( 🔴
+              //     child: Text("Status", style: TextStyle(fontSize: 18))),
+              // const Center(
+              //     child: Text("Calls", style: TextStyle(fontSize: 18))),
             ],
           ),
         );
@@ -172,17 +177,17 @@ class _ChatScreenWebState extends State<_ChatScreenWeb>
   void initState() {
     super.initState();
     // 1) Setup the 4 tabs
-    _controller = TabController(length: 4, vsync: this, initialIndex: 1);
+    _controller = TabController(length: 1, vsync: this);
 
     // If user taps on the camera tab (index 0), open camera
-    _controller.addListener(() {
-      if (_controller.index == 0) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const CameraScreen()),
-        );
-      }
-    });
+    // _controller.addListener(() { 🔴
+    //   if (_controller.index == 0) {
+    //     Navigator.push(
+    //       context,
+    //       MaterialPageRoute(builder: (_) => const CameraScreen()),
+    //     );
+    //   }
+    // });
 
     // 2) Initialize socket, user info, fetch all chats
     _initAll();
@@ -566,6 +571,8 @@ class _ChatScreenWebState extends State<_ChatScreenWeb>
               ),
 
               // Optional icons for call, video, etc.
+              // 🔴 Unimplemented feature: Voice and Video call icons
+              /*
               IconButton(
                 onPressed: () => debugPrint("Voice call tapped"),
                 icon: const Icon(Icons.call, color: Colors.white),
@@ -574,6 +581,7 @@ class _ChatScreenWebState extends State<_ChatScreenWeb>
                 onPressed: () => debugPrint("Video call tapped"),
                 icon: const Icon(Icons.videocam, color: Colors.white),
               ),
+              */
             ],
           ),
         ),
@@ -668,21 +676,23 @@ class _ChatScreenWebState extends State<_ChatScreenWeb>
                     suffixIcon: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        IconButton(
-                          onPressed: () {
-                            showModalBottomSheet(
-                              backgroundColor: Colors.transparent,
-                              context: context,
-                              builder: (_) => _buildCustomBottomSheet(),
-                            );
-                          },
-                          icon: const Icon(Icons.attach_file),
-                          padding: const EdgeInsets.only(right: 0, left: 30),
-                        ),
-                        IconButton(
-                          onPressed: () => debugPrint("Camera clicked"),
-                          icon: const Icon(Icons.camera_alt),
-                        ),
+                        // 🔴 Unimplemented feature: File attachment options
+                        // IconButton(
+                        //   onPressed: () {
+                        //     showModalBottomSheet(
+                        //       backgroundColor: Colors.transparent,
+                        //       context: context,
+                        //       builder: (_) => _buildCustomBottomSheet(),
+                        //     );
+                        //   },
+                        //   icon: const Icon(Icons.attach_file),
+                        //   padding: const EdgeInsets.only(right: 0, left: 30),
+                        // ),
+                        // 🔴 Unimplemented feature: Camera icon in input field
+                        // IconButton(
+                        //   onPressed: () => debugPrint("Camera clicked"),
+                        //   icon: const Icon(Icons.camera_alt),
+                        // ),
                       ],
                     ),
                   ),
@@ -990,6 +1000,8 @@ class _ChatScreenWebState extends State<_ChatScreenWeb>
             );
           },
         ),
+        // 🔴 Unimplemented feature: More options
+        /*
         PopupMenuButton<String>(
           icon: const Icon(Icons.more_vert, color: Colors.white),
           onSelected: (value) => debugPrint("Action: $value"),
@@ -997,11 +1009,11 @@ class _ChatScreenWebState extends State<_ChatScreenWeb>
             PopupMenuItem(value: "New group", child: Text("New group")),
             PopupMenuItem(value: "New broadcast", child: Text("New broadcast")),
             PopupMenuItem(value: "Hajzi web", child: Text("Hajzi web")),
-            PopupMenuItem(
-                value: "Starred messages", child: Text("Starred messages")),
+            PopupMenuItem(value: "Starred messages", child: Text("Starred messages")),
             PopupMenuItem(value: "Settings", child: Text("Settings")),
           ],
         ),
+        */
       ],
       bottom: TabBar(
         controller: _controller,
@@ -1009,10 +1021,11 @@ class _ChatScreenWebState extends State<_ChatScreenWeb>
         labelColor: Colors.white,
         unselectedLabelColor: Colors.white70,
         tabs: const [
-          Tab(icon: Icon(Icons.camera_alt)),
+          // 🔴 Unimplemented feature: Camera, Status, Calls tabs removed
+          //Tab(icon: Icon(Icons.camera_alt)),
           Tab(text: "CHATS"),
-          Tab(text: "STATUS"),
-          Tab(text: "CALLS"),
+          //Tab(text: "STATUS"),
+          //Tab(text: "CALLS"),
         ],
       ),
     );
@@ -1026,18 +1039,18 @@ class _ChatScreenWebState extends State<_ChatScreenWeb>
             controller: _controller,
             children: [
               // 0) Camera
-              const SizedBox.shrink(), // We navigate to camera instantly
+              //const SizedBox.shrink(), // We navigate to camera instantly
 
               // 1) Chats tab => Two-column web layout
               _buildChatsTab(context),
 
               // 2) Status
-              const Center(
-                  child: Text("Status", style: TextStyle(fontSize: 18))),
-
-              // 3) Calls
-              const Center(
-                  child: Text("Calls", style: TextStyle(fontSize: 18))),
+              // const Center(
+              //     child: Text("Status", style: TextStyle(fontSize: 18))),
+              //
+              // // 3) Calls
+              // const Center(
+              //     child: Text("Calls", style: TextStyle(fontSize: 18))),
             ],
           ),
         );
