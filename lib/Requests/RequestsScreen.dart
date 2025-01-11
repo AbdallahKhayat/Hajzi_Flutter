@@ -119,7 +119,7 @@ class _RequestsScreenState extends State<RequestsScreen> {
               ),
             ),
             content: Text(
-              "The shop status has been updated to $status.",
+              "The shop with title: ${blog.title} status has been updated to $status.",
               style: TextStyle(color: Colors.black),
             ),
             actions: [
