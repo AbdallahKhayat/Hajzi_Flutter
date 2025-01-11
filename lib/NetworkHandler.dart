@@ -103,6 +103,30 @@ class NetworkHandler{
 
 
 
+  Future<http.StreamedResponse> postAudioFile({
+    required String filePath,
+    required String chatId,
+    required String receiverEmail,
+  }) async {
+    String? token = await storage.read(key: "token");
+
+    var request = http.MultipartRequest(
+      'POST',
+      Uri.parse(baseurl + '/chat/send-audio'),
+    )
+      ..headers['Authorization'] = 'Bearer $token'
+      ..files.add(
+        await http.MultipartFile.fromPath('audioFile', filePath),
+      )
+      ..fields['chatId'] = chatId
+      ..fields['receiverEmail'] = receiverEmail;
+
+    return await request.send();
+  }
+
+
+
+
   Future<dynamic> getWithAuth(String url, String token) async {
     try {
       final response = await http.get(

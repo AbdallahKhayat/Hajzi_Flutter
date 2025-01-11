@@ -5,6 +5,8 @@ import 'package:blogapp/CustomWidget/OwnMessageCard.dart';
 import 'package:blogapp/CustomWidget/ReplyCard.dart';
 import 'package:flutter/material.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
+import '../CustomWidget/OwnAudioMessageCard.dart';
+import '../CustomWidget/ReplyAudioMessageCard.dart';
 import '../NetworkHandler.dart';
 import '../constants.dart'; // Import the constants file
 import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // 🔥 Add this to get the user's email
@@ -14,6 +16,10 @@ import 'package:file_picker/file_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter/services.dart'; // For Clipboard
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:dio/dio.dart';
+import 'package:flutter_sound/flutter_sound.dart';
+
+
 
 
 class IndividualPage extends StatefulWidget {
@@ -32,6 +38,11 @@ class IndividualPage extends StatefulWidget {
 }
 
 class _IndividualPageState extends State<IndividualPage> {
+
+  final FlutterSoundRecorder _audioRecorder = FlutterSoundRecorder();
+  bool _isRecorderInitialized = false;
+  bool _isRecording = false;
+  String? _lastRecordedFilePath;
   late String chatId;
   late ScrollController _scrollController; // 🔥 Add ScrollController here
   late IO.Socket socket;
@@ -227,6 +238,7 @@ class _IndividualPageState extends State<IndividualPage> {
   @override
   void initState() {
     super.initState();
+    initRecorder();
     _scrollController = ScrollController();
     chatId = widget.initialChatId;
     getUserEmail();
@@ -275,6 +287,24 @@ class _IndividualPageState extends State<IndividualPage> {
         _scrollToBottom();
       }
     });
+  }
+
+
+
+  Future<void> initRecorder() async {
+    // Request mic permission
+    var status = await Permission.microphone.request();
+    if (!status.isGranted) {
+      // Handle denial
+      return;
+    }
+
+    // Open the audio session
+    await _audioRecorder.openRecorder();
+    _isRecorderInitialized = true;
+
+    // If needed, set android AudioSource or iOS Category
+    // await _audioRecorder.setSubscriptionDuration(const Duration(milliseconds: 50));
   }
 
   void _scrollToBottom() {
@@ -351,6 +381,7 @@ class _IndividualPageState extends State<IndividualPage> {
     _scrollController.dispose(); // 🔥 Don't forget to dispose
     NetworkHandler().socket?.off('receive_message_individual');
     NetworkHandler().socket?.off('update_message');
+    _audioRecorder.closeRecorder();
     super.dispose();
   }
 
@@ -568,17 +599,16 @@ class _IndividualPageState extends State<IndividualPage> {
               Expanded(
                 child: ListView.builder(
                   controller: _scrollController,
-                  // Attach scroll controller to auto-scroll
                   itemCount: messages.length,
                   itemBuilder: (context, index) {
                     final message = messages[index];
-                    bool isOwnMessage = message['senderEmail'] ==
-                        loggedInUserEmail; // Check if message is from the current user
-                    // Check if the message has been deleted
+                    bool isOwnMessage = message['senderEmail'] == loggedInUserEmail;
                     String displayMessage = message['content'];
+
                     if (message['content'] == 'Message has been deleted') {
                       displayMessage = 'Message has been deleted';
                     }
+
                     String formattedTime = formatTime(message['timestamp']);
                     String formattedDate = formatDate(message['timestamp']);
 
@@ -587,11 +617,16 @@ class _IndividualPageState extends State<IndividualPage> {
                       showDateSeparator = true;
                     } else {
                       final previousMessage = messages[index - 1];
-                      String previousDate =
-                          formatDate(previousMessage['timestamp']);
+                      String previousDate = formatDate(previousMessage['timestamp']);
                       if (previousDate != formattedDate) {
                         showDateSeparator = true;
                       }
+                    }
+
+                    // **1) Check if it's audio or text**
+                    bool isAudio = false;
+                    if (displayMessage.contains('/uploads/audio/')) {
+                      isAudio = true;
                     }
 
                     return Column(
@@ -608,37 +643,62 @@ class _IndividualPageState extends State<IndividualPage> {
                               ),
                             ),
                           ),
-                        isOwnMessage
-                            ? OwnMessageCard(
-                                message: message['content'],
-                                time: formattedTime,
-                                // Still pass date if needed
-                                messageColor: lightenColor(mainColor, 0.2),
-                                textColor:
-                                    displayMessage == 'Message has been deleted'
-                                        ? Colors.grey
-                                        : Colors.black,
-                                onLongPress: () {
-                                  _showOwnMessageOptions(message);
-                                },
-                              )
-                            : ReplyCard(
-                                message: message['content'],
-                                time: formattedTime,
-                                // Still pass date if needed
-                                messageColor: Colors.white,
-                                textColor:
-                                    displayMessage == 'Message has been deleted'
-                                        ? Colors.grey
-                                        : Colors.black,
-                                onLongPress: () {
-                                  _showReplyMessageOptions(message);
-                                },
-                              ),
+
+                        // Check if it's audio or text
+                        if (isAudio)
+                        // If audio and OWN message => OwnAudioMessageCard
+                          if (isOwnMessage)
+                            OwnAudioMessageCard(
+                              audioUrl: displayMessage,
+                              time: formattedTime,
+                              messageColor: lightenColor(mainColor, 0.2),
+                              textColor: Colors.black, // or your desired color
+                              onLongPress: () {
+                                _showOwnMessageOptions(message);
+                              },
+                            )
+                          else
+                          // Audio but from someone else => ReplyAudioMessageCard
+                            ReplyAudioMessageCard(
+                              audioUrl: displayMessage,
+                              time: formattedTime,
+                              messageColor: Colors.white,
+                              textColor: Colors.black, // or your desired color
+                              onLongPress: () {
+                                _showReplyMessageOptions(message);
+                              },
+                            )
+                        else
+                        // Otherwise TEXT message
+                          if (isOwnMessage)
+                            OwnMessageCard(
+                              message: displayMessage,
+                              time: formattedTime,
+                              messageColor: lightenColor(mainColor, 0.2),
+                              textColor: (displayMessage == 'Message has been deleted')
+                                  ? Colors.grey
+                                  : Colors.black,
+                              onLongPress: () {
+                                _showOwnMessageOptions(message);
+                              },
+                            )
+                          else
+                            ReplyCard(
+                              message: displayMessage,
+                              time: formattedTime,
+                              messageColor: Colors.white,
+                              textColor: (displayMessage == 'Message has been deleted')
+                                  ? Colors.grey
+                                  : Colors.black,
+                              onLongPress: () {
+                                _showReplyMessageOptions(message);
+                              },
+                            ),
                       ],
                     );
                   },
                 ),
+
               ),
               Row(
                 children: [
@@ -755,22 +815,35 @@ class _IndividualPageState extends State<IndividualPage> {
                     child: CircleAvatar(
                       backgroundColor: mainColor,
                       radius: isWeb ? 20 : 25,
-                      child: IconButton(
-                        onPressed: () {
-                          if (sendButton)
-                            sendMessage(_messageController.text.trim());
-                        },
-                        icon: AnimatedSwitcher(
-                          duration: Duration(milliseconds: 200),
-                          child: sendButton || _imageFile != null
-                              ? Icon(Icons.send,
+                        child: GestureDetector(
+                          onLongPressStart: (_) async {
+                            // Start recording
+                            await startRecording();
+                          },
+                          onLongPressEnd: (_) async {
+                            // Stop recording (+ optionally send)
+                            await stopRecording();
+                          },
+                          child: IconButton(
+                            onPressed: () {
+                              // If there's text in the message input, send text
+                              if (sendButton) {
+                                sendMessage(_messageController.text.trim());
+                              }
+                            },
+                            icon: AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 200),
+                              child: _isRecording
+                                  ? const Icon(Icons.stop,
+                                  key: ValueKey('stop'), color: Colors.red) // RECORDING icon
+                                  : (sendButton || _imageFile != null
+                                  ? const Icon(Icons.send,
                                   key: ValueKey('send'), color: Colors.black)
-                              : Icon(Icons.mic,
-                                  key: ValueKey('mic'), color: Colors.black),
+                                  : const Icon(Icons.mic,
+                                  key: ValueKey('mic'), color: Colors.black)),
+                            ),
+                          ),
                         ),
-                        splashColor: mainColor
-                            .withOpacity(0.3), // Slight splash on click
-                      ),
                     ),
                   ),
                 ],
@@ -886,6 +959,116 @@ class _IndividualPageState extends State<IndividualPage> {
     }
   }
 
+
+  Future<void> sendAudioFile(String filePath) async {
+    try {
+      final response = await networkHandler.postAudioFile(
+        filePath: filePath,
+        chatId: chatId,
+        receiverEmail: widget.chatPartnerEmail,
+      );
+
+      if (response.statusCode == 201) {
+        print("✅ Audio sent successfully");
+      } else {
+        print("❌ Failed to send audio. Status: ${response.statusCode}");
+        // Optionally read the response body:
+        final body = await response.stream.bytesToString();
+        print("Response body: $body");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to send audio. Please try again.')),
+        );
+      }
+    } catch (e) {
+      print("❌ Error sending audio file: $e");
+    }
+  }
+
+
+
+  Future<void> startRecording() async {
+    if (!_isRecorderInitialized) return;
+    if (await Permission.microphone.request().isGranted) {
+      // Provide file path or let flutter_sound choose automatically
+      await _audioRecorder.startRecorder(
+        toFile: 'myAudio.aac', // or leave null for a temp path
+        codec: Codec.aacADTS,  // or others like Codec.opusWebM, Codec.aacMP4
+        bitRate: 128000,       // optional
+        sampleRate: 44100,     // optional
+      );
+      setState(() {
+        _isRecording = true;
+      });
+    }
+  }
+
+
+
+  Future<void> stopRecording() async {
+    if (!_isRecorderInitialized || !_isRecording) return;
+
+    String? path = await _audioRecorder.stopRecorder();
+    setState(() {
+      _isRecording = false;
+    });
+    print("🎙️ Audio recorded at: $path");
+
+    // DO NOT SEND IMMEDIATELY
+    if (path != null) {
+      _lastRecordedFilePath = path;
+      // Show a confirm dialog for "Send or Cancel"
+      _showSendOrCancelDialog();
+    }
+  }
+
+  void _showSendOrCancelDialog() {
+    if (_lastRecordedFilePath == null) return;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext ctx) {
+        return AlertDialog(
+          title: Text("Audio Recorded"),
+          content: Text("Do you want to send this audio message?"),
+          actions: [
+            TextButton(
+              onPressed: () {
+                // CANCEL
+                Navigator.of(ctx).pop(); // close the dialog
+                setState(() {
+                  _lastRecordedFilePath = null; // discard
+                });
+              },
+              child: Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.of(ctx).pop();
+                if (_lastRecordedFilePath != null) {
+                  await sendAudioFile(_lastRecordedFilePath!);
+                }
+                setState(() {
+                  _lastRecordedFilePath = null;
+                });
+              },
+              child: Text("Send"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+
+
+
+
+
+
+
+
+
   Future<void> requestPermissions() async {
     if (await Permission.camera.request().isGranted &&
         await Permission.photos.request().isGranted) {
@@ -897,6 +1080,12 @@ class _IndividualPageState extends State<IndividualPage> {
       );
     }
   }
+
+  Future<bool> requestMicPermission() async {
+    final status = await Permission.microphone.request();
+    return status.isGranted;
+  }
+
 
   Widget buttonSheet() {
     return Container(
