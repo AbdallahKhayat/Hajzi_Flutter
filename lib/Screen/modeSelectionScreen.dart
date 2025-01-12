@@ -5,8 +5,9 @@ import 'ChatBotScreen.dart';
 
 class ModeSelectionScreen extends StatelessWidget {
   final String userEmail;
+  final Function(Locale) setLocale;
 
-  ModeSelectionScreen({required this.userEmail});
+  ModeSelectionScreen({required this.userEmail, required this.setLocale});
 
   @override
   Widget build(BuildContext context) {
@@ -27,6 +28,7 @@ class ModeSelectionScreen extends StatelessWidget {
                     builder: (context) => ChatBotScreen(
                       userEmail: userEmail,
                       isAIModeInitial: true,
+                      setLocale: setLocale,
                     ),
                   ),
                 );
@@ -42,6 +44,7 @@ class ModeSelectionScreen extends StatelessWidget {
                     builder: (context) => ChatBotScreen(
                       userEmail: userEmail,
                       isAIModeInitial: false,
+                      setLocale: setLocale,
                     ),
                   ),
                 );

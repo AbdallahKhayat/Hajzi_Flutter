@@ -5,8 +5,8 @@ import '../Blog/Blogs.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 class HomeScreen extends StatefulWidget {
   final int filterState;
-
-  const HomeScreen({super.key, required this.filterState});
+  final int chatbotFlag;
+  const HomeScreen({super.key, required this.filterState, required this.chatbotFlag});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -136,6 +136,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
 
             // ============ RECOMMENDATIONS SECTION ============ //
+            if(widget.chatbotFlag == 0)
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Text(
@@ -151,6 +152,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         fontWeight: FontWeight.bold),
               ),
             ),
+            if(widget.chatbotFlag==0)
             if (hasRecommendations)
               Blogs(
                 key: const ValueKey("recommendations"),

@@ -117,7 +117,7 @@ class _HomePageState extends State<HomePage>
     // Initialize the screen list
     widgets = [
       DashboardScreen(),
-      HomeScreen(filterState: widget.filterState), // Index 0
+      HomeScreen(filterState: widget.filterState,chatbotFlag: 0,), // Index 0
       ProfileScreen(), // Index 1
 
       if(userRole != "admin")
@@ -513,7 +513,7 @@ class _HomePageState extends State<HomePage>
                     setState(() {
                       widget.filterState = 0;
                       // Rebuild the home screen with new filter
-                      widgets[1] = HomeScreen(filterState: widget.filterState);
+                      widgets[1] = HomeScreen(filterState: widget.filterState,chatbotFlag: 0,);
                     });
                     Navigator.pop(context);
                   },
@@ -526,7 +526,7 @@ class _HomePageState extends State<HomePage>
                   onTap: () {
                     setState(() {
                       widget.filterState = 1;
-                      widgets[1] = HomeScreen(filterState: widget.filterState);
+                      widgets[1] = HomeScreen(filterState: widget.filterState,chatbotFlag: 0,);
                     });
                     Navigator.pop(context);
                   },
@@ -539,7 +539,7 @@ class _HomePageState extends State<HomePage>
                   onTap: () {
                     setState(() {
                       widget.filterState = 2;
-                      widgets[1] = HomeScreen(filterState: widget.filterState);
+                      widgets[1] = HomeScreen(filterState: widget.filterState,chatbotFlag: 0,);
                     });
                     Navigator.pop(context);
                   },
@@ -874,7 +874,7 @@ class _HomePageState extends State<HomePage>
                                       setState(() {
                                         currentState = 1;
                                         widget.filterState = 0;
-                                        widgets[1] = HomeScreen(filterState: 0);
+                                        widgets[1] = HomeScreen(filterState: 0,chatbotFlag: 0,);
                                       });
                                     },
                                   ),
@@ -889,7 +889,7 @@ class _HomePageState extends State<HomePage>
                                       setState(() {
                                         currentState = 1;
                                         widget.filterState = 1;
-                                        widgets[1] = HomeScreen(filterState: 1);
+                                        widgets[1] = HomeScreen(filterState: 1,chatbotFlag: 0,);
                                       });
                                     },
                                   ),
@@ -904,7 +904,7 @@ class _HomePageState extends State<HomePage>
                                       setState(() {
                                         currentState = 1;
                                         widget.filterState = 2;
-                                        widgets[1] = HomeScreen(filterState: 2);
+                                        widgets[1] = HomeScreen(filterState: 2,chatbotFlag: 0,);
                                       });
                                     },
                                   ),
@@ -1052,7 +1052,7 @@ class _HomePageState extends State<HomePage>
                                       setState(() {
                                         currentState = 0;
                                         widget.filterState = 0;
-                                        widgets[1] = HomeScreen(filterState: 0);
+                                        widgets[1] = HomeScreen(filterState: 0,chatbotFlag: 0,);
                                       });
                                     },
                                   ),
@@ -1067,7 +1067,7 @@ class _HomePageState extends State<HomePage>
                                       setState(() {
                                         currentState = 0;
                                         widget.filterState = 1;
-                                        widgets[1] = HomeScreen(filterState: 1);
+                                        widgets[1] = HomeScreen(filterState: 1,chatbotFlag: 0,);
                                       });
                                     },
                                   ),
@@ -1082,7 +1082,7 @@ class _HomePageState extends State<HomePage>
                                       setState(() {
                                         currentState = 0;
                                         widget.filterState = 2;
-                                        widgets[1] = HomeScreen(filterState: 2);
+                                        widgets[1] = HomeScreen(filterState: 2,chatbotFlag: 0,);
                                       });
                                     },
                                   ),
@@ -1341,7 +1341,7 @@ class _HomePageState extends State<HomePage>
         return const DashboardScreen();
       } else if (currentState == 1) {
         // HomeScreen with the chosen filter
-        return HomeScreen(filterState: widget.filterState);
+        return HomeScreen(filterState: widget.filterState,chatbotFlag: 0,);
       } else if (currentState == 2) {
         return ProfileScreen();
       } else if (currentState == 3) {
@@ -1359,12 +1359,12 @@ class _HomePageState extends State<HomePage>
         return const DashboardScreen();
       } else {
         // fallback
-        return HomeScreen(filterState: widget.filterState);
+        return HomeScreen(filterState: widget.filterState,chatbotFlag: 0,);
       }
     }
     if (currentState == 0) {
       // HomeScreen with the chosen filter
-      return HomeScreen(filterState: widget.filterState);
+      return HomeScreen(filterState: widget.filterState,chatbotFlag: 0,);
     } else if (currentState == 1) {
       return ProfileScreen();
     } else if (currentState == 2) {
@@ -1379,7 +1379,7 @@ class _HomePageState extends State<HomePage>
       }
     }
     // fallback
-    return HomeScreen(filterState: widget.filterState);
+    return HomeScreen(filterState: widget.filterState,chatbotFlag: 0,);
   }
 
   /// The web top AppBar title
@@ -1750,6 +1750,7 @@ class _HomePageState extends State<HomePage>
                       builder: (context) => ChatBotScreen(
                         userEmail: email,
                         isAIModeInitial: true,
+                        setLocale: widget.setLocale,
                       ),
                     ),
                   );
@@ -1768,6 +1769,7 @@ class _HomePageState extends State<HomePage>
                       builder: (context) => ChatBotScreen(
                         userEmail: email,
                         isAIModeInitial: false,
+                        setLocale: widget.setLocale,
                       ),
                     ),
                   );
