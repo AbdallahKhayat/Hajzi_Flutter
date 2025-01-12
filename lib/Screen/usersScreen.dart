@@ -3,15 +3,14 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import '../NetworkHandler.dart';
-extension StringExtension on String
 
-{
-
+extension StringExtension on String {
   String capitalize() {
     if (this.isEmpty) return this;
     return this[0].toUpperCase() + substring(1).toLowerCase();
   }
 }
+
 class UsersScreen extends StatefulWidget {
   const UsersScreen({super.key});
 
@@ -23,6 +22,7 @@ class _UsersScreenState extends State<UsersScreen> {
   List<dynamic> users = []; // List to store fetched users
   NetworkHandler networkHandler = NetworkHandler();
   TextEditingController _searchController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
@@ -35,8 +35,7 @@ class _UsersScreenState extends State<UsersScreen> {
       return;
     }
 
-
-      var response = await networkHandler.get("/user/search/$query");
+    var response = await networkHandler.get("/user/search/$query");
 
     if (response != null) {
       if (response is List) {
@@ -56,8 +55,6 @@ class _UsersScreenState extends State<UsersScreen> {
         const SnackBar(content: Text("No users found")),
       );
     }
-
-
   }
 
   // Function to fetch users using NetworkHandler
@@ -75,6 +72,7 @@ class _UsersScreenState extends State<UsersScreen> {
       debugPrint("Error fetching users: $e");
     }
   }
+
   Future<void> _showBanConfirmationDialog(String email, bool isBanned) async {
     String action = isBanned ? "unban" : "ban";
     showDialog(
@@ -88,14 +86,20 @@ class _UsersScreenState extends State<UsersScreen> {
               onPressed: () {
                 Navigator.of(context).pop(); // Close the dialog
               },
-              child: const Text("Cancel",style: TextStyle(color: Colors.black),),
+              child: const Text(
+                "Cancel",
+                style: TextStyle(color: Colors.black),
+              ),
             ),
             ElevatedButton(
               onPressed: () {
                 Navigator.of(context).pop(); // Close the dialog
                 toggleBanStatusConfirmed(email); // Proceed with ban/unban
               },
-              child: Text(action.capitalize(),style: const TextStyle(color: Colors.red),),
+              child: Text(
+                action.capitalize(),
+                style: const TextStyle(color: Colors.red),
+              ),
             ),
           ],
         );
@@ -103,6 +107,172 @@ class _UsersScreenState extends State<UsersScreen> {
     );
   }
 
+  Future<void> showUserProfileDialog({
+    required BuildContext context,
+    required NetworkHandler networkHandler,
+    required String email,
+  }) async {
+    try {
+      // 1) Fetch user data by email
+      final response =
+      await networkHandler.get("/profile/getDataByEmail?email=$email");
+
+      if (response == null || response['data'] == null) {
+        throw Exception("No data found for this user.");
+      }
+
+      // 2) Parse the user data
+      final userData = response['data']; // This is a Map<String, dynamic>
+      // Alternatively, if you want to parse into a ProfileModel:
+      // final profile = ProfileModel.fromJson(response['data']);
+
+      // 3) Show the dialog with user information
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20.0),
+            ),
+            title: Row(
+              children: [
+                const Icon(
+                  Icons.person,
+                  color: Colors.blueAccent,
+                  size: 28,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    "User Profile: ${userData['name'] ?? 'Unknown'}",
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            content: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Display image if available
+                  Center(
+                    child: userData['img'] != null && userData['img'].toString().isNotEmpty
+                        ? ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: Image.network(
+                        userData['img'],
+                        height: 120,
+                        width: 120,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            height: 120,
+                            width: 120,
+                            color: Colors.grey[300],
+                            child: const Icon(Icons.broken_image, size: 50),
+                          );
+                        },
+                      ),
+                    )
+                        : Container(
+                      height: 120,
+                      width: 120,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300],
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(Icons.image, size: 50),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  _buildInfoRow(
+                    icon: Icons.email,
+                    label: "Email",
+                    value: userData['email'] ?? 'N/A',
+                  ),
+                  const SizedBox(height: 12),
+                  _buildInfoRow(
+                    icon: Icons.work,
+                    label: "Profession",
+                    value: userData['profession'] ?? 'N/A',
+                  ),
+                  const SizedBox(height: 12),
+                  _buildInfoRow(
+                    icon: Icons.cake,
+                    label: "DOB",
+                    value: userData['DOB'] ?? 'N/A',
+                  ),
+                  const SizedBox(height: 12),
+                  _buildInfoRow(
+                    icon: Icons.title,
+                    label: "Titleline",
+                    value: userData['titleline'] ?? 'N/A',
+                  ),
+                  const SizedBox(height: 12),
+                  _buildInfoRow(
+                    icon: Icons.info,
+                    label: "About",
+                    value: userData['about'] ?? 'N/A',
+                  ),
+                  const SizedBox(height: 12),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text(
+                  "Close",
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      );
+    } catch (error) {
+      debugPrint("Error fetching user profile: $error");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Error fetching user profile.")),
+      );
+    }
+  }
+
+
+  Widget _buildInfoRow({required IconData icon, required String label, required String value}) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(
+          icon,
+          color: Colors.blueAccent,
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: RichText(
+            text: TextSpan(
+              style: const TextStyle(fontSize: 16, color: Colors.black87),
+              children: [
+                TextSpan(
+                  text: "$label: ",
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                TextSpan(
+                  text: value,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 
   Future<void> toggleBanStatusConfirmed(String email) async {
     try {
@@ -163,7 +333,6 @@ class _UsersScreenState extends State<UsersScreen> {
             );
           },
         );
-
       } else {
         debugPrint("Failed to ban/unban user: ${responseData['message']}");
         ScaffoldMessenger.of(context).showSnackBar(
@@ -180,7 +349,9 @@ class _UsersScreenState extends State<UsersScreen> {
       );
     }
   }
-  Future<void> _showRoleConfirmationDialog(String email, String currentRole) async {
+
+  Future<void> _showRoleConfirmationDialog(
+      String email, String currentRole) async {
     String action = currentRole == "customer" ? "unpromote" : "promote";
     String newRole = currentRole == "customer" ? "user" : "customer";
 
@@ -196,14 +367,21 @@ class _UsersScreenState extends State<UsersScreen> {
               onPressed: () {
                 Navigator.of(context).pop(); // Close the dialog
               },
-              child: const Text("Cancel",style: TextStyle(color: Colors.black),),
+              child: const Text(
+                "Cancel",
+                style: TextStyle(color: Colors.black),
+              ),
             ),
             ElevatedButton(
               onPressed: () {
                 Navigator.of(context).pop(); // Close the dialog
-                toggleUserRoleConfirmed(email, currentRole); // Proceed with role change
+                toggleUserRoleConfirmed(
+                    email, currentRole); // Proceed with role change
               },
-              child: Text(action.capitalize(),style: const TextStyle(color: Colors.red),),
+              child: Text(
+                action.capitalize(),
+                style: const TextStyle(color: Colors.red),
+              ),
             ),
           ],
         );
@@ -211,14 +389,13 @@ class _UsersScreenState extends State<UsersScreen> {
     );
   }
 
-
   Future<void> toggleUserRoleConfirmed(String email, String currentRole) async {
     try {
       String newRole = currentRole == "customer" ? "user" : "customer";
       Map<String, dynamic> body = {"role": newRole};
 
       var response =
-      await networkHandler.patch("/user/updateRole/$email", body);
+          await networkHandler.patch("/user/updateRole/$email", body);
       var responseData = json.decode(response.body);
 
       if (response.statusCode == 200) {
@@ -239,7 +416,7 @@ class _UsersScreenState extends State<UsersScreen> {
                   ),
                 ],
               ),
-              content:  Row(
+              content: Row(
                 children: [
                   const Icon(
                     Icons.person_outline,
@@ -249,7 +426,7 @@ class _UsersScreenState extends State<UsersScreen> {
                   SizedBox(width: 10), // Spacing between icon and message
                   Expanded(
                     child: Text(
-                     "${email} role updated successfully!",
+                      "${email} role updated successfully!",
                     ),
                   ),
                 ],
@@ -269,7 +446,6 @@ class _UsersScreenState extends State<UsersScreen> {
           },
         );
 
-
         setState(() {
           int userIndex = users.indexWhere((user) => user['email'] == email);
           if (userIndex != -1) {
@@ -281,7 +457,7 @@ class _UsersScreenState extends State<UsersScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
               content:
-              Text(responseData['msg'] ?? "Failed to update user role.")),
+                  Text(responseData['msg'] ?? "Failed to update user role.")),
         );
       }
     } catch (e) {
@@ -379,7 +555,6 @@ class _UsersScreenState extends State<UsersScreen> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -422,40 +597,38 @@ class _UsersScreenState extends State<UsersScreen> {
       body: users.isEmpty
           ? const Center(child: CircularProgressIndicator())
           : kIsWeb
-          ?  Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return GridView.builder(
-              shrinkWrap: true,
-              physics:
-              const NeverScrollableScrollPhysics(), // Prevent GridView from scrolling separately
-              gridDelegate:
-              SliverGridDelegateWithMaxCrossAxisExtent(
-                maxCrossAxisExtent:
-                400, // Maximum width of each card
-                mainAxisSpacing: 16.0, // Spacing between rows
-                crossAxisSpacing: 16.0, // Spacing between columns
-                childAspectRatio:
-                5 / 4, // Adjust the aspect ratio as needed
-              ),
-              itemCount: users.length,
-              itemBuilder: (context, index) =>
-                  _buildUserCard(users[index]),
-            );
-          },
-        ),
-      )
-          : ListView.builder(
-        itemCount: users.length,
-        itemBuilder: (context, index) => _buildUserCard(users[index]),
-      ),
+              ? Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      return GridView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        // Prevent GridView from scrolling separately
+                        gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+                          maxCrossAxisExtent: 400, // Maximum width of each card
+                          mainAxisSpacing: 16.0, // Spacing between rows
+                          crossAxisSpacing: 16.0, // Spacing between columns
+                          childAspectRatio:
+                              5 / 4, // Adjust the aspect ratio as needed
+                        ),
+                        itemCount: users.length,
+                        itemBuilder: (context, index) =>
+                            _buildUserCard(users[index]),
+                      );
+                    },
+                  ),
+                )
+              : ListView.builder(
+                  itemCount: users.length,
+                  itemBuilder: (context, index) => _buildUserCard(users[index]),
+                ),
     );
   }
 
   Widget _buildUserCard(user) {
     bool isBanned = user['isBanned'] == true;
-
+    final userEmail = user['email'] ?? '';
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
       decoration: BoxDecoration(
@@ -485,9 +658,24 @@ class _UsersScreenState extends State<UsersScreen> {
               ),
             ),
             const SizedBox(height: 4),
-            Text(
-              "Email: ${user['email']}",
-              style: const TextStyle(fontSize: 16, color: Colors.black54),
+            InkWell(
+              onTap: userEmail.contains('@')
+                  ? () {
+                      showUserProfileDialog(
+                        context: context,
+                        networkHandler: networkHandler,
+                        email: userEmail,
+                      );
+                    }
+                  : null,
+              child: Text(
+                "Email: $userEmail",
+                style: const TextStyle(
+                  fontSize: 16,
+                  color: Colors.blue,
+                  decoration: TextDecoration.underline,
+                ),
+              ),
             ),
             const SizedBox(height: 4),
             Text(
@@ -498,8 +686,8 @@ class _UsersScreenState extends State<UsersScreen> {
                 color: user['role'] == "customer"
                     ? Colors.blue
                     : user['role'] == "admin"
-                    ? Colors.red
-                    : Colors.green,
+                        ? Colors.red
+                        : Colors.green,
               ),
             ),
             const SizedBox(height: 4),
@@ -516,7 +704,8 @@ class _UsersScreenState extends State<UsersScreen> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 TextButton(
-                  onPressed: () => _showBanConfirmationDialog(user['email'], user['isBanned']),
+                  onPressed: () => _showBanConfirmationDialog(
+                      user['email'], user['isBanned']),
                   child: Text(
                     isBanned ? "Unban" : "Ban",
                     style: TextStyle(
@@ -528,7 +717,8 @@ class _UsersScreenState extends State<UsersScreen> {
                 ),
                 const SizedBox(width: 10),
                 TextButton(
-                  onPressed: () =>  _showRoleConfirmationDialog(user['email'], user['role']),
+                  onPressed: () =>
+                      _showRoleConfirmationDialog(user['email'], user['role']),
                   child: Text(
                     user['role'] == "customer" ? "Unpromote" : "Promote",
                     style: const TextStyle(

@@ -35,6 +35,174 @@ class _CustomerAppointmentPageState extends State<CustomerAppointmentPage> {
     _fetchAppointments();
   }
 
+  Future<void> showUserProfileDialog({
+    required BuildContext context,
+    required NetworkHandler networkHandler,
+    required String email,
+  }) async {
+    try {
+      // 1) Fetch user data by email
+      final response =
+      await networkHandler.get("/profile/getDataByEmail?email=$email");
+
+      if (response == null || response['data'] == null) {
+        throw Exception("No data found for this user.");
+      }
+
+      // 2) Parse the user data
+      final userData = response['data']; // This is a Map<String, dynamic>
+      // Alternatively, if you want to parse into a ProfileModel:
+      // final profile = ProfileModel.fromJson(response['data']);
+
+      // 3) Show the dialog with user information
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20.0),
+            ),
+            title: Row(
+              children: [
+                const Icon(
+                  Icons.person,
+                  color: Colors.blueAccent,
+                  size: 28,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    "User Profile: ${userData['name'] ?? 'Unknown'}",
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            content: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Display image if available
+                  Center(
+                    child: userData['img'] != null && userData['img'].toString().isNotEmpty
+                        ? ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: Image.network(
+                        userData['img'],
+                        height: 120,
+                        width: 120,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            height: 120,
+                            width: 120,
+                            color: Colors.grey[300],
+                            child: const Icon(Icons.broken_image, size: 50),
+                          );
+                        },
+                      ),
+                    )
+                        : Container(
+                      height: 120,
+                      width: 120,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300],
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(Icons.image, size: 50),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  _buildInfoRow(
+                    icon: Icons.email,
+                    label: "Email",
+                    value: userData['email'] ?? 'N/A',
+                  ),
+                  const SizedBox(height: 12),
+                  _buildInfoRow(
+                    icon: Icons.work,
+                    label: "Profession",
+                    value: userData['profession'] ?? 'N/A',
+                  ),
+                  const SizedBox(height: 12),
+                  _buildInfoRow(
+                    icon: Icons.cake,
+                    label: "DOB",
+                    value: userData['DOB'] ?? 'N/A',
+                  ),
+                  const SizedBox(height: 12),
+                  _buildInfoRow(
+                    icon: Icons.title,
+                    label: "Titleline",
+                    value: userData['titleline'] ?? 'N/A',
+                  ),
+                  const SizedBox(height: 12),
+                  _buildInfoRow(
+                    icon: Icons.info,
+                    label: "About",
+                    value: userData['about'] ?? 'N/A',
+                  ),
+                  const SizedBox(height: 12),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text(
+                  "Close",
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      );
+    } catch (error) {
+      debugPrint("Error fetching user profile: $error");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Error fetching user profile.")),
+      );
+    }
+  }
+
+
+
+  Widget _buildInfoRow({required IconData icon, required String label, required String value}) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(
+          icon,
+          color: Colors.blueAccent,
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: RichText(
+            text: TextSpan(
+              style: const TextStyle(fontSize: 16, color: Colors.black87),
+              children: [
+                TextSpan(
+                  text: "$label: ",
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                TextSpan(
+                  text: value,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   // Function to fetch booked appointments and available slots
   Future<void> _fetchAppointments() async {
     try {
@@ -566,10 +734,35 @@ class _CustomerAppointmentPageState extends State<CustomerAppointmentPage> {
                             final bool isBooked =
                                 appointment['status'] == 'booked';
                             return DataRow(cells: [
-                              DataCell(Text(isBooked
-                                  ? appointment['userName']
-                                  : AppLocalizations.of(context)!
-                                      .availableSlot)),
+                              DataCell(
+                                isBooked
+                                    ? InkWell(
+                                        onTap: () {
+                                          // If we have a valid email, open the popup
+                                          final email = appointment['userName'];
+                                          if (email != null &&
+                                              email.contains("@")) {
+                                            // call your showUserProfileDialog
+                                            showUserProfileDialog(
+                                              context: context,
+                                              networkHandler:
+                                                  widget.networkHandler,
+                                              email: email,
+                                            );
+                                          }
+                                        },
+                                        child: Text(
+                                          appointment['userName'],
+                                          style: const TextStyle(
+                                            color: Colors.blue,
+                                            decoration:
+                                                TextDecoration.underline,
+                                          ),
+                                        ),
+                                      )
+                                    : Text(AppLocalizations.of(context)!
+                                        .availableSlot),
+                              ),
                               DataCell(Text(
                                 _formatTimeWithAMPM(
                                     appointment['time'] ?? 'N/A'),
