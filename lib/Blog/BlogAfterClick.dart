@@ -1,6 +1,9 @@
+import 'dart:convert';
+
 import 'package:blogapp/Blog/BlogsChatPage.dart';
 import 'package:blogapp/NetworkHandler.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:latlong2/latlong.dart' as latLng; // For lat/lng
@@ -34,6 +37,10 @@ class _BlogAfterClickState extends State<BlogAfterClick> {
   String blogOwnerEmail = ''; // Blog owner's email from fetchBlogDetails
   String blogOwnerName = '';
   final storage = FlutterSecureStorage();
+  double _averageRating = 0.0;
+  int _numberOfRatings = 0;
+  bool _userHasRated = false;
+
 
   // Example coordinates for the shop location
   final latLng.LatLng _center =
@@ -49,7 +56,53 @@ class _BlogAfterClickState extends State<BlogAfterClick> {
     _loadEmailRole();
     _loadUserName();
     _storeLastClickedType(widget.addBlogModel.type ?? 'none');
+    _fetchRatingInfo(); // <-- fetch rating after building the page
   }
+  Future<void> _fetchRatingInfo() async {
+    try {
+      final response = await widget.networkHandler.get(
+        "/blogpost/ratinginfo/${widget.addBlogModel.id}",
+      );
+      if (response != null && response['Status'] == true) {
+        setState(() {
+          _averageRating = (response['averageRating'] as num).toDouble();
+          _numberOfRatings = response['numberOfRatings'] as int;
+          _userHasRated = response['userHasRated'] as bool;
+        });
+      }
+    } catch (e) {
+      debugPrint("Error fetching rating info: $e");
+    }
+  }
+
+  Future<void> _rateBlog(double ratingValue) async {
+    try {
+      final body = {"rating": ratingValue};
+      final httpResponse = await widget.networkHandler.patch2E(
+        "/blogpost/rate/${widget.addBlogModel.id}",
+        body,
+      );
+
+      if (httpResponse.statusCode == 200 || httpResponse.statusCode == 201) {
+        final responseData = jsonDecode(httpResponse.body);
+        if (responseData['Status'] == true) {
+          setState(() {
+            _averageRating =
+                (responseData['data']['averageRating'] as num).toDouble();
+            _numberOfRatings = responseData['data']['numberOfRatings'] as int;
+            _userHasRated = true; // user cannot rate again
+          });
+        } else {
+          debugPrint("Error rating blog: ${responseData['message']}");
+        }
+      } else {
+        debugPrint("Error rating blog: ${httpResponse.body}");
+      }
+    } catch (e) {
+      debugPrint("Exception rating blog: $e");
+    }
+  }
+
 
   Future<void> _storeLastClickedType(String storeType) async {
     try {
@@ -253,7 +306,8 @@ class _BlogAfterClickState extends State<BlogAfterClick> {
                     ),
                   ),
                   const SizedBox(height: 20),
-
+                  // ===== RATING SECTION =====
+                  _buildRatingSection(),
                   // Blog title
                   Text(
                     widget.addBlogModel.title!,
@@ -437,6 +491,67 @@ class _BlogAfterClickState extends State<BlogAfterClick> {
             ),
           );
         },
+      ),
+    );
+  }
+
+  // Helper widget to keep code clean
+  Widget _buildRatingSection() {
+    return Card(
+      color: Colors.white,
+      elevation: 3,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            const Text(
+              "Rate This Shop:",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 10),
+
+            // Show the star rating bar
+            if (!_userHasRated) ...[
+              // If user has not rated yet, let them choose
+              RatingBar.builder(
+                initialRating: _averageRating,
+                minRating: 1,
+                maxRating: 5,
+                allowHalfRating: false,
+                itemCount: 5,
+                itemPadding: const EdgeInsets.symmetric(horizontal: 4.0),
+                itemBuilder: (context, _) =>
+                const Icon(Icons.star, color: Colors.amber),
+                onRatingUpdate: (ratingValue) async {
+                  // Call the rating endpoint
+                  await _rateBlog(ratingValue);
+                },
+              ),
+            ] else ...[
+              // If user already rated, just show the average rating as "read only"
+              RatingBarIndicator(
+                rating: _averageRating,
+                itemBuilder: (context, index) =>
+                const Icon(Icons.star, color: Colors.amber),
+                itemSize: 30.0,
+              ),
+              const SizedBox(height: 8),
+              const Text("You have already rated this shop."),
+            ],
+
+            const SizedBox(height: 8),
+            // Show the average rating
+            Text(
+              "Average Rating: ${_averageRating.toStringAsFixed(1)} / 5.0",
+              style: const TextStyle(fontSize: 16),
+            ),
+            Text(
+              "Number of Ratings: $_numberOfRatings",
+              style: const TextStyle(fontSize: 16),
+            ),
+          ],
+        ),
       ),
     );
   }

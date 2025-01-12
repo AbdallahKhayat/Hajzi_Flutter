@@ -77,7 +77,7 @@ dependencies:
   mime: ^2.0.0
   fl_chart: ^0.68.0
   flutter_sound: ^9.2.13   # or the latest version
-
+  flutter_rating_bar: ^4.0.1
 
 
   # The following adds the Cupertino Icons font to your application.
