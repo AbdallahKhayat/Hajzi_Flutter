@@ -140,6 +140,15 @@ class _HomePageState extends State<HomePage>
     super.dispose();
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Set selectedLanguage based on the current locale:
+    selectedLanguage =
+    Localizations.localeOf(context).languageCode == 'ar' ? "العربية" : "English";
+  }
+
+
   // -----------------------------------------
   // Load user role
   // -----------------------------------------
@@ -335,11 +344,10 @@ class _HomePageState extends State<HomePage>
   // -----------------------------------------
   @override
   Widget build(BuildContext context) {
-    if (kIsWeb) {
-      return buildWebLayout(context);
-    } else {
-      return buildMobileLayout(context);
-    }
+    return Directionality(
+      textDirection: TextDirection.ltr, // Force LTR to stop mirroring
+      child: kIsWeb ? buildWebLayout(context) : buildMobileLayout(context),
+    );
   }
 
   // -----------------------------------------

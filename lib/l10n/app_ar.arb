@@ -123,21 +123,23 @@
   "chats": "الدردشات",
   "searchForCustomers": "ابحث عن العملاء...",
   "noShopsFound": "لم يتم العثور على محلات",
-  "noMatchingShops": "لا توجد محلات مطابقة"
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  "noMatchingShops": "لا توجد محلات مطابقة",
+  "slide1Title": "مرحبًا بك في تطبيقنا!",
+  "slide1Description": "اكتشف ميزات مذهلة مُصممة خصيصًا لك.",
+  "slide2Title": "ابقَ على تواصل",
+  "slide2Description": "ابحث عن المكان الذي ترغب في حجز موعد فيه.",
+  "slide3Title": "احجز الآن",
+  "slide3Description": "بعد النقر على المكان، احجز الآن واستمتع بتوفير الوقت",
+  "slide4Title": "حقق المزيد",
+  "slide4Description": "قم بالترقية إلى العميل لتحقيق مزايا إضافية مثل إضافة مكانك الخاص.",
+  "finish": "إنهاء",
+  "getStarted": "ابدأ",
+  "welcome1": "! احجز الآن من منزلك",
+  "signUpWithGoogle": "سجل باستخدام جوجل",
+  "signUpWithFacebook": "سجل باستخدام فيسبوك",
+  "signUpWithEmail": "سجل عبر البريد الإلكتروني",
+  "alreadyHaveAnAccount": "هل لديك حساب بالفعل؟",
+  "signIn": "تسجيل الدخول"
 
 
 

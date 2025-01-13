@@ -124,7 +124,24 @@
   "chats": "CHATS",
   "searchForCustomers": "Search for customers...",
   "noShopsFound": "No shops found",
-  "noMatchingShops": "No matching shops"
+  "noMatchingShops": "No matching shops",
+  "slide1Title": "Welcome to Our App!",
+  "slide1Description": "Discover amazing features tailored for you.",
+  "slide2Title": "Stay Connected",
+  "slide2Description": "Search for the Place you would like to Appoint with.",
+  "slide3Title": "Appoint Now",
+  "slide3Description": "After Clicking the Place, Appoint now And enjoy saving time",
+  "slide4Title": "Achieve More",
+  "slide4Description": "Upgrade to Customer to achieve more features like adding your own Place.",
+  "finish": "Finish",
+  "getStarted": "Get Started",
+  "welcome1": "Reserve Now From Your Home!",
+  "signUpWithGoogle": "Sign up with Google",
+  "signUpWithFacebook": "Sign up with Facebook",
+  "signUpWithEmail": "Sign up with Email",
+  "alreadyHaveAnAccount": "Already have an account?",
+  "signIn": "Sign In"
+
 
 
 
