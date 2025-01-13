@@ -52,21 +52,34 @@ class _UserAppointmentPageState extends State<UserAppointmentPage> {
     }
   }
 
+  // Helper to check if an appointment time is in the past
+  bool isInPast(String timeStr) {
+    try {
+      final now = DateTime.now();
+      final parts = timeStr.split(':');
+      final hour = int.parse(parts[0]);
+      final minute = int.parse(parts[1]);
+      final apptTime = DateTime(now.year, now.month, now.day, hour, minute);
+      return apptTime.isBefore(now);
+    } catch (e) {
+      return false;
+    }
+  }
+
   // Function to show a confirmation dialog
   Future<void> _showConfirmationDialog(String time) async {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title:  Text(AppLocalizations.of(context)!.confirmBooking),
-          content:
-              Text("${AppLocalizations.of(context)!.sureBooking} $time?"),
+          title: Text(AppLocalizations.of(context)!.confirmBooking),
+          content: Text("${AppLocalizations.of(context)!.sureBooking} $time?"),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop(); // Close the dialog
               },
-              child:  Text(
+              child: Text(
                 AppLocalizations.of(context)!.cancel,
                 style: TextStyle(color: Colors.black),
               ),
@@ -76,8 +89,8 @@ class _UserAppointmentPageState extends State<UserAppointmentPage> {
                 Navigator.of(context).pop(); // Close the dialog
                 _confirmBooking(time); // Proceed with booking
               },
-              child:  Text(
-               AppLocalizations.of(context)!.confirm,
+              child: Text(
+                AppLocalizations.of(context)!.confirm,
                 style: TextStyle(color: Colors.red),
               ),
             ),
@@ -196,9 +209,12 @@ class _UserAppointmentPageState extends State<UserAppointmentPage> {
                       ),
                     ),
                     subtitle: isBooked
-                        ? Text("${AppLocalizations.of(context)!.bookedBy}: ${appointment['userName'] ?? 'N/A'}")
-                        :  Text(AppLocalizations.of(context)!.availableSlot),
-                    trailing: (hasBooked || isBooked)
+                        ? Text(
+                            "${AppLocalizations.of(context)!.bookedBy}: ${appointment['userName'] ?? 'N/A'}")
+                        : isInPast(time)
+                            ? const Text("Expired")
+                            : Text(AppLocalizations.of(context)!.availableSlot),
+                    trailing: (hasBooked || isBooked ||  isInPast(time))
                         ? const Icon(Icons.lock, color: Colors.red)
                         : ValueListenableBuilder<Color>(
                             valueListenable: appColorNotifier,
@@ -210,7 +226,7 @@ class _UserAppointmentPageState extends State<UserAppointmentPage> {
                                       appColor, // Dynamic background color
                                 ),
                                 child: Text(
-                               AppLocalizations.of(context)!.book,
+                                  AppLocalizations.of(context)!.book,
                                   style: TextStyle(color: Colors.white),
                                 ),
                               );

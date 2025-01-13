@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -28,13 +29,25 @@ class _CustomerAppointmentPageState extends State<CustomerAppointmentPage> {
   final TextEditingController _closingTimeController = TextEditingController();
   final TextEditingController _durationController = TextEditingController();
   final TextEditingController _timeController = TextEditingController();
+  final TextEditingController _dateController = TextEditingController();
+// NEW: For displaying how much time remains before next appointment
+  String _timeUntilNext = "";
+  Timer? _timer;
 
   @override
   void initState() {
     super.initState();
     _fetchAppointments();
+    // Update the countdown every minute (or adjust as needed)
+    _timer = Timer.periodic(const Duration(minutes: 1), (timer) {
+      _updateTimeUntilNextAppointment();
+    });
   }
-
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
   Future<void> showUserProfileDialog({
     required BuildContext context,
     required NetworkHandler networkHandler,
@@ -43,7 +56,7 @@ class _CustomerAppointmentPageState extends State<CustomerAppointmentPage> {
     try {
       // 1) Fetch user data by email
       final response =
-      await networkHandler.get("/profile/getDataByEmail?email=$email");
+          await networkHandler.get("/profile/getDataByEmail?email=$email");
 
       if (response == null || response['data'] == null) {
         throw Exception("No data found for this user.");
@@ -87,33 +100,35 @@ class _CustomerAppointmentPageState extends State<CustomerAppointmentPage> {
                 children: [
                   // Display image if available
                   Center(
-                    child: userData['img'] != null && userData['img'].toString().isNotEmpty
+                    child: userData['img'] != null &&
+                            userData['img'].toString().isNotEmpty
                         ? ClipRRect(
-                      borderRadius: BorderRadius.circular(10),
-                      child: Image.network(
-                        userData['img'],
-                        height: 120,
-                        width: 120,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
+                            borderRadius: BorderRadius.circular(10),
+                            child: Image.network(
+                              userData['img'],
+                              height: 120,
+                              width: 120,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Container(
+                                  height: 120,
+                                  width: 120,
+                                  color: Colors.grey[300],
+                                  child:
+                                      const Icon(Icons.broken_image, size: 50),
+                                );
+                              },
+                            ),
+                          )
+                        : Container(
                             height: 120,
                             width: 120,
-                            color: Colors.grey[300],
-                            child: const Icon(Icons.broken_image, size: 50),
-                          );
-                        },
-                      ),
-                    )
-                        : Container(
-                      height: 120,
-                      width: 120,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[300],
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: const Icon(Icons.image, size: 50),
-                    ),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[300],
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Icon(Icons.image, size: 50),
+                          ),
                   ),
                   const SizedBox(height: 20),
                   _buildInfoRow(
@@ -172,9 +187,8 @@ class _CustomerAppointmentPageState extends State<CustomerAppointmentPage> {
     }
   }
 
-
-
-  Widget _buildInfoRow({required IconData icon, required String label, required String value}) {
+  Widget _buildInfoRow(
+      {required IconData icon, required String label, required String value}) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -212,6 +226,8 @@ class _CustomerAppointmentPageState extends State<CustomerAppointmentPage> {
         setState(() {
           appointments = List<Map<String, dynamic>>.from(response['data']);
         });
+        // NEW: Update the "time until next appointment" after we fetch
+        _updateTimeUntilNextAppointment();
       }
     } catch (e) {
       debugPrint("Error fetching appointments: $e");
@@ -567,6 +583,172 @@ class _CustomerAppointmentPageState extends State<CustomerAppointmentPage> {
     );
   }
 
+  // NEW: Method to edit the time & duration of a slot
+  Future<void> _editTimeDuration(Map<String, dynamic> appointment) async {
+    // We store the old time to send with the request
+    final String oldTime = appointment['time'];
+    final int currentDuration = appointment['duration'] ?? 30;
+
+    // Temporary controllers for the new time/duration
+    final TextEditingController timeController =
+        TextEditingController(text: oldTime);
+    final TextEditingController durationController =
+        TextEditingController(text: currentDuration.toString());
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Edit Time & Duration"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: timeController,
+                readOnly: true,
+                decoration: const InputDecoration(labelText: "Time (HH:mm)"),
+                onTap: () => _selectTime(context, timeController),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: durationController,
+                decoration: const InputDecoration(labelText: "Duration (min)"),
+                keyboardType: TextInputType.number,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              child:
+                  const Text("Cancel", style: TextStyle(color: Colors.black)),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            ElevatedButton(
+              child: const Text(
+                "Save",
+                style: TextStyle(color: Colors.black),
+              ),
+              onPressed: () async {
+                final newTime = timeController.text.trim();
+                final newDuration =
+                    int.tryParse(durationController.text.trim()) ?? 30;
+
+                if (newTime.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Please select a valid time")),
+                  );
+                  return;
+                }
+
+                try {
+                  final response = await widget.networkHandler.patch(
+                    "/appointment/updateSlot/${widget.blogId}/$oldTime",
+                    {
+                      "newTime": newTime,
+                      "newDuration": newDuration,
+                    },
+                  );
+
+                  final responseData = json.decode(response.body);
+
+                  if (response.statusCode == 200) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(responseData['message'] ??
+                            "Slot updated successfully!"),
+                      ),
+                    );
+                    Navigator.of(context).pop();
+                    _fetchAppointments(); // Refresh
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content:
+                            Text(responseData['message'] ?? "Update Failed"),
+                      ),
+                    );
+                  }
+                } catch (error) {
+                  debugPrint("Error updating slot: $error");
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                        content:
+                            Text("An error occurred while updating the slot.")),
+                  );
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // NEW: Compute how much time remains until the next appointment
+  void _updateTimeUntilNextAppointment() {
+    if (appointments.isEmpty) {
+      setState(() {
+        _timeUntilNext = "No appointments scheduled";
+      });
+      return;
+    }
+
+    final now = DateTime.now();
+    // Attempt to parse each appointment's time into a DateTime for *today*
+    // You may need to incorporate actual date logic if your appointments span multiple days
+    List<DateTime> futureAppointmentTimes = [];
+
+    for (var appt in appointments) {
+      try {
+        // appt['time'] is "HH:mm"
+        final parts = appt['time'].split(":");
+        final hour = int.parse(parts[0]);
+        final minute = int.parse(parts[1]);
+
+        final DateTime todayAppt = DateTime(
+          now.year,
+          now.month,
+          now.day,
+          hour,
+          minute,
+        );
+
+        // Only consider times in the future
+        if (todayAppt.isAfter(now)) {
+          futureAppointmentTimes.add(todayAppt);
+        }
+      } catch (e) {
+        debugPrint("Could not parse appointment time: $e");
+      }
+    }
+
+    if (futureAppointmentTimes.isEmpty) {
+      setState(() {
+        _timeUntilNext = "No upcoming appointments today";
+      });
+      return;
+    }
+
+    // Sort and take the earliest
+    futureAppointmentTimes.sort();
+    final nextAppt = futureAppointmentTimes.first;
+
+    final diff = nextAppt.difference(now);
+
+    final hours = diff.inHours;
+    final minutes = diff.inMinutes % 60;
+
+    setState(() {
+      if (hours <= 0 && minutes <= 0) {
+        _timeUntilNext = "No upcoming appointments at this moment";
+      } else {
+        _timeUntilNext = "Next appointment in ${hours}h ${minutes}m";
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -595,6 +777,16 @@ class _CustomerAppointmentPageState extends State<CustomerAppointmentPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // NEW: Display time until next appointment
+            Text(
+              _timeUntilNext,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.blueAccent,
+              ),
+            ),
+            const SizedBox(height: 20),
             Row(
               children: [
                 Expanded(
@@ -800,6 +992,17 @@ class _CustomerAppointmentPageState extends State<CustomerAppointmentPage> {
                                           appointment['time'],
                                           appointment['userName'],
                                           appointment['status']),
+                                    ),
+                                    // NEW: Edit slot (time & duration)
+                                    IconButton(
+                                      icon: const Icon(
+                                        Icons.timer,
+                                        color: Colors.teal,
+                                      ),
+                                      tooltip: "Edit Time & Duration",
+                                      onPressed: () => _editTimeDuration(
+                                        appointment,
+                                      ),
                                     ),
                                   ],
                                 ),
