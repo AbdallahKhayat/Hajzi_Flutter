@@ -30,6 +30,7 @@ class _CustomerAppointmentPageState extends State<CustomerAppointmentPage> {
   final TextEditingController _durationController = TextEditingController();
   final TextEditingController _timeController = TextEditingController();
   final TextEditingController _dateController = TextEditingController();
+
 // NEW: For displaying how much time remains before next appointment
   String _timeUntilNext = "";
   Timer? _timer;
@@ -43,11 +44,13 @@ class _CustomerAppointmentPageState extends State<CustomerAppointmentPage> {
       _updateTimeUntilNextAppointment();
     });
   }
+
   @override
   void dispose() {
     _timer?.cancel();
     super.dispose();
   }
+
   Future<void> showUserProfileDialog({
     required BuildContext context,
     required NetworkHandler networkHandler,
