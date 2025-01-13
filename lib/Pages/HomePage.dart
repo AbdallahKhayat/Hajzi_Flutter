@@ -342,21 +342,21 @@ class _HomePageState extends State<HomePage>
   // -----------------------------------------
   // Build: check if web or mobile
   // -----------------------------------------
-  @override
-  Widget build(BuildContext context) {
-    return Directionality(
-      textDirection: TextDirection.ltr, // Force LTR to stop mirroring
-      child: kIsWeb ? buildWebLayout(context) : buildMobileLayout(context),
-    );
-  }
-
+  // @override
   // Widget build(BuildContext context) {
-  //   if (kIsWeb) {
-  //     return buildWebLayout(context);
-  //   } else {
-  //     return buildMobileLayout(context);
-  //   }
+  //   return Directionality(
+  //     textDirection: TextDirection.ltr, // Force LTR to stop mirroring
+  //     child: kIsWeb ? buildWebLayout(context) : buildMobileLayout(context),
+  //   );
   // }
+
+  Widget build(BuildContext context) {
+    if (kIsWeb) {
+      return buildWebLayout(context);
+    } else {
+      return buildMobileLayout(context);
+    }
+  }
 
   // -----------------------------------------
   // Mobile Layout (Drawer + BottomNav)
