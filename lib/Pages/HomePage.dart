@@ -350,6 +350,14 @@ class _HomePageState extends State<HomePage>
     );
   }
 
+  // Widget build(BuildContext context) {
+  //   if (kIsWeb) {
+  //     return buildWebLayout(context);
+  //   } else {
+  //     return buildMobileLayout(context);
+  //   }
+  // }
+
   // -----------------------------------------
   // Mobile Layout (Drawer + BottomNav)
   // -----------------------------------------

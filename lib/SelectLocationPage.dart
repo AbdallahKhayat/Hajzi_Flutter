@@ -4,6 +4,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:location/location.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import 'constants.dart';
 
@@ -95,7 +96,7 @@ class _SelectLocationPageState extends State<SelectLocationPage> {
           searchResults.clear();
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('No results found in Palestine')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.noResultsFoundInPalestine)),
         );
       }
     } else {
@@ -103,7 +104,7 @@ class _SelectLocationPageState extends State<SelectLocationPage> {
         searchResults.clear();
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error fetching results')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.errorFetchingResults)),
       );
     }
   }
@@ -137,7 +138,7 @@ class _SelectLocationPageState extends State<SelectLocationPage> {
         await launch(googleMapsUrl);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not open Google Maps')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.couldNotOpenGoogleMaps)),
         );
       }
     }
@@ -154,9 +155,9 @@ class _SelectLocationPageState extends State<SelectLocationPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          "Select Shop Location",
-          style: TextStyle(fontWeight: FontWeight.bold),
+        title: Text(
+          AppLocalizations.of(context)!.selectShopLocation,
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         flexibleSpace: ValueListenableBuilder<Color>(
           valueListenable: appColorNotifier,
@@ -179,7 +180,7 @@ class _SelectLocationPageState extends State<SelectLocationPage> {
               color: Colors.black,
             ),
             onPressed: _goToCurrentLocation,
-            tooltip: 'Go to Current Location',
+            tooltip: AppLocalizations.of(context)!.goToCurrentLocation,
           ),
         ],
       ),
@@ -193,7 +194,7 @@ class _SelectLocationPageState extends State<SelectLocationPage> {
                   child: TextField(
                     controller: _searchController,
                     decoration: InputDecoration(
-                      hintText: 'Search for a location',
+                      hintText: AppLocalizations.of(context)!.searchLocation,
                       prefixIcon: const Icon(Icons.search),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8.0),
@@ -213,9 +214,9 @@ class _SelectLocationPageState extends State<SelectLocationPage> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: appColor, // Dynamic background color
                       ),
-                      child: const Text(
-                        'Search',
-                        style: TextStyle(
+                      child: Text(
+                        AppLocalizations.of(context)!.search,
+                        style: const TextStyle(
                             color: Colors.black, fontWeight: FontWeight.bold),
                       ),
                     );
@@ -294,9 +295,9 @@ class _SelectLocationPageState extends State<SelectLocationPage> {
                       child: ElevatedButton.icon(
                         onPressed: _openInGoogleMaps,
                         icon: const Icon(Icons.map, color: Colors.black),
-                        label: const Text(
-                          "Open in Google Maps",
-                          style: TextStyle(color: Colors.black),
+                        label: Text(
+                          AppLocalizations.of(context)!.openInGoogleMaps,
+                          style: const TextStyle(color: Colors.black),
                         ),
                       ),
                     ),
@@ -314,9 +315,9 @@ class _SelectLocationPageState extends State<SelectLocationPage> {
                         Navigator.pop(context, selectedLocation);
                       },
                       icon: const Icon(Icons.check, color: Colors.black),
-                      label: const Text(
-                        "Confirm Location",
-                        style: TextStyle(color: Colors.black),
+                      label: Text(
+                        AppLocalizations.of(context)!.confirmLocation,
+                        style: const TextStyle(color: Colors.black),
                       ),
                     ),
                   ),

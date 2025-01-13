@@ -140,7 +140,16 @@
   "signUpWithFacebook": "Sign up with Facebook",
   "signUpWithEmail": "Sign up with Email",
   "alreadyHaveAnAccount": "Already have an account?",
-  "signIn": "Sign In"
+  "signIn": "Sign In",
+  "goToCurrentLocation": "Go to Current Location",
+  "searchLocation": "Search for a location",
+  "search": "Search",
+  "noResultsFoundInPalestine": "No results found in Palestine",
+  "errorFetchingResults": "Error fetching results",
+  "couldNotOpenGoogleMaps": "Could not open Google Maps",
+  "openInGoogleMaps": "Open in Google Maps",
+  "confirmLocation": "Confirm Location"
+
 
 
 

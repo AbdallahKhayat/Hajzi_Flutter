@@ -139,7 +139,17 @@
   "signUpWithFacebook": "سجل باستخدام فيسبوك",
   "signUpWithEmail": "سجل عبر البريد الإلكتروني",
   "alreadyHaveAnAccount": "هل لديك حساب بالفعل؟",
-  "signIn": "تسجيل الدخول"
+  "signIn": "تسجيل الدخول",
+  "goToCurrentLocation": "اذهب إلى الموقع الحالي",
+  "searchLocation": "ابحث عن موقع",
+  "search": "ابحث",
+  "noResultsFoundInPalestine": "لم يتم العثور على نتائج في فلسطين",
+  "errorFetchingResults": "حدث خطأ أثناء جلب النتائج",
+  "couldNotOpenGoogleMaps": "تعذر فتح خرائط جوجل",
+  "openInGoogleMaps": "افتح في خرائط جوجل",
+  "confirmLocation": "تأكيد الموقع"
+
+
 
 
 
