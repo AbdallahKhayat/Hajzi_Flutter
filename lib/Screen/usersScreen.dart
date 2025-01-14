@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import '../NetworkHandler.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 extension StringExtension on String {
   String capitalize() {
@@ -79,8 +80,16 @@ class _UsersScreenState extends State<UsersScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text("Confirm $action"),
-          content: Text("Are you sure you want to $action $email?"),
+          title: Text(
+            isBanned
+                ? AppLocalizations.of(context)!.confirmUnban
+                : AppLocalizations.of(context)!.confirmBan,
+          ),
+          content: Text(
+            isBanned
+                ? AppLocalizations.of(context)!.areYouSureUnban(email)
+                : AppLocalizations.of(context)!.areYouSureBan(email),
+          ),
           actions: [
             TextButton(
               onPressed: () {
@@ -144,7 +153,7 @@ class _UsersScreenState extends State<UsersScreen> {
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    "User Profile: ${userData['name'] ?? 'Unknown'}",
+                    "${AppLocalizations.of(context)!.userProfile}: ${userData['name'] ?? AppLocalizations.of(context)!.unknown}",
                     style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -190,31 +199,31 @@ class _UsersScreenState extends State<UsersScreen> {
                   const SizedBox(height: 20),
                   _buildInfoRow(
                     icon: Icons.email,
-                    label: "Email",
+                    label: AppLocalizations.of(context)!.emailLabel,
                     value: userData['email'] ?? 'N/A',
                   ),
                   const SizedBox(height: 12),
                   _buildInfoRow(
                     icon: Icons.work,
-                    label: "Profession",
+                    label: AppLocalizations.of(context)!.professionLabel,
                     value: userData['profession'] ?? 'N/A',
                   ),
                   const SizedBox(height: 12),
                   _buildInfoRow(
                     icon: Icons.cake,
-                    label: "DOB",
+                    label: AppLocalizations.of(context)!.dobLabel,
                     value: userData['DOB'] ?? 'N/A',
                   ),
                   const SizedBox(height: 12),
                   _buildInfoRow(
                     icon: Icons.title,
-                    label: "Titleline",
+                    label: AppLocalizations.of(context)!.titlelineLabel,
                     value: userData['titleline'] ?? 'N/A',
                   ),
                   const SizedBox(height: 12),
                   _buildInfoRow(
                     icon: Icons.info,
-                    label: "About",
+                    label: AppLocalizations.of(context)!.aboutLabel,
                     value: userData['about'] ?? 'N/A',
                   ),
                   const SizedBox(height: 12),
@@ -338,7 +347,8 @@ class _UsersScreenState extends State<UsersScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
               content: Text(
-                  responseData['message'] ?? "Failed to update user status.")),
+                  responseData['message'] ?? AppLocalizations.of(context)!.failedToUpdateStatus
+              )),
         );
       }
     } catch (e) {
@@ -352,16 +362,21 @@ class _UsersScreenState extends State<UsersScreen> {
 
   Future<void> _showRoleConfirmationDialog(
       String email, String currentRole) async {
-    String action = currentRole == "customer" ? "unpromote" : "promote";
-    String newRole = currentRole == "customer" ? "user" : "customer";
+    String action = currentRole == "customer"
+        ? AppLocalizations.of(context)!.unpromote
+        : AppLocalizations.of(context)!.promote;
+    String newRole = currentRole == "customer"
+        ? AppLocalizations.of(context)!.user
+        : AppLocalizations.of(context)!.customer;
+
 
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text("Confirm $action"),
-          content: Text(
-              "Are you sure you want to $action $email to the role of $newRole?"),
+          title: Text(action),
+          content: Text(AppLocalizations.of(context)!.areYouSureChangeRole(email, newRole)),
+
           actions: [
             TextButton(
               onPressed: () {
@@ -457,7 +472,7 @@ class _UsersScreenState extends State<UsersScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
               content:
-                  Text(responseData['msg'] ?? "Failed to update user role.")),
+              Text(responseData['msg'] ?? AppLocalizations.of(context)!.failedToUpdateRole)),
         );
       }
     } catch (e) {
@@ -488,15 +503,16 @@ class _UsersScreenState extends State<UsersScreen> {
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-              content: Text(responseData['message'] ??
-                  "User status updated successfully!")),
+              content: Text(responseData['message'] ?? AppLocalizations.of(context)!.userStatusUpdated
+              )),
         );
       } else {
         debugPrint("Failed to ban/unban user: ${responseData['message']}");
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
               content: Text(
-                  responseData['message'] ?? "Failed to update user status.")),
+                  responseData['message'] ?? AppLocalizations.of(context)!.failedToUpdateStatus
+              )),
         );
       }
     } catch (e) {
@@ -542,8 +558,7 @@ class _UsersScreenState extends State<UsersScreen> {
         debugPrint("Failed to update user role: ${responseData['msg']}");
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-              content:
-                  Text(responseData['msg'] ?? "Failed to update user role.")),
+              content: Text(responseData['msg'] ?? AppLocalizations.of(context)!.failedToUpdateRole))
         );
       }
     } catch (e) {
@@ -567,7 +582,7 @@ class _UsersScreenState extends State<UsersScreen> {
             decoration: InputDecoration(
               filled: true,
               fillColor: Colors.white,
-              hintText: "Search Users...",
+              hintText: AppLocalizations.of(context)!.searchUsers,
               prefixIcon: const Icon(Icons.search, color: Colors.grey),
               contentPadding: const EdgeInsets.symmetric(vertical: 5),
               border: OutlineInputBorder(
@@ -650,7 +665,7 @@ class _UsersScreenState extends State<UsersScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "Username: ${user['username']}",
+              "${AppLocalizations.of(context)!.usernameLabel}: ${user['username']}",
               style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -669,7 +684,7 @@ class _UsersScreenState extends State<UsersScreen> {
                     }
                   : null,
               child: Text(
-                "Email: $userEmail",
+                "${AppLocalizations.of(context)!.emailLabel}: $userEmail",
                 style: const TextStyle(
                   fontSize: 16,
                   color: Colors.blue,
@@ -679,7 +694,7 @@ class _UsersScreenState extends State<UsersScreen> {
             ),
             const SizedBox(height: 4),
             Text(
-              "Role: ${user['role']}",
+              "${AppLocalizations.of(context)!.roleLabel}: ${user['role']}",
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -692,7 +707,8 @@ class _UsersScreenState extends State<UsersScreen> {
             ),
             const SizedBox(height: 4),
             Text(
-              isBanned ? "Status: Banned" : "Status: Active",
+              "${AppLocalizations.of(context)!.statusLabel}: " +
+                  (isBanned ? AppLocalizations.of(context)!.banned : AppLocalizations.of(context)!.active),
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -707,7 +723,7 @@ class _UsersScreenState extends State<UsersScreen> {
                   onPressed: () => _showBanConfirmationDialog(
                       user['email'], user['isBanned']),
                   child: Text(
-                    isBanned ? "Unban" : "Ban",
+                    isBanned ? AppLocalizations.of(context)!.unban : AppLocalizations.of(context)!.ban,
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -720,7 +736,7 @@ class _UsersScreenState extends State<UsersScreen> {
                   onPressed: () =>
                       _showRoleConfirmationDialog(user['email'], user['role']),
                   child: Text(
-                    user['role'] == "customer" ? "Unpromote" : "Promote",
+                    user['role'] == "customer" ? AppLocalizations.of(context)!.unpromote : AppLocalizations.of(context)!.promote,
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
