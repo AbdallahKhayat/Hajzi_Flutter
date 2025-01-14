@@ -45,7 +45,6 @@
   "book": "Book",
   "confirmBooking": "Confirm Booking",
   "sureBooking": "Are you sure you want to book an appointment at",
-  "cancel": "Cancel",
   "confirm": "Confirm",
   "manageAppointments": "Manage Appointments",
   "addAvailableTime": "Add Available Time",
@@ -81,7 +80,6 @@
   "me": "Me",
   "hajziBot": "Hajzi Bot",
   "pickThemeColor": "Pick a Theme Color",
-  "cancel": "Cancel",
   "select": "Select",
   "createPost": "Create Post",
   "preview": "Preview",
@@ -182,37 +180,29 @@
   "profileRequired": "Profile Required",
   "pleaseCreateProfile": "Please create a profile before upgrading to Customer.",
   "createProfile": "Create Profile",
-  "noUsersFound": "No users found"
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  "noUsersFound": "No users found",
+  "notifications": "Notifications",
+  "noNotificationsAvailable": "No notifications available",
+  "notificationDeleted": "Notification Deleted",
+  "notificationDeletedSuccessfully": "Notification deleted successfully!",
+  "failedToDeleteNotification": "Failed to delete the notification.",
+  "errorDeletingNotification": "An error occurred while deleting the notification.",
+  "predefinedMode1": "Hajzi Predefined Questions",
+  "editShop": "Edit Shop",
+  "updatingShop": "Updating Shop...",
+  "pleaseWaitMagicHappening": "Please wait, magic is happening...",
+  "type": "Type",
+  "title": "Title",
+  "body": "Body",
+  "previewImage": "Preview Image",
+  "noPreviewImageSelected": "No preview image selected",
+  "changePreviewImage": "Change Preview Image",
+  "slideshowImages": "Slideshow Images",
+  "addNewImages": "Add New Images",
+  "saveChanges": "Save Changes",
+  "failedToRemoveImage": "Failed to remove image",
+  "shopUpdated": "Shop Updated",
+  "shopUpdatedSuccessfully": "Shop updated successfully!",
+  "ok": "OK",
+  "errorUpdatingShop": "Error updating shop"
 }

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../NetworkHandler.dart';
 import '../Models/notificationModel.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../constants.dart';
 
 class NotificationScreen extends StatefulWidget {
@@ -81,29 +81,29 @@ class _NotificationScreenState extends State<NotificationScreen> {
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
-              title: const Row(
+              title: Row(
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.notifications_off_outlined,
                     color: Colors.green,
                   ),
-                  SizedBox(width: 8), // Spacing between icon and text
+                  const SizedBox(width: 8), // Spacing between icon and text
                   Text(
-                    'Notification Deleted',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    AppLocalizations.of(context)!.notificationDeleted,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
-              content: const Row(
+              content: Row(
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.delete_outline,
                     color: Colors.green,
                     size: 36,
                   ),
-                  SizedBox(width: 10), // Spacing between icon and message
+                  const SizedBox(width: 10), // Spacing between icon and message
                   Expanded(
-                    child: Text("Notification deleted successfully!"),
+                    child: Text(AppLocalizations.of(context)!.notificationDeletedSuccessfully),
                   ),
                 ],
               ),
@@ -123,8 +123,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Failed to delete the notification."),
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.failedToDeleteNotification),
             backgroundColor: Colors.red,
           ),
         );
@@ -132,8 +132,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
     } catch (e) {
       debugPrint("Error deleting notification: $e");
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("An error occurred while deleting the notification."),
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.errorDeletingNotification),
           backgroundColor: Colors.red,
         ),
       );
@@ -144,9 +144,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          "Notifications",
-          style: TextStyle(fontWeight: FontWeight.bold),
+        title: Text(
+          AppLocalizations.of(context)!.notifications,
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         flexibleSpace: ValueListenableBuilder<Color>(
           valueListenable: appColorNotifier,
@@ -174,10 +174,10 @@ class _NotificationScreenState extends State<NotificationScreen> {
           }
           // Handle the case when there are no notifications.
           else if (notifications.isEmpty) {
-            content = const Center(
+            content = Center(
               child: Text(
-                "No notifications available",
-                style: TextStyle(fontSize: 18, color: Colors.grey),
+                AppLocalizations.of(context)!.noNotificationsAvailable,
+                style: const TextStyle(fontSize: 18, color: Colors.grey),
               ),
             );
           }

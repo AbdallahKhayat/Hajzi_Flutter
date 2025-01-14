@@ -1,6 +1,7 @@
 // mode_selection_screen.dart
 import 'package:flutter/material.dart';
 import 'ChatBotScreen.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 
 class ModeSelectionScreen extends StatelessWidget {
@@ -13,14 +14,14 @@ class ModeSelectionScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Select Interaction Mode'),
+        title: Text(AppLocalizations.of(context)!.chooseMode),
       ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             ElevatedButton(
-              child: Text('Chat with AI'),
+              child: Text(AppLocalizations.of(context)!.aiMode),
               onPressed: () {
                 Navigator.push(
                   context,
@@ -36,7 +37,7 @@ class ModeSelectionScreen extends StatelessWidget {
             ),
             SizedBox(height: 20),
             ElevatedButton(
-              child: Text('Hajzi Predefined Questions'),
+              child: Text(AppLocalizations.of(context)!.predefinedMode1),
               onPressed: () {
                 Navigator.push(
                   context,

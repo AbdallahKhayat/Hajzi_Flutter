@@ -44,7 +44,6 @@
   "book": "احجز",
   "confirmBooking": "تأكيد الحجز",
   "sureBooking": "هل أنت متأكد أنك تريد حجز موعد على",
-  "cancel": "الغاء",
   "confirm": "متأكد",
   "manageAppointments": "إدارة المواعيد",
   "addAvailableTime": "إضافة وقت متاح",
@@ -80,7 +79,6 @@
   "me": "أنا",
   "hajziBot": "روبوت حجزي",
   "pickThemeColor": "اختر لون الواجهة",
-  "cancel": "إلغاء",
   "select": "اختيار",
   "createPost": "إنشاء منشور",
   "preview": "عرض المحل",
@@ -102,7 +100,6 @@
   "bodyCannotBeEmpty": "المحتوى لا يمكن أن يكون فارغًا",
   "confirmSubmission": "تأكيد الإرسال",
   "areYouSureSubmitShop": "هل أنت متأكد أنك تريد إرسال هذا المحل؟",
-  "cancel": "إلغاء",
   "submit": "إرسال",
   "editEmail": "تعديل البريد الإلكتروني",
   "email": "البريد الإلكتروني",
@@ -181,17 +178,29 @@
   "profileRequired": "المطلوب إنشاء ملف",
   "pleaseCreateProfile": "يرجى إنشاء ملف قبل الترقية إلى العميل.",
   "createProfile": "إنشاء ملف",
-  "noUsersFound": "لم يتم العثور على مستخدمين"
-
-
-
-
-
-
-
-
-
-
-
-
+  "noUsersFound": "لم يتم العثور على مستخدمين",
+  "notifications": "الإشعارات",
+  "noNotificationsAvailable": "لا توجد إشعارات متوفرة",
+  "notificationDeleted": "تم حذف الإشعار",
+  "notificationDeletedSuccessfully": "تم حذف الإشعار بنجاح!",
+  "failedToDeleteNotification": "فشل في حذف الإشعار.",
+  "errorDeletingNotification": "حدث خطأ أثناء حذف الإشعار.",
+  "predefinedMode1": "الأسئلة المُعدة مسبقاً لحجزي",
+  "editShop": "تعديل المحل",
+  "updatingShop": "جارٍ تحديث المحل...",
+  "pleaseWaitMagicHappening": "يرجى الانتظار، السحر يحدث...",
+  "type": "النوع",
+  "title": "العنوان",
+  "body": "المحتوى",
+  "previewImage": "الصورة المعاينة",
+  "noPreviewImageSelected": "لم يتم اختيار صورة معاينة",
+  "changePreviewImage": "تغيير الصورة المعاينة",
+  "slideshowImages": "صور العرض",
+  "addNewImages": "إضافة صور جديدة",
+  "saveChanges": "حفظ التغييرات",
+  "failedToRemoveImage": "فشل في إزالة الصورة",
+  "shopUpdated": "تم تحديث المحل",
+  "shopUpdatedSuccessfully": "تم تحديث المحل بنجاح!",
+  "ok": "حسناً",
+  "errorUpdatingShop": "حدث خطأ أثناء تحديث المحل"
 }

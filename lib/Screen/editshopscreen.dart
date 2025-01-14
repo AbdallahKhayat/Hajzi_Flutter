@@ -8,6 +8,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../Notifications/push_notifications.dart';
 import '../constants.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class EditShopScreen extends StatefulWidget {
   final AddBlogModel addBlogModel;
@@ -64,11 +65,11 @@ class _EditShopScreenState extends State<EditShopScreen> {
                 // Icon at the top
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
+                  children: [
                     Icon(
                       Icons.sentiment_satisfied_alt,
                       size: 36,
-                      color: Colors.deepPurple,
+                      color: appColorNotifier.value,
                     ),
                   ],
                 ),
@@ -87,14 +88,14 @@ class _EditShopScreenState extends State<EditShopScreen> {
                 // Circular progress indicator
                 CircularProgressIndicator(
                   strokeWidth: 3,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.deepPurple),
+                  valueColor: AlwaysStoppedAnimation<Color>(appColorNotifier.value),
                 ),
                 const SizedBox(height: 20),
                 // Optional tagline
-                const Text(
-                  "Please wait, magic is happening...",
+                Text(
+                  AppLocalizations.of(context)!.pleaseWaitMagicHappening,
                   textAlign: TextAlign.center,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 14,
                     color: Colors.black54,
                   ),
@@ -138,7 +139,7 @@ class _EditShopScreenState extends State<EditShopScreen> {
   Future<void> _submitChanges() async {
     if (_formKey.currentState!.validate()) {
       // Show the loading dialog before starting network operations
-      showLoadingDialog(context, "Updating Shop...");
+      showLoadingDialog(context, AppLocalizations.of(context)!.updatingShop);
       try {
         AddBlogModel updatedBlog = AddBlogModel(
           id: widget.addBlogModel.id, // Retain the same blog ID
@@ -202,44 +203,44 @@ class _EditShopScreenState extends State<EditShopScreen> {
               context: context,
               builder: (BuildContext context) {
                 return AlertDialog(
-                  title: const Row(
-                    children: [
-                      Icon(
-                        Icons.check_circle_outline,
-                        color: Colors.green,
-                      ),
-                      SizedBox(width: 8), // Spacing between icon and text
-                      Text(
-                        'Shop Updated',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
-                  content: const Row(
-                    children: [
-                      Icon(
-                        Icons.store_outlined,
-                        color: Colors.green,
-                        size: 36,
-                      ),
-                      SizedBox(width: 10), // Spacing between icon and message
-                      Expanded(
-                        child: Text("Shop updated successfully!"),
-                      ),
-                    ],
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () {
-                        Navigator.pop(context); // Close the dialog
-                        Navigator.pop(context); // Navigate back
-                      },
-                      child: Text(
-                        'OK',
-                        style: TextStyle(color: Colors.green),
-                      ),
+                    title: Row(
+                      children: [
+                        Icon(
+                          Icons.check_circle_outline,
+                          color: appColorNotifier.value, // Use main color
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          AppLocalizations.of(context)!.shopUpdated,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ],
                     ),
-                  ],
+                    content: Row(
+                      children: [
+                        Icon(
+                          Icons.store_outlined,
+                          color: appColorNotifier.value,
+                          size: 36,
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(AppLocalizations.of(context)!.shopUpdatedSuccessfully),
+                        ),
+                      ],
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(context); // Close the dialog
+                          Navigator.pop(context); // Navigate back
+                        },
+                        child: Text(
+                          AppLocalizations.of(context)!.ok,
+                          style: TextStyle(color: appColorNotifier.value),
+                        ),
+                      ),
+                    ],
                 );
               },
             );
@@ -251,7 +252,7 @@ class _EditShopScreenState extends State<EditShopScreen> {
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Error updating blog: $e")),
+              SnackBar(content: Text(AppLocalizations.of(context)!.errorUpdatingShop))
           );
         }
       }
@@ -289,7 +290,7 @@ class _EditShopScreenState extends State<EditShopScreen> {
         });
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Failed to remove image")),
+            SnackBar(content: Text(AppLocalizations.of(context)!.failedToRemoveImage))
         );
       }
     } catch (e) {
@@ -323,9 +324,9 @@ class _EditShopScreenState extends State<EditShopScreen> {
             );
           },
         ),
-        title: const Text(
-          "Edit Shop",
-          style: TextStyle(
+        title: Text(
+          AppLocalizations.of(context)!.editShop,
+          style: const TextStyle(
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -360,24 +361,25 @@ class _EditShopScreenState extends State<EditShopScreen> {
                               selectedRole = value;
                             });
                           },
-                          items: const [
+                          items: [
                             DropdownMenuItem(
-                                value: "general", child: Text("General")),
+                                value: "general", child: Text(AppLocalizations.of(context)!.general)),
                             DropdownMenuItem(
-                                value: "barbershop", child: Text("Barbershop")),
+                                value: "barbershop", child: Text(AppLocalizations.of(context)!.barbershop)),
                             DropdownMenuItem(
-                                value: "hospital", child: Text("Hospital")),
+                                value: "hospital", child: Text(AppLocalizations.of(context)!.hospital)),
+
                           ],
-                          decoration: const InputDecoration(labelText: "Type"),
+                          decoration: InputDecoration(labelText: AppLocalizations.of(context)!.type),
                         ),
                         const SizedBox(height: 24),
 
                         // Title Field
                         TextFormField(
                           controller: _titleController,
-                          decoration: const InputDecoration(
-                            labelText: "Title",
-                            border: OutlineInputBorder(),
+                          decoration: InputDecoration(
+                            labelText: AppLocalizations.of(context)!.title,
+                            border: const OutlineInputBorder(),
                           ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
@@ -391,9 +393,9 @@ class _EditShopScreenState extends State<EditShopScreen> {
                         // Body Field
                         TextFormField(
                           controller: _bodyController,
-                          decoration: const InputDecoration(
-                            labelText: "Body",
-                            border: OutlineInputBorder(),
+                          decoration: InputDecoration(
+                            labelText: AppLocalizations.of(context)!.body,
+                            border: const OutlineInputBorder(),
                           ),
                           maxLines: 5,
                           validator: (value) {
@@ -407,7 +409,7 @@ class _EditShopScreenState extends State<EditShopScreen> {
 
                         // Preview Image Section
                         Text(
-                          "Preview Image",
+                          AppLocalizations.of(context)!.previewImage,
                           style: Theme.of(context).textTheme.titleMedium,
                         ),
                         const SizedBox(height: 12),
@@ -434,10 +436,10 @@ class _EditShopScreenState extends State<EditShopScreen> {
                               height: double.infinity,
                               fit: BoxFit.cover,
                             )
-                                : const Center(
+                                : Center(
                               child: Text(
-                                "No preview image selected",
-                                style: TextStyle(color: Colors.grey),
+                                AppLocalizations.of(context)!.noPreviewImageSelected,
+                                style: const TextStyle(color: Colors.grey),
                               ),
                             ),
                           ),
@@ -452,7 +454,7 @@ class _EditShopScreenState extends State<EditShopScreen> {
                             builder: (context, color, child) {
                               return TextButton(
                                 onPressed: _pickPreviewImage,
-                                child: const Text("Change Preview Image"),
+                                child: Text(AppLocalizations.of(context)!.changePreviewImage),
                                 style: ButtonStyle(
                                   foregroundColor:
                                   MaterialStateProperty.all<Color>(Colors.black),
@@ -470,7 +472,7 @@ class _EditShopScreenState extends State<EditShopScreen> {
 
                         // Slideshow Images Section
                         Text(
-                          "Slideshow Images",
+                          AppLocalizations.of(context)!.slideshowImages,
                           style: Theme.of(context).textTheme.titleMedium,
                         ),
                         const SizedBox(height: 12),
@@ -559,7 +561,7 @@ class _EditShopScreenState extends State<EditShopScreen> {
                             builder: (context, color, child) {
                               return TextButton(
                                 onPressed: _pickNewCoverImages,
-                                child: const Text("Add New Images"),
+                                child: Text(AppLocalizations.of(context)!.addNewImages),
                                 style: ButtonStyle(
                                   foregroundColor:
                                   MaterialStateProperty.all<Color>(Colors.black),
@@ -580,7 +582,7 @@ class _EditShopScreenState extends State<EditShopScreen> {
                           alignment: Alignment.centerRight,
                           child: ElevatedButton(
                             onPressed: _submitChanges,
-                            child: const Text("Save Changes"),
+                            child: Text(AppLocalizations.of(context)!.saveChanges),
                             style: ElevatedButton.styleFrom(
                               foregroundColor: Colors.black,
                               backgroundColor: Colors.blueGrey,
