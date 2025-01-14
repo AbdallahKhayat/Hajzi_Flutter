@@ -75,7 +75,7 @@ class _UsersScreenState extends State<UsersScreen> {
   }
 
   Future<void> _showBanConfirmationDialog(String email, bool isBanned) async {
-    String action = isBanned ? "unban" : "ban";
+    String action = isBanned ? AppLocalizations.of(context)!.unban : AppLocalizations.of(context)!.ban;
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -95,9 +95,9 @@ class _UsersScreenState extends State<UsersScreen> {
               onPressed: () {
                 Navigator.of(context).pop(); // Close the dialog
               },
-              child: const Text(
-                "Cancel",
-                style: TextStyle(color: Colors.black),
+              child: Text(
+                AppLocalizations.of(context)!.cancel,
+                style: const TextStyle(color: Colors.black),
               ),
             ),
             ElevatedButton(
@@ -233,9 +233,9 @@ class _UsersScreenState extends State<UsersScreen> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: const Text(
-                  "Close",
-                  style: TextStyle(
+                child: Text(
+                  AppLocalizations.of(context)!.close,
+                  style: const TextStyle(
                     color: Colors.black,
                     fontWeight: FontWeight.bold,
                   ),
@@ -308,7 +308,7 @@ class _UsersScreenState extends State<UsersScreen> {
                   ),
                   SizedBox(width: 8), // Spacing between icon and text
                   Text(
-                    'User Status Update',
+                    AppLocalizations.of(context)!.userStatusUpdate,
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ],
@@ -322,9 +322,8 @@ class _UsersScreenState extends State<UsersScreen> {
                   ),
                   SizedBox(width: 10), // Spacing between icon and message
                   Expanded(
-                    child: Text(
-                      "$email status updated successfully!",
-                    ),
+                      child: Text(AppLocalizations.of(context)!.userStatusUpdatedSuccessfully(email)),
+
                   ),
                 ],
               ),
@@ -334,7 +333,7 @@ class _UsersScreenState extends State<UsersScreen> {
                     Navigator.of(context).pop(); // Close the dialog
                   },
                   child: Text(
-                    'OK',
+                    AppLocalizations.of(context)!.ok,
                     style: TextStyle(color: Colors.red),
                   ),
                 ),
@@ -354,8 +353,9 @@ class _UsersScreenState extends State<UsersScreen> {
     } catch (e) {
       debugPrint("Error banning/unbanning user: $e");
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text("An error occurred while updating the user status.")),
+        SnackBar(
+            content: Text(AppLocalizations.of(context)!.errorUpdatingStatus)
+        ),
       );
     }
   }
@@ -382,9 +382,9 @@ class _UsersScreenState extends State<UsersScreen> {
               onPressed: () {
                 Navigator.of(context).pop(); // Close the dialog
               },
-              child: const Text(
-                "Cancel",
-                style: TextStyle(color: Colors.black),
+              child: Text(
+                AppLocalizations.of(context)!.cancel,
+                style: const TextStyle(color: Colors.black),
               ),
             ),
             ElevatedButton(
@@ -418,16 +418,16 @@ class _UsersScreenState extends State<UsersScreen> {
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
-              title: const Row(
+              title: Row(
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.check_circle_outline,
                     color: Colors.blue,
                   ),
-                  SizedBox(width: 8), // Spacing between icon and text
+                  const SizedBox(width: 8), // Spacing between icon and text
                   Text(
-                    'Role Update',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    AppLocalizations.of(context)!.roleUpdate,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
@@ -440,9 +440,9 @@ class _UsersScreenState extends State<UsersScreen> {
                   ),
                   SizedBox(width: 10), // Spacing between icon and message
                   Expanded(
-                    child: Text(
-                      "${email} role updated successfully!",
-                    ),
+
+                      child: Text(AppLocalizations.of(context)!.roleUpdatedSuccessfully(email)),
+
                   ),
                 ],
               ),
@@ -452,7 +452,7 @@ class _UsersScreenState extends State<UsersScreen> {
                     Navigator.of(context).pop(); // Close the dialog
                   },
                   child: Text(
-                    'OK',
+                    AppLocalizations.of(context)!.ok,
                     style: TextStyle(color: Colors.blue),
                   ),
                 ),

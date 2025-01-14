@@ -202,5 +202,13 @@
   "shopUpdated": "تم تحديث المحل",
   "shopUpdatedSuccessfully": "تم تحديث المحل بنجاح!",
   "ok": "حسناً",
-  "errorUpdatingShop": "حدث خطأ أثناء تحديث المحل"
+  "errorUpdatingShop": "حدث خطأ أثناء تحديث المحل",
+  "close": "إغلاق",
+  "userStatusUpdate": "تحديث حالة المستخدم",
+  "userStatusUpdatedSuccessfully": " {email} تم تحديث حالته بنجاح!",
+  "statusUpdatedSuccessfully": "تم تحديث الحالة بنجاح!",
+  "roleUpdate": "تحديث الدور",
+  "roleUpdatedSuccessfully": "تم تحديث دور {email} بنجاح!",
+  "cancel": "إلغاء"
+
 }

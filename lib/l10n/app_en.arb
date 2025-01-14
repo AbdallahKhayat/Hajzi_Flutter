@@ -204,5 +204,13 @@
   "shopUpdated": "Shop Updated",
   "shopUpdatedSuccessfully": "Shop updated successfully!",
   "ok": "OK",
-  "errorUpdatingShop": "Error updating shop"
+  "errorUpdatingShop": "Error updating shop",
+  "close": "Close",
+  "userStatusUpdate": "User Status Update",
+  "userStatusUpdatedSuccessfully": " {email} status updated successfully!",
+  "statusUpdatedSuccessfully": "status updated successfully!",
+  "roleUpdate": "Role Update",
+  "roleUpdatedSuccessfully": " {email} role updated successfully!"
+
+
 }
