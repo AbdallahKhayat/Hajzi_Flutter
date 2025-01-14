@@ -209,6 +209,15 @@
   "statusUpdatedSuccessfully": "تم تحديث الحالة بنجاح!",
   "roleUpdate": "تحديث الدور",
   "roleUpdatedSuccessfully": "تم تحديث دور {email} بنجاح!",
-  "cancel": "إلغاء"
+  "cancel": "إلغاء",
+  "revenueLast7Days": "الأرباح (آخر 7 أيام)",
+  "dailyRevenueBarChart": "الأرباح اليومية (رسم بياني شريطي)",
+  "noRevenueDataLast7Days": "لا توجد بيانات أرباح لآخر 7 أيام",
+  "noRevenueDataAvailable": "لا توجد بيانات أرباح متوفرة",
+  "noChatsAvailable": "لا توجد دردشات متوفرة",
+  "selectUserToChat": "اختر مستخدمًا للبدء بالدردشة",
+  "copiedToClipboard": "تم النسخ للحافظة",
+  "copy": "نسح",
+  "messageDeleted": "تم حذف الرسالة"
 
 }

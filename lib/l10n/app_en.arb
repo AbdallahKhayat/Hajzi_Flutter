@@ -210,7 +210,15 @@
   "userStatusUpdatedSuccessfully": " {email} status updated successfully!",
   "statusUpdatedSuccessfully": "status updated successfully!",
   "roleUpdate": "Role Update",
-  "roleUpdatedSuccessfully": " {email} role updated successfully!"
-
+  "roleUpdatedSuccessfully": " {email} role updated successfully!",
+  "revenueLast7Days": "Revenue (Last 7 Days)",
+  "dailyRevenueBarChart": "Daily Revenue (Bar Chart)",
+  "noRevenueDataLast7Days": "No revenue data for the last 7 days",
+  "noRevenueDataAvailable": "No revenue data available",
+  "noChatsAvailable": "No chats available",
+  "selectUserToChat": "Select a user to start chatting",
+  "copiedToClipboard": "Copied to clipboard",
+  "copy": "Copy",
+  "messageDeleted": "Message has been deleted"
 
 }

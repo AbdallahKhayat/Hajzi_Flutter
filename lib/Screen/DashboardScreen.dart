@@ -421,9 +421,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildRevenueChartDialog() {
     return AlertDialog(
-      title: const Text(
-        "Revenue (Last 7 Days)",
-        style: TextStyle(fontWeight: FontWeight.bold),
+      title: Text(
+        AppLocalizations.of(context)!.revenueLast7Days,
+        style: const TextStyle(fontWeight: FontWeight.bold),
       ),
       content: SizedBox(
         width: 300,
@@ -433,7 +433,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text("Close"),
+          child: Text(AppLocalizations.of(context)!.close),
         ),
       ],
     );
@@ -442,7 +442,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget _buildLineChart() {
     // For safety, if stripeRevenueData is empty, show an empty chart
     if (stripeRevenueData.isEmpty) {
-      return const Center(child: Text("No revenue data for the last 7 days"));
+      return Center(child: Text(AppLocalizations.of(context)!.noRevenueDataLast7Days));
     }
 
     // Build a list of the last 7 days in ascending order
@@ -519,7 +519,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildBarChartDialog() {
     return AlertDialog(
-      title: const Text("Daily Revenue (Bar Chart)"),
+      title: Text(AppLocalizations.of(context)!.dailyRevenueBarChart),
       content: SizedBox(
         width: 300,
         height: 300,
@@ -528,7 +528,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text("Close"),
+          child: Text(AppLocalizations.of(context)!.close),
         ),
       ],
     );
@@ -536,7 +536,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildBarChart() {
     if (stripeRevenueData.isEmpty) {
-      return const Center(child: Text("No revenue data available"));
+      return Center(child: Text(AppLocalizations.of(context)!.noRevenueDataAvailable));
     }
 
     final now = DateTime.now();

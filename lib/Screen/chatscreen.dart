@@ -438,7 +438,7 @@ class _ChatScreenWebState extends State<_ChatScreenWeb>
       return const Center(child: CircularProgressIndicator());
     }
     if (_chats.isEmpty) {
-      return const Center(child: Text("No chats available"));
+      return Center(child: Text(AppLocalizations.of(context)!.noChatsAvailable));
     }
 
     // We do a fixed 300 px for the left column, as requested
@@ -485,7 +485,7 @@ class _ChatScreenWebState extends State<_ChatScreenWeb>
         // Right side: chat detail
         Expanded(
           child: _selectedChatId == null
-              ? const Center(child: Text("Select a user to start chatting"))
+              ? Center(child: Text(AppLocalizations.of(context)!.selectUserToChat))
               : _buildChatDetailArea(appColorNotifier.value),
         ),
       ],
@@ -577,7 +577,7 @@ class _ChatScreenWebState extends State<_ChatScreenWeb>
               // Partner name
               Expanded(
                 child: Text(
-                  _selectedPartnerName ?? 'Unknown',
+                  _selectedPartnerName ?? AppLocalizations.of(context)!.unknown,
                   style: const TextStyle(
                     fontSize: 16,
                     color: Colors.white,
@@ -684,7 +684,7 @@ class _ChatScreenWebState extends State<_ChatScreenWeb>
                   },
                   decoration: InputDecoration(
                     border: InputBorder.none,
-                    hintText: "Type a message",
+                    hintText: AppLocalizations.of(context)!.typeMessage,
                     contentPadding: const EdgeInsets.only(
                       left: 20,
                       top: 10,
@@ -753,7 +753,7 @@ class _ChatScreenWebState extends State<_ChatScreenWeb>
             children: [
               ListTile(
                 leading: Icon(Icons.copy),
-                title: Text('Copy'),
+                title: Text(AppLocalizations.of(context)!.copy),
                 onTap: () {
                   Navigator.of(context).pop();
                   _copyToClipboard(message['content']);
@@ -761,7 +761,7 @@ class _ChatScreenWebState extends State<_ChatScreenWeb>
               ),
               ListTile(
                 leading: Icon(Icons.delete),
-                title: Text('Delete'),
+                title: Text(AppLocalizations.of(context)!.delete),
                 onTap: () {
                   Navigator.of(context).pop();
                   _deleteOwnMessage(message['_id']);
@@ -784,7 +784,7 @@ class _ChatScreenWebState extends State<_ChatScreenWeb>
             children: [
               ListTile(
                 leading: Icon(Icons.copy),
-                title: Text('Copy'),
+                title: Text(AppLocalizations.of(context)!.copy),
                 onTap: () {
                   Navigator.of(context).pop();
                   _copyToClipboard(message['content']);
@@ -802,7 +802,7 @@ class _ChatScreenWebState extends State<_ChatScreenWeb>
   void _copyToClipboard(String text) {
     Clipboard.setData(ClipboardData(text: text));
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Copied to clipboard')),
+      SnackBar(content: Text(AppLocalizations.of(context)!.copiedToClipboard)),
     );
   }
 
