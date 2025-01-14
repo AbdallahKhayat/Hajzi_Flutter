@@ -6,6 +6,7 @@ import 'package:blogapp/Models/profileModel.dart';
 import 'package:blogapp/NetworkHandler.dart';
 import 'package:image_picker/image_picker.dart';
 import '../constants.dart';
+import 'package:intl/intl.dart';
 
 class EditProfile extends StatefulWidget {
   final ProfileModel profileModel;
@@ -311,7 +312,7 @@ class _EditProfileState extends State<EditProfile> {
                               _buildTextField("Name", _nameController),
                               _buildTextField(
                                   "Profession", _professionController),
-                              _buildTextField("Date of Birth", _dobController),
+                              _buildDOBField(), // Using the date picker field
                               _buildTextField(
                                 "About",
                                 _aboutController,
@@ -351,6 +352,67 @@ class _EditProfileState extends State<EditProfile> {
                       ),
               ),
             ),
+    );
+  }
+
+  // New dedicated Date of Birth field with a date picker
+  Widget _buildDOBField() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10.0),
+      child: TextFormField(
+        controller: _dobController,
+        readOnly: true, // Prevent manual editing
+        decoration: InputDecoration(
+          labelText: "Date of Birth",
+          labelStyle: const TextStyle(color: Colors.teal),
+          filled: true,
+          fillColor: Colors.grey[200],
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: BorderSide.none,
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: const BorderSide(color: Colors.teal, width: 2),
+          ),
+        ),
+        onTap: () async {
+          // Parse current text in _dobController for initial date (if available)
+          DateTime initialDate = DateTime.now();
+          try {
+            if (_dobController.text.isNotEmpty) {
+              List<String> parts = _dobController.text.split('/');
+              if (parts.length == 3) {
+                int day = int.parse(parts[0]);
+                int month = int.parse(parts[1]);
+                int year = int.parse(parts[2]);
+                initialDate = DateTime(year, month, day);
+              }
+            }
+          } catch (e) {
+            // In case of error in parsing, default to today
+            initialDate = DateTime.now();
+          }
+          DateTime? pickedDate = await showDatePicker(
+            context: context,
+            initialDate: initialDate,
+            firstDate: DateTime(1900),
+            lastDate: DateTime.now(),
+          );
+          if (pickedDate != null) {
+            String formattedDate = DateFormat('dd/MM/yyyy').format(pickedDate);
+            setState(() {
+              _dobController.text = formattedDate;
+            });
+          }
+        },
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return "Please enter Date of Birth";
+          }
+          return null;
+        },
+      ),
     );
   }
 

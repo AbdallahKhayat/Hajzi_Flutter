@@ -887,221 +887,186 @@ class _AddBlogState extends State<AddBlog> {
               return;
             }
 
-            // Step 2: Create AddBlogApproval object
-            AddBlogApproval addBlogApproval = AddBlogApproval(
-              title: _titleController.text,
-              body: _bodyController.text,
-              email: customerEmail,
-              username: username,
-              type: selectedRole ?? "general",
-              lat: selectedLat,
-              lng: selectedLng,
-            );
-
-            // Step 3: Send approval request
-            var approvalResponse = await networkHandler.post(
-              "/AddBlogApproval/addApproval",
-              addBlogApproval.toJson(),
-            );
-
-            // Send an email notification
-            final serviceId = 'service_lap99wb';
-            final templateId = 'template_fon03t7';
-            final userId = 'tPJQRVN9PQ2jjZ_6C';
-            final url =
-            Uri.parse('https://api.emailjs.com/api/v1.0/email/send');
-
-            final emailResponse = await http.post(
-              url,
-              headers: {
-                'origin': "https://hajzi-6883b1f029cf.herokuapp.com",
-                'Content-Type': 'application/json',
-              },
-              body: json.encode({
-                'service_id': serviceId,
-                'template_id': templateId,
-                'user_id': userId,
-                'template_params': {
-                  'user_title': addBlogApproval.title,
-                  'user_message': addBlogApproval.body,
-                  'user_name': addBlogApproval.email,
-                },
-              }),
-            );
-
-            print("Email Response: ${emailResponse.body}");
-
-            // Notify admins about the new blog
-            final notificationResponse = await networkHandler.post(
-              "/notifications/notifyAdmins/$customerEmail",
-              // Note: Ensure proper string interpolation
-              {},
-            );
-
-            print(
-                "Notification Response Code: ${notificationResponse.statusCode}");
-            print("Notification Response Body: ${notificationResponse.body}");
-
-            if (notificationResponse.statusCode == 200) {
-              print("Admin notification sent successfully");
-              PushNotifications.init();
-            } else {
-              print("Failed to notify admins");
+            var shopCountResponse = await networkHandler.get(
+                "/blogpost/countUserShops");
+            int userShopsCount = 0;
+            if (shopCountResponse is Map<String, dynamic> &&
+                shopCountResponse.containsKey("shopCount")) {
+              userShopsCount = shopCountResponse["shopCount"];
             }
-
-
-            if (approvalResponse.statusCode == 200 ||
-                approvalResponse.statusCode == 201) {
-              String blogId = json.decode(approvalResponse.body)["data"];
-
-              await sendNotification(
-                title: "New Shop Approval Request",
-                body:
-                "${addBlogApproval.email} has applied for a shop with the title: ${addBlogApproval.title}. Please review it.",
+            if (userShopsCount == 0) {
+              // =========== Directly create in BlogPost ===========
+              AddBlogModel newShop = AddBlogModel(
+                title: _titleController.text,
+                body: _bodyController.text,
+                status: "approved",
+                // or "published" if you prefer
+                createdAt: DateTime.now(),
+                type: selectedRole ?? "general",
+                email: customerEmail,
+                username: username,
+                lat: selectedLat,
+                lng: selectedLng,
               );
 
-              // Upload images
-              // Upload preview image
-              if (imageFiles.isNotEmpty) {
-                await uploadPreviewImage(blogId, imageFiles.first.path);
-                await uploadCoverImages(blogId, imageFiles.sublist(1));
-              }
+              var addResponse = await networkHandler.post(
+                  "/blogpost/Add", newShop.toJson());
 
-              // -------------------------------------------------------------
-              // CLOSE LOADING DIALOG before showing next dialog
-              // -------------------------------------------------------------
-              Navigator.of(context).pop(); // close loading dialog
+              if (addResponse.statusCode == 200 ||
+                  addResponse.statusCode == 201) {
+                String newBlogId = json.decode(addResponse.body)["data"];
 
-              if (mounted) {
-                showDialog(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return AlertDialog(
-                      title: Text(
-                        'Submission Successful',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      content: Text('Your shop has been submitted for approval!'),
-                      actions: [
-                        TextButton(
-                          onPressed: () {
-                            Navigator.of(context).pop(); // Close the dialog
-                          },
-                          child: Text(
-                            'OK',
-                            style: TextStyle(color: Colors.green),
-                          ),
-                        ),
-                      ],
-                    );
-                  },
-                );
-              }
-
-
-              // Step 4: Periodically check approval status
-              String status = "pending";
-              while (status == "pending") {
-                await Future.delayed(
-                    Duration(seconds: 5)); // Wait before checking
-                var statusResponse =
-                await networkHandler.get("/AddBlogApproval/status/$blogId");
-
-                if (statusResponse is Map<String, dynamic> &&
-                    statusResponse.containsKey("status")) {
-                  status = statusResponse["status"];
-                  print("Approval Status: $status");
-                } else {
-                  print("Error checking approval status: $statusResponse");
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                        content: Text('Error checking approval status'),
-                        backgroundColor: Colors.red),
-                  );
-                  return;
-                }
-              }
-
-              // Step 5: If approved, add to blogpost schema
-              if (status == "approved") {
-                AddBlogModel addBlogModel = AddBlogModel(
-                  title: addBlogApproval.title,
-                  body: addBlogApproval.body,
-                  status: "approved",
-                  createdAt: DateTime.now(),
-                  type: selectedRole ?? "general",
-                  email: addBlogApproval.email,
-                  username: addBlogApproval.username,
-                  lat: selectedLat,
-                  lng: selectedLng,
-                );
-
-                var addResponse = await networkHandler.post(
-                    "/blogpost/Add", addBlogModel.toJson());
-
-                if (addResponse.statusCode == 200 ||
-                    addResponse.statusCode == 201) {
-                  String newBlogId = json.decode(addResponse.body)["data"];
-                  print("New BlogPost ID: $newBlogId");
-
-                  // Step 6: Upload preview image to BlogPost
-                  if (imageFiles.isNotEmpty) {
-                    await uploadPreviewImageToBlogPost(
-                        newBlogId, imageFiles.first.path);
+                // Upload images to the new BlogPost
+                if (imageFiles.isNotEmpty) {
+                  await uploadPreviewImageToBlogPost(
+                      newBlogId, imageFiles.first.path);
+                  if (imageFiles.length > 1) {
                     await uploadCoverImagesToBlogPost(
                         newBlogId, imageFiles.sublist(1));
                   }
+                }
 
-                  if (mounted) Navigator.pop(context);
-                  if (mounted) {
-                    showDialog<void>(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return AlertDialog(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(15.0),
-                          ),
-                          title: const Row(
-                            children: [
-                              Icon(Icons.check_circle, color: Colors.green),
-                              SizedBox(width: 8),
-                              Text('Success'),
-                            ],
-                          ),
-                          content: const Text(
-                              'Shop approved and published successfully!'),
-                          actions: <Widget>[
-                            TextButton(
-                              child: const Text('OK',style: TextStyle(color: Colors.black),),
-                              onPressed: () {
-                                Navigator.of(context).pop();
-                              },
-                            ),
+                // close loading dialog
+                Navigator.of(context).pop();
+                // Show success
+                if (mounted) {
+                  showDialog<void>(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15.0),
+                        ),
+                        title: const Row(
+                          children: [
+                            Icon(Icons.check_circle, color: Colors.green),
+                            SizedBox(width: 8),
+                            Text('Success'),
                           ],
-                        );
-                      },
-                    );
-                  }
-                } else {
-                  if (mounted)
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                          content:
-                          Text('Failed to add blog to blogpost schema'),
-                          backgroundColor: Colors.red),
-                    );
+                        ),
+                        content: const Text('First shop created successfully!'),
+                        actions: <Widget>[
+                          TextButton(
+                            child: const Text(
+                                'OK', style: TextStyle(color: Colors.black)),
+                            onPressed: () => Navigator.of(context).pop(),
+                          ),
+                        ],
+                      );
+                    },
+                  );
                 }
               } else {
+                Navigator.of(context).pop(); // close loading
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Failed to create shop'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              }
+            } else {
+              // Step 2: Create AddBlogApproval object
+              AddBlogApproval addBlogApproval = AddBlogApproval(
+                title: _titleController.text,
+                body: _bodyController.text,
+                email: customerEmail,
+                username: username,
+                type: selectedRole ?? "general",
+                lat: selectedLat,
+                lng: selectedLng,
+              );
+
+              // Step 3: Send approval request
+              var approvalResponse = await networkHandler.post(
+                "/AddBlogApproval/addApproval",
+                addBlogApproval.toJson(),
+              );
+
+              // Send an email notification
+              final serviceId = 'service_lap99wb';
+              final templateId = 'template_fon03t7';
+              final userId = 'tPJQRVN9PQ2jjZ_6C';
+              final url =
+              Uri.parse('https://api.emailjs.com/api/v1.0/email/send');
+
+              final emailResponse = await http.post(
+                url,
+                headers: {
+                  'origin': "https://hajzi-6883b1f029cf.herokuapp.com",
+                  'Content-Type': 'application/json',
+                },
+                body: json.encode({
+                  'service_id': serviceId,
+                  'template_id': templateId,
+                  'user_id': userId,
+                  'template_params': {
+                    'user_title': addBlogApproval.title,
+                    'user_message': addBlogApproval.body,
+                    'user_name': addBlogApproval.email,
+                  },
+                }),
+              );
+
+              print("Email Response: ${emailResponse.body}");
+
+              // Notify admins about the new blog
+              final notificationResponse = await networkHandler.post(
+                "/notifications/notifyAdmins/$customerEmail",
+                // Note: Ensure proper string interpolation
+                {},
+              );
+
+              print(
+                  "Notification Response Code: ${notificationResponse
+                      .statusCode}");
+              print("Notification Response Body: ${notificationResponse.body}");
+
+              if (notificationResponse.statusCode == 200) {
+                print("Admin notification sent successfully");
+                PushNotifications.init();
+              } else {
+                print("Failed to notify admins");
+              }
+
+
+              if (approvalResponse.statusCode == 200 ||
+                  approvalResponse.statusCode == 201) {
+                String blogId = json.decode(approvalResponse.body)["data"];
+
+                await sendNotification(
+                  title: "New Shop Approval Request",
+                  body:
+                  "${addBlogApproval
+                      .email} has applied for a shop with the title: ${addBlogApproval
+                      .title}. Please review it.",
+                );
+
+                // Upload images
+                // Upload preview image
+                if (imageFiles.isNotEmpty) {
+                  await uploadPreviewImage(blogId, imageFiles.first.path);
+                  await uploadCoverImages(blogId, imageFiles.sublist(1));
+                }
+
+                // -------------------------------------------------------------
+                // CLOSE LOADING DIALOG before showing next dialog
+                // -------------------------------------------------------------
+                Navigator.of(context).pop(); // close loading dialog
+
                 if (mounted) {
                   showDialog(
                     context: context,
                     builder: (BuildContext context) {
                       return AlertDialog(
                         title: Text(
-                          'Approval Pending',
+                          'Submission Successful',
                           style: TextStyle(fontWeight: FontWeight.bold),
                         ),
-                        content: Text('The Shop was not approved by the admin.'),
+                        content: Text(
+                            'Your shop has been submitted for approval!'),
                         actions: [
                           TextButton(
                             onPressed: () {
@@ -1109,7 +1074,7 @@ class _AddBlogState extends State<AddBlog> {
                             },
                             child: Text(
                               'OK',
-                              style: TextStyle(color: Colors.orange),
+                              style: TextStyle(color: Colors.green),
                             ),
                           ),
                         ],
@@ -1118,46 +1083,167 @@ class _AddBlogState extends State<AddBlog> {
                   );
                 }
 
-              }
-            } else {
-              if (mounted) {
-                showDialog(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return AlertDialog(
-                      title: const Text(
-                        'Submission Error',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      content: Text('Shop has already been submitted.'),
-                      actions: [
-                        TextButton(
-                          onPressed: () {
-                            Navigator.of(context).pop(); // Close the dialog
-                          },
-                          child: const Text(
-                            'OK',
-                            style: TextStyle(color: Colors.red),
-                          ),
-                        ),
-                      ],
-                    );
-                  },
-                );
-              }
 
+                // Step 4: Periodically check approval status
+                String status = "pending";
+                while (status == "pending") {
+                  await Future.delayed(
+                      Duration(seconds: 5)); // Wait before checking
+                  var statusResponse =
+                  await networkHandler.get("/AddBlogApproval/status/$blogId");
+
+                  if (statusResponse is Map<String, dynamic> &&
+                      statusResponse.containsKey("status")) {
+                    status = statusResponse["status"];
+                    print("Approval Status: $status");
+                  } else {
+                    print("Error checking approval status: $statusResponse");
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                          content: Text('Error checking approval status'),
+                          backgroundColor: Colors.red),
+                    );
+                    return;
+                  }
+                }
+
+                // Step 5: If approved, add to blogpost schema
+                if (status == "approved") {
+                  AddBlogModel addBlogModel = AddBlogModel(
+                    title: addBlogApproval.title,
+                    body: addBlogApproval.body,
+                    status: "approved",
+                    createdAt: DateTime.now(),
+                    type: selectedRole ?? "general",
+                    email: addBlogApproval.email,
+                    username: addBlogApproval.username,
+                    lat: selectedLat,
+                    lng: selectedLng,
+                  );
+
+                  var addResponse = await networkHandler.post(
+                      "/blogpost/Add", addBlogModel.toJson());
+
+                  if (addResponse.statusCode == 200 ||
+                      addResponse.statusCode == 201) {
+                    String newBlogId = json.decode(addResponse.body)["data"];
+                    print("New BlogPost ID: $newBlogId");
+
+                    // Step 6: Upload preview image to BlogPost
+                    if (imageFiles.isNotEmpty) {
+                      await uploadPreviewImageToBlogPost(
+                          newBlogId, imageFiles.first.path);
+                      await uploadCoverImagesToBlogPost(
+                          newBlogId, imageFiles.sublist(1));
+                    }
+
+                    if (mounted) Navigator.pop(context);
+                    if (mounted) {
+                      showDialog<void>(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15.0),
+                            ),
+                            title: const Row(
+                              children: [
+                                Icon(Icons.check_circle, color: Colors.green),
+                                SizedBox(width: 8),
+                                Text('Success'),
+                              ],
+                            ),
+                            content: const Text(
+                                'Shop approved and published successfully!'),
+                            actions: <Widget>[
+                              TextButton(
+                                child: const Text(
+                                  'OK', style: TextStyle(color: Colors.black),),
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    }
+                  } else {
+                    if (mounted)
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                            content:
+                            Text('Failed to add blog to blogpost schema'),
+                            backgroundColor: Colors.red),
+                      );
+                  }
+                } else {
+                  if (mounted) {
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: Text(
+                            'Approval Pending',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          content: Text(
+                              'The Shop was not approved by the admin.'),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop(); // Close the dialog
+                              },
+                              child: Text(
+                                'OK',
+                                style: TextStyle(color: Colors.orange),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  }
+                }
+              } else {
+                if (mounted) {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: const Text(
+                          'Submission Error',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        content: Text('Shop has already been submitted.'),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop(); // Close the dialog
+                            },
+                            child: const Text(
+                              'OK',
+                              style: TextStyle(color: Colors.red),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                }
+              }
             }
-          }
-        } else {
-          if (mounted)
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  AppLocalizations.of(context)!.fillAllFieldsAndSelectImage,
+          } else {
+            if (mounted)
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    AppLocalizations.of(context)!.fillAllFieldsAndSelectImage,
+                  ),
+                  backgroundColor: Colors.orange,
                 ),
-                backgroundColor: Colors.orange,
-              ),
-            );
+              );
+          }
         }
       },
       child: Center(

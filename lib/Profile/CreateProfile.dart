@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
-
+import 'package:intl/intl.dart';
 import '../NetworkHandler.dart';
 
 class CreateProfile extends StatefulWidget {
@@ -373,6 +373,24 @@ class _CreateProfileState extends State<CreateProfile> {
   Widget dobTextField() {
     return TextFormField(
       controller: _dobController,
+      readOnly: true, // prevents manual editing
+      onTap: () async {
+        // Show the date picker when the field is tapped.
+        DateTime? pickedDate = await showDatePicker(
+          context: context,
+          initialDate: DateTime.now(), // default date displayed
+          firstDate: DateTime(1900),   // earliest date allowed
+          lastDate: DateTime.now(),    // latest date allowed
+        );
+
+        if (pickedDate != null) {
+          // Format the selected date using the intl package.
+          String formattedDate = DateFormat('dd/MM/yyyy').format(pickedDate);
+          setState(() {
+            _dobController.text = formattedDate;
+          });
+        }
+      },
       validator: (value) {
         if (value == null || value.isEmpty) {
           return "DOB can't be empty";
@@ -380,24 +398,25 @@ class _CreateProfileState extends State<CreateProfile> {
         return null;
       },
       decoration: const InputDecoration(
-          border: OutlineInputBorder(
-            borderSide: BorderSide(
-              color: Colors.teal,
-            ),
+        border: OutlineInputBorder(
+          borderSide: BorderSide(
+            color: Colors.teal,
           ),
-          focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(
-              color: Colors.orange,
-              width: 2,
-            ),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderSide: BorderSide(
+            color: Colors.orange,
+            width: 2,
           ),
-          prefixIcon: Icon(
-            Icons.calendar_month,
-            color: Colors.green,
-          ),
-          labelText: "Date of birth",
-          helperText: "Provide DOB on dd/mm/yyyy format",
-          hintText: "Ex: 17/8/2002"),
+        ),
+        prefixIcon: Icon(
+          Icons.calendar_month,
+          color: Colors.green,
+        ),
+        labelText: "Date of birth",
+        helperText: "Provide DOB on dd/mm/yyyy format",
+        hintText: "Ex: 17/08/2002",
+      ),
     );
   }
 
