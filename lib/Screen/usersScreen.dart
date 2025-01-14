@@ -410,7 +410,7 @@ class _UsersScreenState extends State<UsersScreen> {
       Map<String, dynamic> body = {"role": newRole};
 
       var response =
-          await networkHandler.patch("/user/updateRole/$email", body);
+      await networkHandler.patch("/user/updateRole/$email", body);
       var responseData = json.decode(response.body);
 
       if (response.statusCode == 200) {
@@ -535,7 +535,7 @@ class _UsersScreenState extends State<UsersScreen> {
 
       // Make the PATCH request
       var response =
-          await networkHandler.patch("/user/updateRole/$email", body);
+      await networkHandler.patch("/user/updateRole/$email", body);
 
       // Decode the response body
       var responseData = json.decode(response.body);
@@ -557,8 +557,8 @@ class _UsersScreenState extends State<UsersScreen> {
       } else {
         debugPrint("Failed to update user role: ${responseData['msg']}");
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text(responseData['msg'] ?? AppLocalizations.of(context)!.failedToUpdateRole))
+            SnackBar(
+                content: Text(responseData['msg'] ?? AppLocalizations.of(context)!.failedToUpdateRole))
         );
       }
     } catch (e) {
@@ -612,32 +612,32 @@ class _UsersScreenState extends State<UsersScreen> {
       body: users.isEmpty
           ? const Center(child: CircularProgressIndicator())
           : kIsWeb
-              ? Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      return GridView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        // Prevent GridView from scrolling separately
-                        gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-                          maxCrossAxisExtent: 400, // Maximum width of each card
-                          mainAxisSpacing: 16.0, // Spacing between rows
-                          crossAxisSpacing: 16.0, // Spacing between columns
-                          childAspectRatio:
-                              5 / 4, // Adjust the aspect ratio as needed
-                        ),
-                        itemCount: users.length,
-                        itemBuilder: (context, index) =>
-                            _buildUserCard(users[index]),
-                      );
-                    },
-                  ),
-                )
-              : ListView.builder(
-                  itemCount: users.length,
-                  itemBuilder: (context, index) => _buildUserCard(users[index]),
-                ),
+          ? Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              // Prevent GridView from scrolling separately
+              gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+                maxCrossAxisExtent: 400, // Maximum width of each card
+                mainAxisSpacing: 16.0, // Spacing between rows
+                crossAxisSpacing: 16.0, // Spacing between columns
+                childAspectRatio:
+                5 / 4, // Adjust the aspect ratio as needed
+              ),
+              itemCount: users.length,
+              itemBuilder: (context, index) =>
+                  _buildUserCard(users[index]),
+            );
+          },
+        ),
+      )
+          : ListView.builder(
+        itemCount: users.length,
+        itemBuilder: (context, index) => _buildUserCard(users[index]),
+      ),
     );
   }
 
@@ -676,12 +676,12 @@ class _UsersScreenState extends State<UsersScreen> {
             InkWell(
               onTap: userEmail.contains('@')
                   ? () {
-                      showUserProfileDialog(
-                        context: context,
-                        networkHandler: networkHandler,
-                        email: userEmail,
-                      );
-                    }
+                showUserProfileDialog(
+                  context: context,
+                  networkHandler: networkHandler,
+                  email: userEmail,
+                );
+              }
                   : null,
               child: Text(
                 "${AppLocalizations.of(context)!.emailLabel}: $userEmail",
@@ -701,8 +701,8 @@ class _UsersScreenState extends State<UsersScreen> {
                 color: user['role'] == "customer"
                     ? Colors.blue
                     : user['role'] == "admin"
-                        ? Colors.red
-                        : Colors.green,
+                    ? Colors.red
+                    : Colors.green,
               ),
             ),
             const SizedBox(height: 4),
