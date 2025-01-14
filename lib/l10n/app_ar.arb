@@ -18,7 +18,7 @@
   "searchBlogsDescription": "Text displayed in the search bar for blogs",
 
   "requests": "طلبات",
-  "customer":"صاحب محل",
+  "customer":"ترقية لمتجر",
 
   "barberShopPosts": "محلات الحلاقة",
   "hospitalPosts": "المستشفيات",
@@ -147,7 +147,11 @@
   "errorFetchingResults": "حدث خطأ أثناء جلب النتائج",
   "couldNotOpenGoogleMaps": "تعذر فتح خرائط جوجل",
   "openInGoogleMaps": "افتح في خرائط جوجل",
-  "confirmLocation": "تأكيد الموقع"
+  "confirmLocation": "تأكيد الموقع",
+  "shopLocation": "موقع المحل",
+  "upgradeToCustomer": "الترقية إلى متجر"
+
+
 
 
 

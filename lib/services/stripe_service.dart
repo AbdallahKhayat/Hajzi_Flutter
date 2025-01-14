@@ -1,6 +1,10 @@
 import 'package:blogapp/consts.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
+import '../main.dart';
 
 class StripeService {
   StripeService._();
@@ -8,6 +12,14 @@ class StripeService {
   static final StripeService instance = StripeService._();
   bool paymentSuccessful = false;
   Future<void> makePayment(Function(bool) onPaymentStatus) async {
+
+    final BuildContext? context = navigationKey.currentContext;
+    if (context == null) {
+      onPaymentStatus(false);
+      return;
+    }
+
+
     try {
       print("Creating payment intent...");
       String? paymentIntentClientSecret = await _createPaymentIntent(1, "usd");
@@ -21,7 +33,7 @@ class StripeService {
       await Stripe.instance.initPaymentSheet(
         paymentSheetParameters: SetupPaymentSheetParameters(
           paymentIntentClientSecret: paymentIntentClientSecret,
-          merchantDisplayName: "Upgrade To Customer",
+          merchantDisplayName: AppLocalizations.of(context)!.upgradeToCustomer,
         ),
       );
       print("Payment sheet initialized.");

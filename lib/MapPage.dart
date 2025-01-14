@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import 'constants.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class MapPage extends StatelessWidget {
   final double lat;
@@ -21,9 +22,9 @@ class MapPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Shop Location',
-          style: TextStyle(fontWeight: FontWeight.bold),
+        title: Text(
+          AppLocalizations.of(context)!.shopLocation,
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         flexibleSpace: ValueListenableBuilder<Color>(
           valueListenable: appColorNotifier,

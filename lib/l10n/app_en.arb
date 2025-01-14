@@ -148,7 +148,11 @@
   "errorFetchingResults": "Error fetching results",
   "couldNotOpenGoogleMaps": "Could not open Google Maps",
   "openInGoogleMaps": "Open in Google Maps",
-  "confirmLocation": "Confirm Location"
+  "confirmLocation": "Confirm Location",
+  "shopLocation": "Shop Location",
+  "upgradeToCustomer": "Upgrade To Customer"
+
+
 
 
 
