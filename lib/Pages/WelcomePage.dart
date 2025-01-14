@@ -70,7 +70,9 @@ class _WelcomePageState extends State<WelcomePage>
   void didChangeDependencies() {
     super.didChangeDependencies();
     // Set selectedLanguage based on the current locale:
-    selectedLanguage = Localizations.localeOf(context).languageCode == 'ar' ? "العربية" : "English";
+    selectedLanguage = Localizations.localeOf(context).languageCode == 'ar'
+        ? "العربية"
+        : "English";
   }
 
   // Language dialog method
@@ -115,57 +117,59 @@ class _WelcomePageState extends State<WelcomePage>
     // Build the Row that reverses its children for Arabic.
     final List<Widget> authRowChildren = isArabic
         ? [
-      // In Arabic: "Sign In" comes first, then "Already have an account?"
-      InkWell(
-        onTap: () {
-          Navigator.of(context).push(MaterialPageRoute(
-            builder: (context) => EmailSignInPage(setLocale: widget.setLocale),
-          ));
-        },
-        child: Text(
-          AppLocalizations.of(context)!.signIn,
-          style: const TextStyle(
-            color: Colors.blueAccent,
-            fontSize: 17,
-            fontWeight: FontWeight.bold,
-            decoration: TextDecoration.underline,
-            decorationColor: Colors.blue,
-            decorationThickness: 2,
-          ),
-        ),
-      ),
-      const SizedBox(width: 10),
-      Text(
-        AppLocalizations.of(context)!.alreadyHaveAnAccount,
-        style: const TextStyle(fontSize: 17),
-      ),
-    ]
+            // In Arabic: "Sign In" comes first, then "Already have an account?"
+            InkWell(
+              onTap: () {
+                Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) =>
+                      EmailSignInPage(setLocale: widget.setLocale),
+                ));
+              },
+              child: Text(
+                AppLocalizations.of(context)!.signIn,
+                style: const TextStyle(
+                  color: Colors.blueAccent,
+                  fontSize: 17,
+                  fontWeight: FontWeight.bold,
+                  decoration: TextDecoration.underline,
+                  decorationColor: Colors.blue,
+                  decorationThickness: 2,
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Text(
+              AppLocalizations.of(context)!.alreadyHaveAnAccount,
+              style: const TextStyle(fontSize: 17),
+            ),
+          ]
         : [
-      // For English (and other LTR languages): "Already have an account?" then "Sign In"
-      Text(
-        AppLocalizations.of(context)!.alreadyHaveAnAccount,
-        style: const TextStyle(fontSize: 17),
-      ),
-      const SizedBox(width: 10),
-      InkWell(
-        onTap: () {
-          Navigator.of(context).push(MaterialPageRoute(
-            builder: (context) => EmailSignInPage(setLocale: widget.setLocale),
-          ));
-        },
-        child: Text(
-          AppLocalizations.of(context)!.signIn,
-          style: const TextStyle(
-            color: Colors.blueAccent,
-            fontSize: 17,
-            fontWeight: FontWeight.bold,
-            decoration: TextDecoration.underline,
-            decorationColor: Colors.blue,
-            decorationThickness: 2,
-          ),
-        ),
-      ),
-    ];
+            // For English (and other LTR languages): "Already have an account?" then "Sign In"
+            Text(
+              AppLocalizations.of(context)!.alreadyHaveAnAccount,
+              style: const TextStyle(fontSize: 17),
+            ),
+            const SizedBox(width: 10),
+            InkWell(
+              onTap: () {
+                Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) =>
+                      EmailSignInPage(setLocale: widget.setLocale),
+                ));
+              },
+              child: Text(
+                AppLocalizations.of(context)!.signIn,
+                style: const TextStyle(
+                  color: Colors.blueAccent,
+                  fontSize: 17,
+                  fontWeight: FontWeight.bold,
+                  decoration: TextDecoration.underline,
+                  decorationColor: Colors.blue,
+                  decorationThickness: 2,
+                ),
+              ),
+            ),
+          ];
 
     // Wrap in Directionality to force LTR (prevents mirror effect)
     return Directionality(
@@ -181,7 +185,7 @@ class _WelcomePageState extends State<WelcomePage>
                 gradient: LinearGradient(
                   colors: [
                     Colors.white,
-                    appColorNotifier.value.withOpacity(0.7),
+                    Colors.green[400]!,
                   ],
                   begin: const FractionalOffset(0.0, 1.0),
                   end: const FractionalOffset(0.0, 1.0),
@@ -190,7 +194,8 @@ class _WelcomePageState extends State<WelcomePage>
                 ),
               ),
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 30.0, vertical: 60.0),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 30.0, vertical: 60.0),
                 child: Column(
                   children: [
                     // Your branded image
@@ -206,7 +211,8 @@ class _WelcomePageState extends State<WelcomePage>
                     SlideTransition(
                       position: animation1,
                       child: Text(
-                        AppLocalizations.of(context)!.welcome1, // Localized welcome message
+                        AppLocalizations.of(context)!.welcome1,
+                        // Localized welcome message
                         textAlign: TextAlign.center,
                         style: const TextStyle(
                           fontWeight: FontWeight.w600,
@@ -215,17 +221,25 @@ class _WelcomePageState extends State<WelcomePage>
                       ),
                     ),
                     const SizedBox(height: 30),
-                    boxContainer("assets/google.png", AppLocalizations.of(context)!.signUpWithGoogle, null),
+                    boxContainer("assets/google.png",
+                        AppLocalizations.of(context)!.signUpWithGoogle, null),
                     const SizedBox(height: 20),
-                    boxContainer("assets/Facebook_logo.png", AppLocalizations.of(context)!.signUpWithFacebook, onFBLogin),
+                    boxContainer(
+                        "assets/Facebook_logo.png",
+                        AppLocalizations.of(context)!.signUpWithFacebook,
+                        onFBLogin),
                     const SizedBox(height: 20),
-                    boxContainer("assets/email.png", AppLocalizations.of(context)!.signUpWithEmail, onEmailClick),
+                    boxContainer(
+                        "assets/email.png",
+                        AppLocalizations.of(context)!.signUpWithEmail,
+                        onEmailClick),
                     const SizedBox(height: 30),
                     SlideTransition(
                       position: animation2,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
-                        children: authRowChildren, // Use our conditionally built list.
+                        children:
+                            authRowChildren, // Use our conditionally built list.
                       ),
                     )
                   ],
@@ -261,7 +275,8 @@ class _WelcomePageState extends State<WelcomePage>
         if (accessToken != null) {
           final token = accessToken.tokenString;
           final response = await http.get(
-            Uri.parse("https://graph.facebook.com/v2.12/me?fields=name,picture,email&access_token=$token"),
+            Uri.parse(
+                "https://graph.facebook.com/v2.12/me?fields=name,picture,email&access_token=$token"),
           );
           final data1 = json.decode(response.body);
           setState(() {
@@ -283,88 +298,95 @@ class _WelcomePageState extends State<WelcomePage>
 
   Future fbPaypass() {
     return Navigator.of(context).push(MaterialPageRoute(
-        builder: (context) => HomePage(setLocale: widget.setLocale, filterState: 0,)));
+        builder: (context) => HomePage(
+              setLocale: widget.setLocale,
+              filterState: 0,
+            )));
   }
 
   onEmailClick() {
     Navigator.of(context).push(MaterialPageRoute(
-        builder: (context) => EmailSignUpPage(setLocale: widget.setLocale,)));
+        builder: (context) => EmailSignUpPage(
+              setLocale: widget.setLocale,
+            )));
   }
 
   Widget boxContainer(String path, String text, VoidCallback? onClick) {
     return kIsWeb
         ? SlideTransition(
-      position: animation2,
-      child: InkWell(
-        onTap: onClick,
-        child: Container(
-          height: 50,
-          width: 400,
-          child: Card(
-            elevation: 2,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 8),
-              child: Row(
-                children: [
-                  Image.asset(
-                    path,
-                    height: 30,
-                    width: 30,
+            position: animation2,
+            child: InkWell(
+              onTap: onClick,
+              child: Container(
+                height: 50,
+                width: 400,
+                child: Card(
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
                   ),
-                  const SizedBox(width: 15),
-                  Expanded(
-                    child: Text(
-                      text,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Colors.black87,
-                        fontWeight: FontWeight.w500,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 15.0, vertical: 8),
+                    child: Row(
+                      children: [
+                        Image.asset(
+                          path,
+                          height: 30,
+                          width: 30,
+                        ),
+                        const SizedBox(width: 15),
+                        Expanded(
+                          child: Text(
+                            text,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Colors.black87,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
+                ),
               ),
             ),
-          ),
-        ),
-      ),
-    )
+          )
         : SlideTransition(
-      position: animation2,
-      child: InkWell(
-        onTap: onClick,
-        child: Container(
-          height: 60,
-          width: MediaQuery.of(context).size.width - 120,
-          child: Card(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10),
-              child: Row(
-                children: [
-                  Image.asset(
-                    path,
-                    height: 35,
-                    width: 35,
-                  ),
-                  const SizedBox(width: 20),
-                  Text(
-                    text,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      color: Colors.black87,
+            position: animation2,
+            child: InkWell(
+              onTap: onClick,
+              child: Container(
+                height: 60,
+                width: MediaQuery.of(context).size.width - 120,
+                child: Card(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20.0, vertical: 10),
+                    child: Row(
+                      children: [
+                        Image.asset(
+                          path,
+                          height: 35,
+                          width: 35,
+                        ),
+                        const SizedBox(width: 20),
+                        Text(
+                          text,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            color: Colors.black87,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
+                ),
               ),
             ),
-          ),
-        ),
-      ),
-    );
+          );
   }
 }
