@@ -311,7 +311,17 @@
   "failedToBookAppointment": "فشل في حجز الموعد.",
   "errorBookingAppointment": "حدث خطأ أثناء حجز الموعد.",
   "expired": "منتهية",
-  "methodUnavailableOnWeb": "هذه الطريقة غير متوفرة حاليًا على الويب، يرجى التبديل إلى التطبيق المحمول."
+  "methodUnavailableOnWeb": "هذه الطريقة غير متوفرة حاليًا على الويب، يرجى التبديل إلى التطبيق المحمول.",
+  "forgotPassword": "نسيت كلمة المرور",
+  "emailEmpty": "البريد الإلكتروني لا يمكن أن يكون فارغًا!",
+  "invalidEmail": "البريد الإلكتروني غير صالح!",
+  "enterYourEmail": "أدخل بريدك الإلكتروني",
+  "enterYourNewPassword": "أدخل كلمة المرور الجديدة",
+  "verifyEmail": "تحقق من البريد الإلكتروني",
+  "updatePassword": "تحديث كلمة المرور",
+  "pleaseVerifyYourEmail": "يرجى التحقق من بريدك الإلكتروني!",
+  "passwordUpdatedSuccessfully": "تم تحديث كلمة المرور بنجاح!"
+
 
 
 

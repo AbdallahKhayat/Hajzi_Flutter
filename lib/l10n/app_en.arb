@@ -312,7 +312,17 @@
   "failedToBookAppointment": "Failed to book appointment.",
   "errorBookingAppointment": "An error occurred while booking the appointment.",
   "expired": "Expired",
-  "methodUnavailableOnWeb": "This method isn't currently available on WEB, please switch to the mobile app."
+  "methodUnavailableOnWeb": "This method isn't currently available on WEB, please switch to the mobile app.",
+  "forgotPassword": "Forgot Password",
+  "emailEmpty": "Email can’t be empty!",
+  "invalidEmail": "Invalid email!",
+  "enterYourEmail": "Enter your email",
+  "enterYourNewPassword": "Enter your new password",
+  "verifyEmail": "Verify Email",
+  "updatePassword": "Update Password",
+  "pleaseVerifyYourEmail": "Please verify your email!",
+  "passwordUpdatedSuccessfully": "Password updated successfully!"
+
 
 
 
