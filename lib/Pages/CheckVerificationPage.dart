@@ -140,6 +140,12 @@ class _CheckVerificationPageState extends State<CheckVerificationPage> {
 
       if (isVerified) {
         bool hasProfile = await checkProfileFlag();
+
+        final response = await networkHandler
+            .post("/user/verifyToFalse/${widget.email}", {});
+        print("POST /verifyToFalse: ${response.statusCode}");
+        print("Response body: ${response.body}");
+
         if (hasProfile) {
           Navigator.pushAndRemoveUntil(
             context,

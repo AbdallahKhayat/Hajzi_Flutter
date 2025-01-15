@@ -25,7 +25,8 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   bool isVerified = false;
   String? errorText;
   late String buttonText;
-
+  /// Store which email has been verified
+  String? verifiedEmail;
 
 
 
@@ -155,7 +156,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                   color: Colors.black,
                 ),
                 const SizedBox(height: 20),
-                emailTextField(),
+               if(!isVerified) emailTextField(),
                 const SizedBox(height: 15),
                 if (isVerified) passwordTextField(),
                 const SizedBox(height: 20),
@@ -174,6 +175,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
 
                           if (alreadyVerified) {
                             setState(() {
+                              verifiedEmail = _emailController.text;
                               isVerified = true;
                               buttonText = AppLocalizations.of(context)!.updatePassword; // CHANGED
                             });
@@ -187,6 +189,16 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                             );
                           }
                         } else {
+                          // If isVerified is true, ensure the email hasn't changed
+                          if (_emailController.text != verifiedEmail) {
+                            setState(() {
+                              isVerified = false;
+                              buttonText = "Verify Email";
+                            });
+                            throw Exception(
+                                "Email changed. Please re-verify the new email.");
+                          }
+
                           // Update the password
                           await updatePassword(
                             _emailController.text,
@@ -239,6 +251,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
         width: 400,
         child: TextFormField(
           controller: _emailController,
+         // readOnly: isVerified, // Disable editing if verified
           validator: (value) {
             if (value == null || value.isEmpty) {
               return AppLocalizations.of(context)!.emailEmpty; // CHANGED
@@ -265,6 +278,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     ):
     TextFormField(
       controller: _emailController,
+    //  readOnly: isVerified, // Disable editing if verified
       validator: (value) {
         if (value == null || value.isEmpty) {
           return AppLocalizations.of(context)!.emailEmpty; // CHANGED
