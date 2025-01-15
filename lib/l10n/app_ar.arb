@@ -304,7 +304,16 @@
   "aboutEmpty": "حول لا يمكن أن يكون فارغًا",
   "aboutHelper": "اكتب شيئًا عن نفسك (اختياري)",
   "aboutHint": "مثال: أعمل كطبيب اسنان منذ 4 سنوات و عندي عيادتي الخاصة",
-  "somethingWentWrong": "حدث خطأ ما"
+  "somethingWentWrong": "حدث خطأ ما",
+  "failedToFetchAvailableSlots": "فشل في جلب المواعيد المتاحة",
+  "alreadyBooked": "لقد قمت بحجز موعد بالفعل.",
+  "appointmentBookedSuccessfully": "تم حجز الموعد بنجاح!",
+  "failedToBookAppointment": "فشل في حجز الموعد.",
+  "errorBookingAppointment": "حدث خطأ أثناء حجز الموعد.",
+  "expired": "منتهية",
+  "methodUnavailableOnWeb": "هذه الطريقة غير متوفرة حاليًا على الويب، يرجى التبديل إلى التطبيق المحمول."
+
+
 
 
 

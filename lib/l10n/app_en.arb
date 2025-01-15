@@ -305,7 +305,16 @@
   "aboutEmpty": "About can't be empty",
   "aboutHelper": "Write about yourself (optional)",
   "aboutHint": "Ex: I am a specialized dentist and have my own clinic which i opened in 2020",
-  "somethingWentWrong": "Something went wrong"
+  "somethingWentWrong": "Something went wrong",
+  "failedToFetchAvailableSlots": "Failed to fetch available slots",
+  "alreadyBooked": "You have already booked an appointment.",
+  "appointmentBookedSuccessfully": "Appointment booked successfully!",
+  "failedToBookAppointment": "Failed to book appointment.",
+  "errorBookingAppointment": "An error occurred while booking the appointment.",
+  "expired": "Expired",
+  "methodUnavailableOnWeb": "This method isn't currently available on WEB, please switch to the mobile app."
+
+
 
 
 

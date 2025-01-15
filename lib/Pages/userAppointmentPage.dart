@@ -47,8 +47,9 @@ class _UserAppointmentPageState extends State<UserAppointmentPage> {
     } catch (e) {
       debugPrint("Error fetching appointments: $e");
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to fetch available slots.')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.failedToFetchAvailableSlots)), // CHANGED
       );
+
     }
   }
 
@@ -104,8 +105,8 @@ class _UserAppointmentPageState extends State<UserAppointmentPage> {
   Future<void> _confirmBooking(String time) async {
     if (hasBooked) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('You have already booked an appointment.'),
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.alreadyBooked), // CHANGED
         ),
       );
       return;
@@ -125,19 +126,19 @@ class _UserAppointmentPageState extends State<UserAppointmentPage> {
 
       if (response.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Appointment booked successfully!')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.appointmentBookedSuccessfully)), // CHANGED
         );
         _fetchAvailableSlots(); // Refresh the available slots
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to book appointment.')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.failedToBookAppointment)), // CHANGED
         );
       }
     } catch (error) {
       debugPrint("Error booking appointment: $error");
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('An error occurred while booking the appointment.')),
+        SnackBar(
+            content: Text(AppLocalizations.of(context)!.errorBookingAppointment)), // CHANGED
       );
     }
   }
@@ -212,7 +213,7 @@ class _UserAppointmentPageState extends State<UserAppointmentPage> {
                         ? Text(
                             "${AppLocalizations.of(context)!.bookedBy}: ${appointment['userName'] ?? 'N/A'}")
                         : isInPast(time)
-                            ? const Text("Expired")
+                        ? Text(AppLocalizations.of(context)!.expired) // CHANGED
                             : Text(AppLocalizations.of(context)!.availableSlot),
                     trailing: (hasBooked || isBooked ||  isInPast(time))
                         ? const Icon(Icons.lock, color: Colors.red)

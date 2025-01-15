@@ -1562,7 +1562,8 @@ class _HomePageState extends State<HomePage>
   Future<void> _upgradeToCustomer() async {
     if (kIsWeb) {
       _showErrorDialog(
-          "This method isn't currently available on WEB pls switch to mobile app.");
+        AppLocalizations.of(context)!.methodUnavailableOnWeb,
+      );
       return;
     }
     await StripeService.instance.makePayment(
@@ -1630,8 +1631,8 @@ class _HomePageState extends State<HomePage>
                   title: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        "Congratulations!",
+                       Text(
+                        AppLocalizations.of(context)!.congratulations,
                         style: TextStyle(
                             fontSize: 18, fontWeight: FontWeight.bold),
                       ),
@@ -1643,15 +1644,16 @@ class _HomePageState extends State<HomePage>
                       ),
                     ],
                   ),
-                  content: const Text(
-                    "You have successfully upgraded to Customer.",
+                  content:  Text(
+                    AppLocalizations.of(context)!.upgradeSuccess,
                     style: TextStyle(fontSize: 16),
                   ),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.of(context).pop(),
-                      child: const Text("Close",
-                          style: TextStyle(color: Colors.black)),
+                      child: Text(
+                          AppLocalizations.of(context)!.close,
+                          style: const TextStyle(color: Colors.black)),
                     ),
                   ],
                 );
@@ -1687,14 +1689,14 @@ class _HomePageState extends State<HomePage>
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text("Feature not provided yet"),
+          title: Text(AppLocalizations.of(context)!.featureNotProvided),
           content: Text(message),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text(
-                "Close",
-                style: TextStyle(color: Colors.black),
+              child: Text(
+              AppLocalizations.of(context)!.close,
+                style: const TextStyle(color: Colors.black),
               ),
             ),
           ],
@@ -1709,9 +1711,10 @@ class _HomePageState extends State<HomePage>
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text("Profile Required"),
-          content: const Text(
-              "Please create a profile before upgrading to Customer."),
+          title: Text(AppLocalizations.of(context)!.profileRequired),
+          content:  Text(
+            AppLocalizations.of(context)!.pleaseCreateProfile,
+          ),
           actions: [
             TextButton(
               onPressed: () {
@@ -1725,15 +1728,15 @@ class _HomePageState extends State<HomePage>
                   ),
                 );
               },
-              child: const Text(
-                "Create Profile",
-                style: TextStyle(color: Colors.black),
+              child: Text(
+                AppLocalizations.of(context)!.createProfile,
+                style: const TextStyle(color: Colors.black),
               ),
             ),
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text(
-                "Cancel",
+              child:  Text(
+                AppLocalizations.of(context)!.cancel,
                 style: TextStyle(color: Colors.black),
               ),
             ),
