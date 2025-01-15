@@ -240,5 +240,22 @@
   "gallery": "معرض",
   "audio": "صوت",
   "location": "الموقع",
-  "contact": "جهة الاتصال"
+  "contact": "جهة الاتصال",
+  "transferPaymentHelp": "لنقل إلى المتجر، يرجى إتمام عملية الدفع. اضغط على الزر أدناه لفتح صفحة الدفع.",
+  "requestNotProcessed": "عذرًا، لم أتمكن من معالجة طلبك في الوقت الحالي.",
+  "requestProcessingError": "حدث خطأ أثناء محاولة معالجة طلبك.",
+  "browseAllShops": "تصفح جميع المحلات",
+  "payAndUpgrade": "الدفع والترقية",
+  "deleteChatHistoryTitle": "حذف سجل الدردشة",
+  "deleteChatHistoryContent": "هل أنت متأكد من أنك تريد حذف سجل الدردشة؟",
+  "featureNotProvided": "الميزة غير متوفرة بعد",
+  "congratulations": "تهانينا!",
+  "upgradeSuccess": "لقد تم ترقيتك بنجاح إلى المتجر.",
+  "alreadyCustomer": "أنت مشترك بالفعل",
+  "alreadyRegisteredCustomer": "أنت مسجل كعميل بالفعل.",
+  "methodNotAvailableOnWeb": "هذه الطريقة غير متوفرة حاليًا على الويب، يرجى التبديل إلى التطبيق المحمول."
+
+
+
+
 }

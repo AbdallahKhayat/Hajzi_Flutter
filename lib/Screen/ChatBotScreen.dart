@@ -139,8 +139,7 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
 
         case "2": // Transfer to customer
           _addAssistantMessage(
-              "To transfer to Customer, please complete your payment. "
-              "Click the button below to open the payment page.");
+               AppLocalizations.of(context)!.transferPaymentHelp); // CHANGED
           messages
               .add({"role": "assistant", "content": "__SHOW_PAYMENT_BUTTON__"});
           break;
@@ -193,13 +192,13 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
         await _saveChatHistory();
       } else {
         debugPrint('Failed to fetch response: ${response.body}');
-        _addAssistantMessage(
-            "Sorry, I couldn't process your request at the moment.");
-      }
+        _addAssistantMessage(AppLocalizations.of(context)!.requestNotProcessed); // CHANGED
+
+    }
     } catch (error) {
       debugPrint('Error sending message: $error');
-      _addAssistantMessage(
-          "An error occurred while trying to process your request.");
+      _addAssistantMessage(AppLocalizations.of(context)!.requestProcessingError);// CHANGED
+
     } finally {
       setState(() {
         isLoading = false;
@@ -230,18 +229,17 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text(
-          "Delete Chat History",
-          style: TextStyle(fontWeight: FontWeight.bold),
+        title: Text(
+          AppLocalizations.of(context)!.deleteChatHistoryTitle, // CHANGED
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
-        content:
-            const Text("Are you sure you want to delete the chat history?"),
+        content: Text(AppLocalizations.of(context)!.deleteChatHistoryContent), // CHANGED
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context), // Cancel
-            child: const Text(
-              "Cancel",
-              style: TextStyle(
+            child: Text(
+              AppLocalizations.of(context)!.cancel, // CHANGED (if not already localized)
+              style: const TextStyle(
                 color: Colors.black,
                 fontWeight: FontWeight.bold,
               ),
@@ -252,9 +250,9 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
               Navigator.pop(context); // Close dialog
               _deleteChatHistory(); // Delete history
             },
-            child: const Text(
-              "Delete",
-              style: TextStyle(
+            child: Text(
+              AppLocalizations.of(context)!.delete, // CHANGED
+              style: const TextStyle(
                 color: Colors.red,
                 fontWeight: FontWeight.bold,
               ),
@@ -378,9 +376,9 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
                               builder: (_) => HomeScreen(chatbotFlag:1,filterState: 0)),
                         );
                       },
-                      child: const Text(
-                        "Browse All Shops",
-                        style: TextStyle(
+                      child: Text(
+                        AppLocalizations.of(context)!.browseAllShops, // CHANGED
+                        style: const TextStyle(
                             color: Colors.black, fontWeight: FontWeight.bold),
                       ),
                     ),
@@ -401,33 +399,34 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
                             context: context,
                             builder: (BuildContext context) {
                               return AlertDialog(
-                                title: const Row(
+                                title: Row(
                                   children: [
-                                    Icon(
+                                    const Icon(
                                       Icons.info_outline,
                                       color: Colors.blue,
                                     ),
-                                    SizedBox(width: 8),
+                                    const SizedBox(width: 8),
                                     // Spacing between icon and text
                                     Text(
-                                      'Already a Customer',
-                                      style: TextStyle(
+                                      AppLocalizations.of(context)!.alreadyCustomer,
+                                      style: const TextStyle(
                                           fontWeight: FontWeight.bold),
                                     ),
                                   ],
                                 ),
-                                content: const Row(
+                                content: Row(
                                   children: [
-                                    Icon(
+                                    const Icon(
                                       Icons.person_outline,
                                       color: Colors.blue,
                                       size: 36,
                                     ),
-                                    SizedBox(width: 10),
+                                    const SizedBox(width: 10),
                                     // Spacing between icon and message
                                     Expanded(
                                       child: Text(
-                                          "You are already a registered customer."),
+                                        AppLocalizations.of(context)!.alreadyRegisteredCustomer
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -437,9 +436,9 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
                                       Navigator.of(context)
                                           .pop(); // Close the dialog
                                     },
-                                    child: const Text(
-                                      'OK',
-                                      style: TextStyle(color: Colors.blue),
+                                    child: Text(
+                                    AppLocalizations.of(context)!.ok,
+                                      style: const TextStyle(color: Colors.blue),
                                     ),
                                   ),
                                 ],
@@ -449,9 +448,9 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
                           return; // Exit the else block
                         }
                       },
-                      child: const Text(
-                        "Pay & Upgrade",
-                        style: TextStyle(
+                      child: Text(
+                        AppLocalizations.of(context)!.payAndUpgrade, // CHANGED
+                        style: const TextStyle(
                             color: Colors.black, fontWeight: FontWeight.bold),
                       ),
                     ),
@@ -532,14 +531,14 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text("Feature not provided yet"),
+          title: Text(AppLocalizations.of(context)!.featureNotProvided), // CHANGED
           content: Text(message),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text(
-                "Close",
-                style: TextStyle(color: Colors.black),
+              child: Text(
+                AppLocalizations.of(context)!.close, // CHANGED
+                style: const TextStyle(color: Colors.black),
               ),
             ),
           ],
@@ -552,7 +551,8 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
   Future<void> _upgradeToCustomer() async {
     if (kIsWeb) {
       _showErrorDialog(
-          "This method isn't currently available on WEB pls switch to mobile app.");
+        AppLocalizations.of(context)!.methodNotAvailableOnWeb,
+      );
       return;
     }
     await StripeService.instance.makePayment(
@@ -619,9 +619,9 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
                   title: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        "Congratulations!",
-                        style: TextStyle(
+                      Text(
+                        AppLocalizations.of(context)!.congratulations, // CHANGED
+                        style: const TextStyle(
                             fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                       IconButton(
@@ -632,15 +632,16 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
                       ),
                     ],
                   ),
-                  content: const Text(
-                    "You have successfully upgraded to Customer.",
-                    style: TextStyle(fontSize: 16),
+                  content: Text(
+                    AppLocalizations.of(context)!.upgradeSuccess, // CHANGED
+                    style: const TextStyle(fontSize: 16),
                   ),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.of(context).pop(),
-                      child: const Text("Close",
-                          style: TextStyle(color: Colors.black)),
+                      child: Text(
+                          AppLocalizations.of(context)!.close, // CHANGED
+                          style: const TextStyle(color: Colors.black)),
                     ),
                   ],
                 );
@@ -676,9 +677,9 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text("Profile Required"),
-          content: const Text(
-              "Please create a profile before upgrading to Customer."),
+          title: Text(AppLocalizations.of(context)!.profileRequired), // CHANGED
+          content: Text(AppLocalizations.of(context)!.pleaseCreateProfile), // CHANGED
+
           actions: [
             TextButton(
               onPressed: () {
@@ -692,16 +693,16 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
                   ),
                 );
               },
-              child: const Text(
-                "Create Profile",
-                style: TextStyle(color: Colors.black),
+              child: Text(
+                AppLocalizations.of(context)!.createProfile, // CHANGED
+                style: const TextStyle(color: Colors.black),
               ),
             ),
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text(
-                "Cancel",
-                style: TextStyle(color: Colors.black),
+              child: Text(
+                AppLocalizations.of(context)!.cancel, // CHANGED
+                style: const TextStyle(color: Colors.black),
               ),
             ),
           ],

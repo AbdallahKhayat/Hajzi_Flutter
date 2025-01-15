@@ -241,5 +241,23 @@
   "gallery": "Gallery",
   "audio": "Audio",
   "location": "Location",
-  "contact": "Contact"
+  "contact": "Contact",
+  "transferPaymentHelp": "To transfer to Customer, please complete your payment. Click the button below to open the payment page.",
+  "requestNotProcessed": "Sorry, I couldn't process your request at the moment.",
+  "requestProcessingError": "An error occurred while trying to process your request.",
+  "browseAllShops": "Browse All Shops",
+  "payAndUpgrade": "Pay & Upgrade",
+  "deleteChatHistoryTitle": "Delete Chat History",
+  "deleteChatHistoryContent": "Are you sure you want to delete the chat history?",
+  "featureNotProvided": "Feature not provided yet",
+  "congratulations": "Congratulations!",
+  "upgradeSuccess": "You have successfully upgraded to Customer.",
+  "alreadyCustomer": "Already a Customer",
+  "alreadyRegisteredCustomer": "You are already a registered customer.",
+  "methodNotAvailableOnWeb": "This method isn't currently available on WEB, please switch to the mobile app."
+
+
+
+
+
 }
