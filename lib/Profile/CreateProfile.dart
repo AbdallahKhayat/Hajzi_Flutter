@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:intl/intl.dart';
 import '../NetworkHandler.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class CreateProfile extends StatefulWidget {
   const CreateProfile({super.key});
@@ -134,8 +135,8 @@ class _CreateProfileState extends State<CreateProfile> {
                                   circular = false; // Hide the loading indicator
                                 });
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text("Something went wrong"),
+                                  SnackBar(
+                                    content: Text(AppLocalizations.of(context)!.somethingWentWrong),
                                   ),
                                 );
                               }
@@ -167,9 +168,9 @@ class _CreateProfileState extends State<CreateProfile> {
                             ? const CircularProgressIndicator(
                           color: Colors.white,
                         )
-                            : const Text(
-                          "Submit",
-                          style: TextStyle(
+                            : Text(
+                          AppLocalizations.of(context)!.submit, // CHANGED
+                          style: const TextStyle(
                             color: Colors.white,
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -226,7 +227,7 @@ class _CreateProfileState extends State<CreateProfile> {
     } else {
       print("Camera or Gallery permission denied");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Camera or Gallery permission is required")),
+        SnackBar(content: Text(AppLocalizations.of(context)!.cameraGalleryPermission)), // CHANGED
       );
     }
   }
@@ -241,9 +242,9 @@ class _CreateProfileState extends State<CreateProfile> {
       ),
       child: Column(
         children: [
-          const Text(
-            "Choose Profile Photo",
-            style: TextStyle(
+          Text(
+            AppLocalizations.of(context)!.chooseProfilePhoto, // CHANGED
+            style: const TextStyle(
               fontSize: 20,
             ),
           ),
@@ -262,9 +263,9 @@ class _CreateProfileState extends State<CreateProfile> {
                   color: Colors.black,
                 ),
                 // The icon to display
-                label: const Text(
-                  "Camera",
-                  style: TextStyle(
+                label: Text(
+                  AppLocalizations.of(context)!.camera, // CHANGED
+                  style: const TextStyle(
                     color: Colors.black,
                   ),
                 ), // The label text to display
@@ -281,9 +282,9 @@ class _CreateProfileState extends State<CreateProfile> {
                   color: Colors.black,
                 ),
                 // The icon to display
-                label: const Text(
-                  "Gallery",
-                  style: TextStyle(
+                label: Text(
+                  AppLocalizations.of(context)!.gallery, // CHANGED
+                  style: const TextStyle(
                     color: Colors.black,
                   ),
                 ), // The label text to display
@@ -313,29 +314,30 @@ class _CreateProfileState extends State<CreateProfile> {
       controller: _nameController,
       validator: (value) {
         if (value == null || value.isEmpty) {
-          return "Name can't be empty";
+          return AppLocalizations.of(context)!.nameEmpty; // CHANGED
         }
         return null;
       },
-      decoration: const InputDecoration(
-          border: OutlineInputBorder(
+      decoration: InputDecoration(
+          border: const OutlineInputBorder(
             borderSide: BorderSide(
               color: Colors.teal,
             ),
           ),
-          focusedBorder: OutlineInputBorder(
+          focusedBorder: const OutlineInputBorder(
             borderSide: BorderSide(
               color: Colors.orange,
               width: 2,
             ),
           ),
-          prefixIcon: Icon(
+          prefixIcon: const Icon(
             Icons.person,
             color: Colors.green,
           ),
-          labelText: "Name",
-          helperText: "Name can't be empty",
-          hintText: "Ex: Abdallah Khayat"),
+          labelText: AppLocalizations.of(context)!.name, // CHANGED
+          helperText: AppLocalizations.of(context)!.nameHelper, // CHANGED
+          hintText: AppLocalizations.of(context)!.nameHint, // CHANGED
+    ),
     );
   }
 
@@ -344,29 +346,30 @@ class _CreateProfileState extends State<CreateProfile> {
       controller: _professionController,
       validator: (value) {
         if (value == null || value.isEmpty) {
-          return "Profession can't be empty";
+          return AppLocalizations.of(context)!.professionEmpty; // CHANGED
         }
         return null;
       },
-      decoration: const InputDecoration(
-          border: OutlineInputBorder(
+      decoration: InputDecoration(
+          border: const OutlineInputBorder(
             borderSide: BorderSide(
               color: Colors.teal,
             ),
           ),
-          focusedBorder: OutlineInputBorder(
+          focusedBorder: const OutlineInputBorder(
             borderSide: BorderSide(
               color: Colors.orange,
               width: 2,
             ),
           ),
-          prefixIcon: Icon(
+          prefixIcon: const Icon(
             Icons.business,
             color: Colors.green,
           ),
-          labelText: "Profession",
-          helperText: "Profession can't be empty",
-          hintText: "Ex: Fullstack Developer"),
+        labelText: AppLocalizations.of(context)!.profession, // CHANGED
+        helperText: AppLocalizations.of(context)!.professionHelper, // CHANGED
+        hintText: AppLocalizations.of(context)!.professionHint, // CHANGED
+      ),
     );
   }
 
@@ -393,29 +396,30 @@ class _CreateProfileState extends State<CreateProfile> {
       },
       validator: (value) {
         if (value == null || value.isEmpty) {
-          return "DOB can't be empty";
+          return AppLocalizations.of(context)!.dobEmpty; // CHANGED
         }
         return null;
       },
-      decoration: const InputDecoration(
-        border: OutlineInputBorder(
+      decoration: InputDecoration(
+        border: const OutlineInputBorder(
           borderSide: BorderSide(
             color: Colors.teal,
           ),
         ),
-        focusedBorder: OutlineInputBorder(
+        focusedBorder: const OutlineInputBorder(
           borderSide: BorderSide(
             color: Colors.orange,
             width: 2,
           ),
         ),
-        prefixIcon: Icon(
+        prefixIcon: const Icon(
           Icons.calendar_month,
           color: Colors.green,
         ),
-        labelText: "Date of birth",
-        helperText: "Provide DOB on dd/mm/yyyy format",
-        hintText: "Ex: 17/08/2002",
+        labelText: AppLocalizations.of(context)!.dob, // CHANGED
+        helperText: AppLocalizations.of(context)!.dobHelper, // CHANGED
+        hintText: AppLocalizations.of(context)!.dobHint, // CHANGED
+
       ),
     );
   }
@@ -425,29 +429,31 @@ class _CreateProfileState extends State<CreateProfile> {
       controller: _titleController,
       validator: (value) {
         if (value == null || value.isEmpty) {
-          return "Title can't be empty";
+          return AppLocalizations.of(context)!.titleEmpty; // CHANGED
         }
         return null;
       },
-      decoration: const InputDecoration(
-          border: OutlineInputBorder(
+      decoration: InputDecoration(
+          border: const OutlineInputBorder(
             borderSide: BorderSide(
               color: Colors.teal,
             ),
           ),
-          focusedBorder: OutlineInputBorder(
+          focusedBorder: const OutlineInputBorder(
             borderSide: BorderSide(
               color: Colors.orange,
               width: 2,
             ),
           ),
-          prefixIcon: Icon(
+          prefixIcon: const Icon(
             Icons.title,
             color: Colors.green,
           ),
-          labelText: "Title",
-          helperText: "Title can't be empty",
-          hintText: "Ex: Flutter Developer"),
+              labelText: AppLocalizations.of(context)!.title, // CHANGED
+              helperText: AppLocalizations.of(context)!.titleHelper, // CHANGED
+              hintText: AppLocalizations.of(context)!.titleHint, // CHANGED
+
+      ),
     );
   }
 
@@ -456,26 +462,28 @@ class _CreateProfileState extends State<CreateProfile> {
       controller: _aboutController,
       validator: (value) {
         if (value == null || value.isEmpty) {
-          return "About can't be empty";
+          return AppLocalizations.of(context)!.aboutEmpty; // CHANGED
         }
         return null;
       },
       maxLines: 4,
-      decoration: const InputDecoration(
-          border: OutlineInputBorder(
+      decoration: InputDecoration(
+          border: const OutlineInputBorder(
             borderSide: BorderSide(
               color: Colors.teal,
             ),
           ),
-          focusedBorder: OutlineInputBorder(
+          focusedBorder: const OutlineInputBorder(
             borderSide: BorderSide(
               color: Colors.orange,
               width: 2,
             ),
           ),
-          labelText: "About",
-          helperText: "Write about yourself (optional)",
-          hintText: "Ex: I am a Flutter Developer"),
+              labelText: AppLocalizations.of(context)!.about, // CHANGED
+              helperText: AppLocalizations.of(context)!.aboutHelper, // CHANGED
+              hintText: AppLocalizations.of(context)!.aboutHint, // CHANGED
+
+      ),
     );
   }
 }

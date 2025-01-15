@@ -7,6 +7,7 @@ import 'package:blogapp/NetworkHandler.dart';
 import 'package:image_picker/image_picker.dart';
 import '../constants.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class EditProfile extends StatefulWidget {
   final ProfileModel profileModel;
@@ -116,7 +117,7 @@ class _EditProfileState extends State<EditProfile> {
               } else {
                 print("Image upload failed.");
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Image upload failed!")),
+                  SnackBar(content: Text(AppLocalizations.of(context)!.imageUploadFailed)), // CHANGED
                 );
               }
             }
@@ -132,14 +133,14 @@ class _EditProfileState extends State<EditProfile> {
             context: context,
             builder: (BuildContext context) {
               return AlertDialog(
-                title: Text('Profile Updated'),
-                content: Text('Your profile has been updated successfully!'),
+                title: Text(AppLocalizations.of(context)!.profileUpdated), // CHANGED
+                content: Text(AppLocalizations.of(context)!.profileUpdatedSuccess), // CHANGED
                 actions: [
                   TextButton(
                     onPressed: () {
                       Navigator.pop(context); // Close dialog
                     },
-                    child: Text('OK'),
+                    child: Text(AppLocalizations.of(context)!.ok), // CHANGED
                   ),
                 ],
               );
@@ -151,17 +152,17 @@ class _EditProfileState extends State<EditProfile> {
             builder: (BuildContext context) {
               return AlertDialog(
                 title: Text(
-                  'Update Failed',
+                  AppLocalizations.of(context)!.updateFailed, // CHANGED
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
-                content: Text('Update failed! Please try again.'),
+                content: Text(AppLocalizations.of(context)!.updateFailedMessage), // CHANGED
                 actions: [
                   TextButton(
                     onPressed: () {
                       Navigator.of(context).pop(); // Close the dialog
                     },
                     child: Text(
-                      'OK',
+                      AppLocalizations.of(context)!.ok, // CHANGED
                       style: TextStyle(color: Colors.red),
                     ),
                   ),
@@ -173,7 +174,7 @@ class _EditProfileState extends State<EditProfile> {
       } catch (e) {
         print("Error during profile update: $e");
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("An error occurred: $e")),
+          SnackBar(content: Text(AppLocalizations.of(context)!.errorOccurred(e.toString()))),
         );
       } finally {
         setState(() {
@@ -228,9 +229,9 @@ class _EditProfileState extends State<EditProfile> {
           },
         ),
         elevation: 0,
-        title: const Text(
-          "Edit Profile",
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        title: Text(
+          AppLocalizations.of(context)!.editProfile, // CHANGED
+          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
       ),
@@ -255,18 +256,12 @@ class _EditProfileState extends State<EditProfile> {
                                 shrinkWrap: true,
                                 children: [
                                   _buildImagePicker(),
-                                  _buildTextField(
-                                      "Titleline", _titlelineController),
-                                  _buildTextField("Name", _nameController),
-                                  _buildTextField(
-                                      "Profession", _professionController),
-                                  _buildTextField(
-                                      "Date of Birth", _dobController),
-                                  _buildTextField(
-                                    "About",
-                                    _aboutController,
-                                    maxLines: 5,
-                                  ),
+                                  _buildTextField(AppLocalizations.of(context)!.titleline, _titlelineController), // CHANGED
+                                  _buildTextField(AppLocalizations.of(context)!.name, _nameController), // CHANGED
+                                  _buildTextField(AppLocalizations.of(context)!.profession, _professionController), // CHANGED
+                                  _buildTextField(AppLocalizations.of(context)!.dob, _dobController), // CHANGED
+                                  _buildTextField(AppLocalizations.of(context)!.about, _aboutController, maxLines: 5), // CHANGED
+
                                   const SizedBox(height: 30),
                                   Center(
                                     child: ElevatedButton(
@@ -280,9 +275,9 @@ class _EditProfileState extends State<EditProfile> {
                                         padding: const EdgeInsets.symmetric(
                                             horizontal: 40, vertical: 15),
                                       ),
-                                      child: const Text(
-                                        "Save Changes",
-                                        style: TextStyle(
+                                      child: Text(
+                                        AppLocalizations.of(context)!.saveChanges, // CHANGED
+                                        style: const TextStyle(
                                           fontSize: 16,
                                           fontWeight: FontWeight.bold,
                                           color: Colors.white,
@@ -307,17 +302,12 @@ class _EditProfileState extends State<EditProfile> {
                             shrinkWrap: true,
                             children: [
                               _buildImagePicker(),
-                              _buildTextField(
-                                  "Titleline", _titlelineController),
-                              _buildTextField("Name", _nameController),
-                              _buildTextField(
-                                  "Profession", _professionController),
-                              _buildDOBField(), // Using the date picker field
-                              _buildTextField(
-                                "About",
-                                _aboutController,
-                                maxLines: 5,
-                              ),
+                              _buildTextField(AppLocalizations.of(context)!.titleline, _titlelineController), // CHANGED
+                              _buildTextField(AppLocalizations.of(context)!.name, _nameController), // CHANGED
+                              _buildTextField(AppLocalizations.of(context)!.profession, _professionController), // CHANGED
+                              _buildTextField(AppLocalizations.of(context)!.dob, _dobController), // CHANGED
+                              _buildTextField(AppLocalizations.of(context)!.about, _aboutController, maxLines: 5), // CHANGED
+
                               const SizedBox(height: 30),
                               Center(
                                 child: ValueListenableBuilder<Color>(
@@ -334,9 +324,9 @@ class _EditProfileState extends State<EditProfile> {
                                         padding: const EdgeInsets.symmetric(
                                             horizontal: 40, vertical: 15),
                                       ),
-                                      child: const Text(
-                                        "Save Changes",
-                                        style: TextStyle(
+                                      child: Text(
+                                        AppLocalizations.of(context)!.saveChanges, // CHANGED
+                                        style: const TextStyle(
                                           fontSize: 16,
                                           fontWeight: FontWeight.bold,
                                           color: Colors.white,
@@ -363,7 +353,7 @@ class _EditProfileState extends State<EditProfile> {
         controller: _dobController,
         readOnly: true, // Prevent manual editing
         decoration: InputDecoration(
-          labelText: "Date of Birth",
+          labelText: AppLocalizations.of(context)!.dob, // CHANGED
           labelStyle: const TextStyle(color: Colors.teal),
           filled: true,
           fillColor: Colors.grey[200],
@@ -439,7 +429,7 @@ class _EditProfileState extends State<EditProfile> {
         ),
         validator: (value) {
           if (value == null || value.isEmpty) {
-            return "Please enter $label";
+            return AppLocalizations.of(context)!.pleaseEnterField(label);
           }
           return null;
         },

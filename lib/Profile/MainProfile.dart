@@ -108,10 +108,10 @@ class _MainProfileState extends State<MainProfile> {
                   else
                     Container(
                       color: Colors.grey,
-                      child: const Center(
+                      child: Center(
                         child: Text(
-                          "No Image Available",
-                          style: TextStyle(color: Colors.white),
+                          AppLocalizations.of(context)!.noImageAvailable,
+                          style: const TextStyle(color: Colors.white),
                         ),
                       ),
                     ),
@@ -146,24 +146,24 @@ class _MainProfileState extends State<MainProfile> {
                 _buildInfoSection(
                   context,
                   label: AppLocalizations.of(context)!.about,
-                  value:
-                  profileModel.about ?? "No information available",
+                  value: profileModel.about ?? AppLocalizations.of(context)!.noInformationAvailable, // CHANGED
+
                 ),
                 _buildInfoSection(
                   context,
                   label: AppLocalizations.of(context)!.name,
-                  value: profileModel.name ?? "No name provided",
+                  value: profileModel.name ?? AppLocalizations.of(context)!.noNameProvided, // CHANGED
                 ),
                 _buildInfoSection(
                   context,
                   label: AppLocalizations.of(context)!.profession,
-                  value:
-                  profileModel.profession ?? "No profession listed",
+                  value: profileModel.profession ?? AppLocalizations.of(context)!.noProfessionListed, // CHANGED
+
                 ),
                 _buildInfoSection(
                   context,
                   label: AppLocalizations.of(context)!.dob,
-                  value: profileModel.DOB ?? "No date of birth provided",
+                  value: profileModel.DOB ?? AppLocalizations.of(context)!.noDOBProvided, // CHANGED
                 ),
 
                 const Divider(thickness: 1),
@@ -235,7 +235,7 @@ class _MainProfileState extends State<MainProfile> {
             ),
             const SizedBox(height: 16),
             Text(
-              profileModel.email ?? "Email not available",
+              profileModel.email ?? AppLocalizations.of(context)!.emailNotAvailable, // CHANGED
               style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -243,7 +243,7 @@ class _MainProfileState extends State<MainProfile> {
             ),
             const SizedBox(height: 8),
             Text(
-              profileModel.titleline ?? "Title line not available",
+              profileModel.titleline ?? AppLocalizations.of(context)!.titleLineNotAvailable, // CHANGED
               style: TextStyle(
                 fontSize: 16,
                 color: Colors.grey.shade700,

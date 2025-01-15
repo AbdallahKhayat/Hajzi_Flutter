@@ -1,5 +1,5 @@
 import 'dart:convert';
-
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:blogapp/Models/addBlogApproval.dart';
@@ -56,8 +56,8 @@ class _RequestsScreenState extends State<RequestsScreen> {
         isLoading = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Failed to fetch blog requests"),
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.failedToFetchBlogRequests), // CHANGED
           backgroundColor: Colors.red,
         ),
       );
@@ -102,7 +102,7 @@ class _RequestsScreenState extends State<RequestsScreen> {
       // Send notification to the customer
       await sendNotification(
         email: customerEmail!,
-        title: "Shop Status Updated",
+        title:   AppLocalizations.of(context)!.shopStatusUpdated, // CHANGED
         body:
         "Your Shop with title: ${blog.title} has been $status by the admin.",
       );
@@ -112,23 +112,24 @@ class _RequestsScreenState extends State<RequestsScreen> {
         builder: (BuildContext context) {
           return AlertDialog(
             title: Text(
-              'Shop Status Updated',
+              AppLocalizations.of(context)!.shopStatusUpdated, // CHANGED
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 color: status == "approved" ? Colors.green : Colors.red,
               ),
             ),
             content: Text(
-              "The shop with title: ${blog.title} status has been updated to $status.",
+              AppLocalizations.of(context)!.shopStatusUpdatedMessage(blog.title ?? "N/A", status),
               style: TextStyle(color: Colors.black),
             ),
+
             actions: [
               TextButton(
                 onPressed: () {
                   Navigator.of(context).pop(); // Close the dialog
                 },
                 child: Text(
-                  'OK',
+                  AppLocalizations.of(context)!.ok, // CHANGED
                   style: TextStyle(
                     color: status == "approved" ? Colors.green : Colors.red,
                   ),
@@ -145,8 +146,8 @@ class _RequestsScreenState extends State<RequestsScreen> {
       });
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Failed to update shop status"),
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.failedToUpdateShopStatus),
           backgroundColor: Colors.red,
         ),
       );
@@ -242,7 +243,7 @@ class _RequestsScreenState extends State<RequestsScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text("Shop Details"),
+          title: Text(AppLocalizations.of(context)!.shopDetails), // CHANGED
           content: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -252,9 +253,9 @@ class _RequestsScreenState extends State<RequestsScreen> {
                   children: [
                     const Icon(Icons.person, color: Colors.teal),
                     const SizedBox(width: 10),
-                    const Text(
-                      "Username: ",
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                    Text(
+                      AppLocalizations.of(context)!.usernameLabel, // CHANGED
+                      style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                     Text(blog.username ?? "N/A"),
                   ],
@@ -265,9 +266,9 @@ class _RequestsScreenState extends State<RequestsScreen> {
                   children: [
                     const Icon(Icons.email, color: Colors.teal),
                     const SizedBox(width: 10),
-                    const Text(
-                      "Email: ",
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                    Text(
+                      AppLocalizations.of(context)!.emailLabel, // CHANGED
+                      style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),
@@ -278,9 +279,9 @@ class _RequestsScreenState extends State<RequestsScreen> {
                 ),
                 const SizedBox(height:20),
                 // Preview Image
-                const Text(
-                  "Preview Image:",
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                Text(
+                  AppLocalizations.of(context)!.previewImage, // CHANGED
+                  style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 10),
                 previewImage != null
@@ -295,15 +296,15 @@ class _RequestsScreenState extends State<RequestsScreen> {
                     ),
                   ),
                 )
-                    : const Text(
-                  "No preview image uploaded.",
-                  style: TextStyle(color: Colors.grey),
+                    : Text(
+                  AppLocalizations.of(context)!.noPreviewImageUploaded, // CHANGED
+                  style: const TextStyle(color: Colors.grey),
                 ),
                 const SizedBox(height: 20),
                 // Cover Images
-                const Text(
-                  "Cover Images:",
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                Text(
+                  AppLocalizations.of(context)!.coverImages, // CHANGED
+                  style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 10),
                 coverImages.isNotEmpty
@@ -326,9 +327,9 @@ class _RequestsScreenState extends State<RequestsScreen> {
                   )
                       .toList(),
                 )
-                    : const Text(
-                  "No cover images uploaded.",
-                  style: TextStyle(color: Colors.grey),
+                    : Text(
+                  AppLocalizations.of(context)!.noCoverImagesUploaded, // CHANGED
+                  style: const TextStyle(color: Colors.grey),
                 ),
               ],
             ),
@@ -336,7 +337,7 @@ class _RequestsScreenState extends State<RequestsScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text("Close"),
+              child: Text(AppLocalizations.of(context)!.close),
             ),
           ],
         );
@@ -364,9 +365,9 @@ class _RequestsScreenState extends State<RequestsScreen> {
         ),
         title: TextField(
           controller: _searchController,
-          decoration: const InputDecoration(
-            hintText: "Search by title...",
-            hintStyle: TextStyle(color: Colors.white70),
+          decoration: InputDecoration(
+            hintText: AppLocalizations.of(context)!.searchByTitle, // CHANGED
+            hintStyle: const TextStyle(color: Colors.white70),
             border: InputBorder.none,
           ),
           style: const TextStyle(color: Colors.white),
@@ -376,10 +377,10 @@ class _RequestsScreenState extends State<RequestsScreen> {
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : filteredRequests.isEmpty
-          ? const Center(
+          ? Center(
         child: Text(
-          "No Shop requests found",
-          style: TextStyle(fontSize: 18, color: Colors.grey),
+          AppLocalizations.of(context)!.noShopRequestsFound, // CHANGED
+          style: const TextStyle(fontSize: 18, color: Colors.grey),
         ),
       )
           : ListView.builder(
@@ -405,7 +406,7 @@ class _RequestsScreenState extends State<RequestsScreen> {
                     CrossAxisAlignment.start,
                     children: [
                       Text(
-                        blog.title ?? "Untitled Blog",
+                        blog.title ?? AppLocalizations.of(context)!.untitledBlog, // CHANGED
                         style: const TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
@@ -414,7 +415,7 @@ class _RequestsScreenState extends State<RequestsScreen> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        blog.body ?? "No content available",
+                        blog.body ?? AppLocalizations.of(context)!.noContentAvailable, // CHANGED
                         maxLines: 3,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
@@ -434,9 +435,9 @@ class _RequestsScreenState extends State<RequestsScreen> {
                               Icons.check,
                               color: Colors.black,
                             ),
-                            label: const Text(
-                              "Approve",
-                              style: TextStyle(
+                            label: Text(
+                              AppLocalizations.of(context)!.approve, // CHANGED
+                              style: const TextStyle(
                                 color: Colors.black,
                               ),
                             ),
@@ -459,9 +460,9 @@ class _RequestsScreenState extends State<RequestsScreen> {
                               Icons.cancel,
                               color: Colors.black,
                             ),
-                            label: const Text(
-                              "Deny",
-                              style: TextStyle(
+                            label: Text(
+                              AppLocalizations.of(context)!.deny, // CHANGED
+                              style: const TextStyle(
                                 color: Colors.black,
                               ),
                             ),
@@ -483,9 +484,9 @@ class _RequestsScreenState extends State<RequestsScreen> {
                             onPressed: () => _showDetails(blog),
                             icon: const Icon(Icons.info,
                                 color: Colors.black),
-                            label: const Text(
-                              "View Details",
-                              style: TextStyle(
+                            label: Text(
+                              AppLocalizations.of(context)!.viewDetails, // CHANGED
+                              style: const TextStyle(
                                   color: Colors.black),
                             ),
                             style: ElevatedButton.styleFrom(
@@ -522,7 +523,7 @@ class _RequestsScreenState extends State<RequestsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      blog.title ?? "Untitled Blog",
+                      blog.title ?? AppLocalizations.of(context)!.untitledBlog, // CHANGED
                       style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -531,7 +532,7 @@ class _RequestsScreenState extends State<RequestsScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      blog.body ?? "No content available",
+                      blog.body ?? AppLocalizations.of(context)!.noContentAvailable, // CHANGED
                       maxLines: 3,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
@@ -551,9 +552,9 @@ class _RequestsScreenState extends State<RequestsScreen> {
                             Icons.check,
                             color: Colors.black,
                           ),
-                          label: const Text(
-                            "Approve",
-                            style: TextStyle(
+                          label: Text(
+                            AppLocalizations.of(context)!.approve, // CHANGED
+                            style: const TextStyle(
                               color: Colors.black,
                             ),
                           ),
@@ -574,9 +575,9 @@ class _RequestsScreenState extends State<RequestsScreen> {
                             Icons.cancel,
                             color: Colors.black,
                           ),
-                          label: const Text(
-                            "Deny",
-                            style: TextStyle(
+                          label: Text(
+                            AppLocalizations.of(context)!.deny, // CHANGED
+                            style: const TextStyle(
                               color: Colors.black,
                             ),
                           ),
@@ -604,9 +605,9 @@ class _RequestsScreenState extends State<RequestsScreen> {
                 onPressed: () => _showDetails(blog),
                 icon: const Icon(Icons.info_outline,
                     color: Colors.white, size: 18),
-                label: const Text(
-                  "Details",
-                  style: TextStyle(
+                label: Text(
+                  AppLocalizations.of(context)!.details, // CHANGED
+                  style: const TextStyle(
                       color: Colors.white, fontSize: 12),
                 ),
                 style: ElevatedButton.styleFrom(
@@ -625,113 +626,3 @@ class _RequestsScreenState extends State<RequestsScreen> {
     );
   }
 }
-
-// Future<void> updateBlogStatus(String blogId, String status) async {
-//   setState(() {
-//     isLoading = true;
-//   });
-//
-//   try {
-//     // Fetch the blog approval details first to get the original username
-//     final approvalResponse = await networkHandler.get("/AddBlogApproval/$blogId");
-//
-//     // Check if the response contains valid data (original username)
-//     if (approvalResponse != null && approvalResponse.containsKey("data") && approvalResponse["data"].containsKey("username")) {
-//       var blogData = approvalResponse["data"];
-//       String customerUsername = blogData["username"]; // Original customer's username
-//
-//       // If the status is "approved", we can add it to the main blog post schema
-//       if (status == "approved") {
-//         AddBlogModel newBlog = AddBlogModel(
-//           title: blogData["title"],
-//           body: blogData["body"],
-//           username: customerUsername,  // Use the original customer's username
-//           status: "approved",
-//           createdAt: DateTime.now(),
-//         );
-//
-//         // Now send the approval update with the blog data
-//         final addResponse = await networkHandler.post("/blogpost/Add", newBlog.toJson());
-//
-//         if (addResponse.statusCode == 200 || addResponse.statusCode == 201) {
-//           ScaffoldMessenger.of(context).showSnackBar(
-//             SnackBar(
-//               content: Text("Blog approved and added successfully!"),
-//               backgroundColor: Colors.green,
-//             ),
-//           );
-//
-//           // Remove the approved blog from the pending list
-//           setState(() {
-//             blogRequests.removeWhere((request) => request.id == blogId); // Remove from the list
-//           });
-//         } else {
-//           ScaffoldMessenger.of(context).showSnackBar(
-//             SnackBar(
-//               content: Text("Failed to add blog to the blogpost schema"),
-//               backgroundColor: Colors.red,
-//             ),
-//           );
-//         }
-//       } else {
-//         ScaffoldMessenger.of(context).showSnackBar(
-//           SnackBar(
-//             content: Text("Blog was rejected"),
-//             backgroundColor: Colors.red,
-//           ),
-//         );
-//       }
-//     } else {
-//       ScaffoldMessenger.of(context).showSnackBar(
-//         SnackBar(
-//           content: Text("Failed to retrieve customer details or blog data"),
-//           backgroundColor: Colors.red,
-//         ),
-//       );
-//     }
-//   } catch (e) {
-//     ScaffoldMessenger.of(context).showSnackBar(
-//       SnackBar(
-//         content: Text("An error occurred: $e"),
-//         backgroundColor: Colors.red,
-//       ),
-//     );
-//     print("Error: $e");
-//   }
-//
-//   setState(() {
-//     isLoading = false;
-//   });
-// }
-
-// Future<void> updateBlogStatus(String blogId, String status) async {
-//   setState(() {
-//     isLoading = true;
-//   });
-//   var response = await networkHandler.patch(
-//     "/AddBlogApproval/updateStatus/$blogId",  // Updated endpoint for status update
-//     {"status": status},
-//   );
-//
-//   if (response.statusCode == 200) {
-//     ScaffoldMessenger.of(context).showSnackBar(
-//       SnackBar(
-//         content: Text("Blog status updated to $status"),
-//         backgroundColor: status == "approved" ? Colors.green : Colors.red,
-//       ),
-//     );
-//     setState(() {
-//       blogRequests.removeWhere((request) => request.id == blogId); // Remove the blog from the list
-//     });
-//   } else {
-//     ScaffoldMessenger.of(context).showSnackBar(
-//       SnackBar(
-//         content: Text("Failed to update blog status"),
-//         backgroundColor: Colors.red,
-//       ),
-//     );
-//   }
-//   setState(() {
-//     isLoading = false;
-//   });
-// }

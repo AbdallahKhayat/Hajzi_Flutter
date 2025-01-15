@@ -1,7 +1,7 @@
 import 'package:blogapp/NetworkHandler.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'CreateProfile.dart';
 import 'MainProfile.dart';
 
@@ -46,7 +46,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget showProfile() {
     return Center(
-      child: Text("Profile Data is Available"),
+      child: Text(AppLocalizations.of(context)!.profileDataAvailable), // CHANGED
     );
   }
 
@@ -60,7 +60,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           kIsWeb
               ? Center(
                   child: Text(
-                    "Tap the button below to add your profile data",
+                    AppLocalizations.of(context)!.addProfileInfo, // CHANGED
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.teal,
@@ -70,7 +70,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 )
               : Text(
-                  "Tap the button below to add your profile data",
+                AppLocalizations.of(context)!.addProfileInfo, // CHANGED,
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: Colors.teal,
@@ -96,17 +96,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
               elevation: 8,
             ),
             child: kIsWeb
-                ? const Text(
-                    "Add Profile",
-                    style: TextStyle(
+                ? Text(
+                    AppLocalizations.of(context)!.addProfile, // CHANGED
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 30,
                       fontWeight: FontWeight.bold,
                     ),
                   )
-                : const Text(
-                    "Add Profile",
-                    style: TextStyle(
+                : Text(
+                    AppLocalizations.of(context)!.addProfile, // CHANGED
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
