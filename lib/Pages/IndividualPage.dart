@@ -144,7 +144,7 @@ class _IndividualPageState extends State<IndividualPage> {
               print(
                   "❌ Chat creation failed. No '_id' in response. Full response: ${response.body}");
               ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                content: Text('Failed to create chat. Please try again.'),
+                content: Text(AppLocalizations.of(context)!.failedToCreateChat), // CHANGED
               ));
             }
           } catch (e) {
@@ -169,7 +169,7 @@ class _IndividualPageState extends State<IndividualPage> {
     } catch (e) {
       print("❌ Error in sendMessage: $e");
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('Failed to send message. Please try again.'),
+        content: Text(AppLocalizations.of(context)!.failedToSendMessage), // CHANGED
       ));
     }
   }
@@ -213,13 +213,13 @@ class _IndividualPageState extends State<IndividualPage> {
       } else {
         print("❌ Error sending message: Response was null");
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Failed to send message. Please try again.'),
+          content: Text(AppLocalizations.of(context)!.failedToSendMessage), // CHANGED
         ));
       }
     } catch (e) {
       print("❌ Error in sendActualMessage: $e");
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('Failed to send message. Please try again.'),
+        content: Text(AppLocalizations.of(context)!.failedToSendMessage), // CHANGED
       ));
     }
   }
@@ -574,20 +574,19 @@ class _IndividualPageState extends State<IndividualPage> {
                   ),
                   onSelected: (value) {}, // 🚀 To be implemented later
                   itemBuilder: (BuildContext context) {
-                    return const [
+                    return [
                       PopupMenuItem(
-                          value: "View Contact", child: Text("View Contact")),
+                          value: "View Contact", child: Text(AppLocalizations.of(context)!.viewContact)), // CHANGED
                       PopupMenuItem(
-                          value: "Media, links, and docs",
-                          child: Text("Media, links, and docs")),
+                          value: "Media, links, and docs", child: Text(AppLocalizations.of(context)!.mediaLinksDocs)), // CHANGED
                       PopupMenuItem(
-                          value: "Hajzi web", child: Text("Hajzi web")),
-                      PopupMenuItem(value: "Search", child: Text("Search")),
+                          value: "Hajzi web", child: Text(AppLocalizations.of(context)!.hajziWeb)), // CHANGED
                       PopupMenuItem(
-                          value: "Mute Notifications",
-                          child: Text("Mute Notifications")),
+                          value: "Search", child: Text(AppLocalizations.of(context)!.search)), // CHANGED
                       PopupMenuItem(
-                          value: "Wall Paper", child: Text("Wall Paper")),
+                          value: "Mute Notifications", child: Text(AppLocalizations.of(context)!.muteNotifications)), // CHANGED
+                      PopupMenuItem(
+                          value: "Wall Paper", child: Text(AppLocalizations.of(context)!.wallPaper)), // CHANGED
                     ];
                   },
                 ),
@@ -605,8 +604,8 @@ class _IndividualPageState extends State<IndividualPage> {
                     bool isOwnMessage = message['senderEmail'] == loggedInUserEmail;
                     String displayMessage = message['content'];
 
-                    if (message['content'] == 'Message has been deleted') {
-                      displayMessage = 'Message has been deleted';
+                    if (message['content'] == '') {
+                      AppLocalizations.of(context)!.messageDeleted;
                     }
 
                     String formattedTime = formatTime(message['timestamp']);
@@ -672,10 +671,12 @@ class _IndividualPageState extends State<IndividualPage> {
                         // Otherwise TEXT message
                           if (isOwnMessage)
                             OwnMessageCard(
-                              message: displayMessage,
+                              message: displayMessage == ""
+                                  ? AppLocalizations.of(context)!.messageDeleted
+                                  : displayMessage,
                               time: formattedTime,
                               messageColor: lightenColor(mainColor, 0.2),
-                              textColor: (displayMessage == 'Message has been deleted')
+                              textColor: displayMessage == ""
                                   ? Colors.grey
                                   : Colors.black,
                               onLongPress: () {
@@ -684,16 +685,19 @@ class _IndividualPageState extends State<IndividualPage> {
                             )
                           else
                             ReplyCard(
-                              message: displayMessage,
+                              message: displayMessage == ""
+                                  ? AppLocalizations.of(context)!.messageDeleted
+                                  : displayMessage,
                               time: formattedTime,
                               messageColor: Colors.white,
-                              textColor: (displayMessage == 'Message has been deleted')
+                              textColor: displayMessage == ""
                                   ? Colors.grey
                                   : Colors.black,
                               onLongPress: () {
                                 _showReplyMessageOptions(message);
                               },
                             ),
+
                       ],
                     );
                   },
@@ -865,7 +869,7 @@ class _IndividualPageState extends State<IndividualPage> {
             children: [
               ListTile(
                 leading: Icon(Icons.copy),
-                title: Text('Copy'),
+                title: Text(AppLocalizations.of(context)!.copy),
                 onTap: () {
                   Navigator.of(context).pop();
                   _copyToClipboard(message['content']);
@@ -873,7 +877,7 @@ class _IndividualPageState extends State<IndividualPage> {
               ),
               ListTile(
                 leading: Icon(Icons.delete),
-                title: Text('Delete'),
+                title: Text(AppLocalizations.of(context)!.delete),
                 onTap: () {
                   Navigator.of(context).pop();
                   _deleteOwnMessage(message['_id']);
@@ -896,7 +900,7 @@ class _IndividualPageState extends State<IndividualPage> {
             children: [
               ListTile(
                 leading: Icon(Icons.copy),
-                title: Text('Copy'),
+                title: Text(AppLocalizations.of(context)!.copy),
                 onTap: () {
                   Navigator.of(context).pop();
                   _copyToClipboard(message['content']);
@@ -914,7 +918,7 @@ class _IndividualPageState extends State<IndividualPage> {
   void _copyToClipboard(String text) {
     Clipboard.setData(ClipboardData(text: text));
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Copied to clipboard')),
+      SnackBar(content: Text(AppLocalizations.of(context)!.copiedToClipboard)), // CHANGED
     );
   }
 
@@ -926,7 +930,7 @@ class _IndividualPageState extends State<IndividualPage> {
       if (token == null) {
         print("No token found; cannot delete message");
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error deleting message')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.errorDeletingMessage)), // CHANGED
         );
         return;
       }
@@ -939,7 +943,7 @@ class _IndividualPageState extends State<IndividualPage> {
         setState(() {
           int index = messages.indexWhere((msg) => msg['_id'] == messageId);
           if (index != -1) {
-            messages[index]['content'] = 'Message has been deleted';
+            messages[index]['content'] = '';
           }
         });
         // ScaffoldMessenger.of(context).showSnackBar(
@@ -948,13 +952,13 @@ class _IndividualPageState extends State<IndividualPage> {
       } else {
         print("❌ Error deleting message: ${response?.body}");
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to delete message')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.failedToDeleteMessage)), // CHANGED
         );
       }
     } catch (e) {
       print("Error deleting message: $e");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error deleting message')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.errorDeletingMessage)), // CHANGED
       );
     }
   }
@@ -976,7 +980,9 @@ class _IndividualPageState extends State<IndividualPage> {
         final body = await response.stream.bytesToString();
         print("Response body: $body");
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to send audio. Please try again.')),
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.failedToSendAudio),
+          ),
         );
       }
     } catch (e) {
@@ -1029,8 +1035,8 @@ class _IndividualPageState extends State<IndividualPage> {
       barrierDismissible: false,
       builder: (BuildContext ctx) {
         return AlertDialog(
-          title: Text("Audio Recorded"),
-          content: Text("Do you want to send this audio message?"),
+          title: Text(AppLocalizations.of(context)!.audioRecorded), // CHANGED
+          content: Text(AppLocalizations.of(context)!.sendAudioMessageQuestion), // CHANGED
           actions: [
             TextButton(
               onPressed: () {
@@ -1040,7 +1046,7 @@ class _IndividualPageState extends State<IndividualPage> {
                   _lastRecordedFilePath = null; // discard
                 });
               },
-              child: Text("Cancel"),
+              child: Text(AppLocalizations.of(context)!.cancel), // CHANGED
             ),
             TextButton(
               onPressed: () async {
@@ -1052,7 +1058,7 @@ class _IndividualPageState extends State<IndividualPage> {
                   _lastRecordedFilePath = null;
                 });
               },
-              child: Text("Send"),
+              child: Text(AppLocalizations.of(context)!.send), // CHANGED
             ),
           ],
         );
@@ -1076,7 +1082,7 @@ class _IndividualPageState extends State<IndividualPage> {
     } else {
       print("Camera or Gallery permission denied");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Camera or Gallery permission is required")),
+        SnackBar(content: Text(AppLocalizations.of(context)!.cameraGalleryPermission)), // CHANGED
       );
     }
   }
@@ -1097,9 +1103,9 @@ class _IndividualPageState extends State<IndividualPage> {
       ),
       child: Column(
         children: [
-          const Text(
-            "Choose Image From",
-            style: TextStyle(
+          Text(
+            AppLocalizations.of(context)!.chooseImageFrom, // CHANGED
+            style: const TextStyle(
               fontSize: 20,
             ),
           ),
@@ -1118,9 +1124,9 @@ class _IndividualPageState extends State<IndividualPage> {
                   color: Colors.black,
                 ),
                 // The icon to display
-                label: const Text(
-                  "Camera",
-                  style: TextStyle(
+                label: Text(
+                  AppLocalizations.of(context)!.camera, // CHANGED
+                  style: const TextStyle(
                     color: Colors.black,
                   ),
                 ), // The label text to display
@@ -1137,9 +1143,9 @@ class _IndividualPageState extends State<IndividualPage> {
                   color: Colors.black,
                 ),
                 // The icon to display
-                label: const Text(
-                  "Gallery",
-                  style: TextStyle(
+                label: Text(
+                  AppLocalizations.of(context)!.gallery, // CHANGED
+                  style: const TextStyle(
                     color: Colors.black,
                   ),
                 ), // The label text to display

@@ -639,25 +639,25 @@ class _ChatScreenWebState extends State<_ChatScreenWeb>
                   ),
                 ),
               ),
-              isOwnMessage
-              ? OwnMessageCard(
-              message: msg['content'] ?? '',
-              time: timeString,
-              messageColor: appColorNotifier.value.withOpacity(0.6),
-              textColor: msg['content'] == 'Message has been deleted'
-              ? Colors.grey
-                  : Colors.black,
-              onLongPress: () => _showOwnMessageOptions(msg),
-              )
-                  : ReplyCard(
-              message: msg['content'] ?? '',
-              time: timeString,
-              messageColor: Colors.white,
-              textColor: msg['content'] == 'Message has been deleted'
-              ? Colors.grey
-                  : Colors.black,
-              onLongPress: () => _showReplyMessageOptions(msg),
-              ),
+                    isOwnMessage
+                        ? OwnMessageCard(
+                      message: msg['content'] == ""
+                          ? AppLocalizations.of(context)!.messageDeleted
+                          : msg['content'],
+                      time: timeString,
+                      messageColor: appColorNotifier.value.withOpacity(0.6),
+                      textColor: msg['content'] == "" ? Colors.grey : Colors.black,
+                      onLongPress: () => _showOwnMessageOptions(msg),
+                    )
+                        : ReplyCard(
+                      message: msg['content'] == ""
+                          ? AppLocalizations.of(context)!.messageDeleted
+                          : msg['content'],
+                      time: timeString,
+                      messageColor: Colors.white,
+                      textColor: msg['content'] == "" ? Colors.grey : Colors.black,
+                      onLongPress: () => _showReplyMessageOptions(msg),
+                    ),
               ],
               );
             },
@@ -813,7 +813,7 @@ class _ChatScreenWebState extends State<_ChatScreenWeb>
       if (token == null) {
         print("No token found; cannot delete message");
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error deleting message')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.errorDeletingMessage)), // CHANGED
         );
         return;
       }
@@ -826,22 +826,22 @@ class _ChatScreenWebState extends State<_ChatScreenWeb>
         setState(() {
           int index = _messages.indexWhere((msg) => msg['_id'] == messageId);
           if (index != -1) {
-            _messages[index]['content'] = 'Message has been deleted';
+            _messages[index]['content'] = '';
           }
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Message deleted')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.messageDeletedSuccess)), // CHANGED
         );
       } else {
         print("❌ Error deleting message: ${response?.body}");
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to delete message')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.failedToDeleteMessage)), // CHANGED
         );
       }
     } catch (e) {
       print("Error deleting message: $e");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error deleting message')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.errorDeletingMessage)), // CHANGED
       );
     }
   }
@@ -1039,10 +1039,10 @@ class _ChatScreenWebState extends State<_ChatScreenWeb>
         indicatorColor: Colors.white,
         labelColor: Colors.white,
         unselectedLabelColor: Colors.white70,
-        tabs: const [
+        tabs: [
           // 🔴 Unimplemented feature: Camera, Status, Calls tabs removed
           //Tab(icon: Icon(Icons.camera_alt)),
-          Tab(text: "CHATS"),
+          Tab(text: AppLocalizations.of(context)!.chats),
           //Tab(text: "STATUS"),
           //Tab(text: "CALLS"),
         ],
