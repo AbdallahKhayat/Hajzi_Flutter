@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:blogapp/CustomWidget/CustomCard.dart';
 import 'package:blogapp/NetworkHandler.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../constants.dart';
 
@@ -146,17 +147,17 @@ class _ChatPageState extends State<ChatPage> {
                   );
                 },
               ),
-              title: const Text(
-                'Chats',
-                style: TextStyle(fontWeight: FontWeight.bold),
+              title: Text(
+                AppLocalizations.of(context)!.chat,
+                style: const TextStyle(fontWeight: FontWeight.bold),
               ),
             )
           : null,
       body: chats.isEmpty
-          ? const Center(
+          ? Center(
               child: Text(
-                'No chats available',
-                style: TextStyle(
+                AppLocalizations.of(context)!.noChatsAvailable,
+                style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                     color: Colors.grey),
