@@ -18,9 +18,8 @@ import 'package:flutter/services.dart'; // For Clipboard
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_sound/flutter_sound.dart';
-
-
-
+import 'package:flutter/material.dart';
+import 'dart:ui' as ui;
 
 class IndividualPage extends StatefulWidget {
   final String initialChatId; // ✅ Rename from chatId to initialChatId
@@ -38,7 +37,6 @@ class IndividualPage extends StatefulWidget {
 }
 
 class _IndividualPageState extends State<IndividualPage> {
-
   final FlutterSoundRecorder _audioRecorder = FlutterSoundRecorder();
   bool _isRecorderInitialized = false;
   bool _isRecording = false;
@@ -144,7 +142,8 @@ class _IndividualPageState extends State<IndividualPage> {
               print(
                   "❌ Chat creation failed. No '_id' in response. Full response: ${response.body}");
               ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                content: Text(AppLocalizations.of(context)!.failedToCreateChat), // CHANGED
+                content: Text(AppLocalizations.of(context)!
+                    .failedToCreateChat), // CHANGED
               ));
             }
           } catch (e) {
@@ -169,7 +168,8 @@ class _IndividualPageState extends State<IndividualPage> {
     } catch (e) {
       print("❌ Error in sendMessage: $e");
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(AppLocalizations.of(context)!.failedToSendMessage), // CHANGED
+        content:
+            Text(AppLocalizations.of(context)!.failedToSendMessage), // CHANGED
       ));
     }
   }
@@ -213,13 +213,15 @@ class _IndividualPageState extends State<IndividualPage> {
       } else {
         print("❌ Error sending message: Response was null");
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(AppLocalizations.of(context)!.failedToSendMessage), // CHANGED
+          content: Text(
+              AppLocalizations.of(context)!.failedToSendMessage), // CHANGED
         ));
       }
     } catch (e) {
       print("❌ Error in sendActualMessage: $e");
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(AppLocalizations.of(context)!.failedToSendMessage), // CHANGED
+        content:
+            Text(AppLocalizations.of(context)!.failedToSendMessage), // CHANGED
       ));
     }
   }
@@ -288,8 +290,6 @@ class _IndividualPageState extends State<IndividualPage> {
       }
     });
   }
-
-
 
   Future<void> initRecorder() async {
     // Request mic permission
@@ -576,17 +576,29 @@ class _IndividualPageState extends State<IndividualPage> {
                   itemBuilder: (BuildContext context) {
                     return [
                       PopupMenuItem(
-                          value: "View Contact", child: Text(AppLocalizations.of(context)!.viewContact)), // CHANGED
+                          value: "View Contact",
+                          child: Text(AppLocalizations.of(context)!
+                              .viewContact)), // CHANGED
                       PopupMenuItem(
-                          value: "Media, links, and docs", child: Text(AppLocalizations.of(context)!.mediaLinksDocs)), // CHANGED
+                          value: "Media, links, and docs",
+                          child: Text(AppLocalizations.of(context)!
+                              .mediaLinksDocs)), // CHANGED
                       PopupMenuItem(
-                          value: "Hajzi web", child: Text(AppLocalizations.of(context)!.hajziWeb)), // CHANGED
+                          value: "Hajzi web",
+                          child: Text(AppLocalizations.of(context)!
+                              .hajziWeb)), // CHANGED
                       PopupMenuItem(
-                          value: "Search", child: Text(AppLocalizations.of(context)!.search)), // CHANGED
+                          value: "Search",
+                          child: Text(
+                              AppLocalizations.of(context)!.search)), // CHANGED
                       PopupMenuItem(
-                          value: "Mute Notifications", child: Text(AppLocalizations.of(context)!.muteNotifications)), // CHANGED
+                          value: "Mute Notifications",
+                          child: Text(AppLocalizations.of(context)!
+                              .muteNotifications)), // CHANGED
                       PopupMenuItem(
-                          value: "Wall Paper", child: Text(AppLocalizations.of(context)!.wallPaper)), // CHANGED
+                          value: "Wall Paper",
+                          child: Text(AppLocalizations.of(context)!
+                              .wallPaper)), // CHANGED
                     ];
                   },
                 ),
@@ -601,7 +613,8 @@ class _IndividualPageState extends State<IndividualPage> {
                   itemCount: messages.length,
                   itemBuilder: (context, index) {
                     final message = messages[index];
-                    bool isOwnMessage = message['senderEmail'] == loggedInUserEmail;
+                    bool isOwnMessage =
+                        message['senderEmail'] == loggedInUserEmail;
                     String displayMessage = message['content'];
 
                     if (message['content'] == '') {
@@ -616,7 +629,8 @@ class _IndividualPageState extends State<IndividualPage> {
                       showDateSeparator = true;
                     } else {
                       final previousMessage = messages[index - 1];
-                      String previousDate = formatDate(previousMessage['timestamp']);
+                      String previousDate =
+                          formatDate(previousMessage['timestamp']);
                       if (previousDate != formattedDate) {
                         showDateSeparator = true;
                       }
@@ -645,64 +659,70 @@ class _IndividualPageState extends State<IndividualPage> {
 
                         // Check if it's audio or text
                         if (isAudio)
-                        // If audio and OWN message => OwnAudioMessageCard
+                          // If audio and OWN message => OwnAudioMessageCard
                           if (isOwnMessage)
-                            OwnAudioMessageCard(
-                              audioUrl: displayMessage,
-                              time: formattedTime,
-                              messageColor: lightenColor(mainColor, 0.2),
-                              textColor: Colors.black, // or your desired color
-                              onLongPress: () {
-                                _showOwnMessageOptions(message);
-                              },
+                            Directionality(
+                              textDirection: ui.TextDirection.ltr,
+                              child: OwnAudioMessageCard(
+                                audioUrl: displayMessage,
+                                time: formattedTime,
+                                messageColor: lightenColor(mainColor, 0.2),
+                                textColor: Colors.black,
+                                // or your desired color
+                                onLongPress: () {
+                                  _showOwnMessageOptions(message);
+                                },
+                              ),
                             )
                           else
-                          // Audio but from someone else => ReplyAudioMessageCard
-                            ReplyAudioMessageCard(
-                              audioUrl: displayMessage,
-                              time: formattedTime,
-                              messageColor: Colors.white,
-                              textColor: Colors.black, // or your desired color
-                              onLongPress: () {
-                                _showReplyMessageOptions(message);
-                              },
+                            // Audio but from someone else => ReplyAudioMessageCard
+                            Directionality(
+                              textDirection: ui.TextDirection.ltr,
+                              child: ReplyAudioMessageCard(
+                                audioUrl: displayMessage,
+                                time: formattedTime,
+                                messageColor: Colors.white,
+                                textColor: Colors.black,
+                                // or your desired color
+                                onLongPress: () {
+                                  _showReplyMessageOptions(message);
+                                },
+                              ),
                             )
                         else
                         // Otherwise TEXT message
-                          if (isOwnMessage)
-                            OwnMessageCard(
-                              message: displayMessage == ""
-                                  ? AppLocalizations.of(context)!.messageDeleted
-                                  : displayMessage,
-                              time: formattedTime,
-                              messageColor: lightenColor(mainColor, 0.2),
-                              textColor: displayMessage == ""
-                                  ? Colors.grey
-                                  : Colors.black,
-                              onLongPress: () {
-                                _showOwnMessageOptions(message);
-                              },
-                            )
-                          else
-                            ReplyCard(
-                              message: displayMessage == ""
-                                  ? AppLocalizations.of(context)!.messageDeleted
-                                  : displayMessage,
-                              time: formattedTime,
-                              messageColor: Colors.white,
-                              textColor: displayMessage == ""
-                                  ? Colors.grey
-                                  : Colors.black,
-                              onLongPress: () {
-                                _showReplyMessageOptions(message);
-                              },
-                            ),
-
+                        if (isOwnMessage)
+                          OwnMessageCard(
+                            message: displayMessage == ""
+                                ? AppLocalizations.of(context)!.messageDeleted
+                                : displayMessage,
+                            time: formattedTime,
+                            messageColor: lightenColor(mainColor, 0.2),
+                            textColor: displayMessage == ""
+                                ? Colors.grey
+                                : Colors.black,
+                            onLongPress: () {
+                              _showOwnMessageOptions(message);
+                            },
+                          )
+                        else
+                          ReplyCard(
+                            message: displayMessage == ""
+                                ? AppLocalizations.of(context)!.messageDeleted
+                                : displayMessage,
+                            time: formattedTime,
+                            messageColor: Colors.white,
+                            textColor: displayMessage == ""
+                                ? Colors.grey
+                                : Colors.black,
+                            onLongPress: () {
+                              _showReplyMessageOptions(message);
+                            },
+                          ),
                       ],
                     );
                   },
                 ),
-
               ),
               Row(
                 children: [
@@ -819,35 +839,38 @@ class _IndividualPageState extends State<IndividualPage> {
                     child: CircleAvatar(
                       backgroundColor: mainColor,
                       radius: isWeb ? 20 : 25,
-                        child: GestureDetector(
-                          onLongPressStart: (_) async {
-                            // Start recording
-                            await startRecording();
+                      child: GestureDetector(
+                        onLongPressStart: (_) async {
+                          // Start recording
+                          await startRecording();
+                        },
+                        onLongPressEnd: (_) async {
+                          // Stop recording (+ optionally send)
+                          await stopRecording();
+                        },
+                        child: IconButton(
+                          onPressed: () {
+                            // If there's text in the message input, send text
+                            if (sendButton) {
+                              sendMessage(_messageController.text.trim());
+                            }
                           },
-                          onLongPressEnd: (_) async {
-                            // Stop recording (+ optionally send)
-                            await stopRecording();
-                          },
-                          child: IconButton(
-                            onPressed: () {
-                              // If there's text in the message input, send text
-                              if (sendButton) {
-                                sendMessage(_messageController.text.trim());
-                              }
-                            },
-                            icon: AnimatedSwitcher(
-                              duration: const Duration(milliseconds: 200),
-                              child: _isRecording
-                                  ? const Icon(Icons.stop,
-                                  key: ValueKey('stop'), color: Colors.red) // RECORDING icon
-                                  : (sendButton || _imageFile != null
-                                  ? const Icon(Icons.send,
-                                  key: ValueKey('send'), color: Colors.black)
-                                  : const Icon(Icons.mic,
-                                  key: ValueKey('mic'), color: Colors.black)),
-                            ),
+                          icon: AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 200),
+                            child: _isRecording
+                                ? const Icon(Icons.stop,
+                                    key: ValueKey('stop'),
+                                    color: Colors.red) // RECORDING icon
+                                : (sendButton || _imageFile != null
+                                    ? const Icon(Icons.send,
+                                        key: ValueKey('send'),
+                                        color: Colors.black)
+                                    : const Icon(Icons.mic,
+                                        key: ValueKey('mic'),
+                                        color: Colors.black)),
                           ),
                         ),
+                      ),
                     ),
                   ),
                 ],
@@ -918,7 +941,9 @@ class _IndividualPageState extends State<IndividualPage> {
   void _copyToClipboard(String text) {
     Clipboard.setData(ClipboardData(text: text));
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(AppLocalizations.of(context)!.copiedToClipboard)), // CHANGED
+      SnackBar(
+          content:
+              Text(AppLocalizations.of(context)!.copiedToClipboard)), // CHANGED
     );
   }
 
@@ -930,7 +955,9 @@ class _IndividualPageState extends State<IndividualPage> {
       if (token == null) {
         print("No token found; cannot delete message");
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.errorDeletingMessage)), // CHANGED
+          SnackBar(
+              content: Text(AppLocalizations.of(context)!
+                  .errorDeletingMessage)), // CHANGED
         );
         return;
       }
@@ -952,17 +979,20 @@ class _IndividualPageState extends State<IndividualPage> {
       } else {
         print("❌ Error deleting message: ${response?.body}");
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.failedToDeleteMessage)), // CHANGED
+          SnackBar(
+              content: Text(AppLocalizations.of(context)!
+                  .failedToDeleteMessage)), // CHANGED
         );
       }
     } catch (e) {
       print("Error deleting message: $e");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context)!.errorDeletingMessage)), // CHANGED
+        SnackBar(
+            content: Text(
+                AppLocalizations.of(context)!.errorDeletingMessage)), // CHANGED
       );
     }
   }
-
 
   Future<void> sendAudioFile(String filePath) async {
     try {
@@ -990,25 +1020,21 @@ class _IndividualPageState extends State<IndividualPage> {
     }
   }
 
-
-
   Future<void> startRecording() async {
     if (!_isRecorderInitialized) return;
     if (await Permission.microphone.request().isGranted) {
       // Provide file path or let flutter_sound choose automatically
       await _audioRecorder.startRecorder(
         toFile: 'myAudio.aac', // or leave null for a temp path
-        codec: Codec.aacADTS,  // or others like Codec.opusWebM, Codec.aacMP4
-        bitRate: 128000,       // optional
-        sampleRate: 44100,     // optional
+        codec: Codec.aacADTS, // or others like Codec.opusWebM, Codec.aacMP4
+        bitRate: 128000, // optional
+        sampleRate: 44100, // optional
       );
       setState(() {
         _isRecording = true;
       });
     }
   }
-
-
 
   Future<void> stopRecording() async {
     if (!_isRecorderInitialized || !_isRecording) return;
@@ -1035,8 +1061,10 @@ class _IndividualPageState extends State<IndividualPage> {
       barrierDismissible: false,
       builder: (BuildContext ctx) {
         return AlertDialog(
-          title: Text(AppLocalizations.of(context)!.audioRecorded), // CHANGED
-          content: Text(AppLocalizations.of(context)!.sendAudioMessageQuestion), // CHANGED
+          title: Text(AppLocalizations.of(context)!.audioRecorded),
+          // CHANGED
+          content: Text(AppLocalizations.of(context)!.sendAudioMessageQuestion),
+          // CHANGED
           actions: [
             TextButton(
               onPressed: () {
@@ -1066,15 +1094,6 @@ class _IndividualPageState extends State<IndividualPage> {
     );
   }
 
-
-
-
-
-
-
-
-
-
   Future<void> requestPermissions() async {
     if (await Permission.camera.request().isGranted &&
         await Permission.photos.request().isGranted) {
@@ -1082,7 +1101,9 @@ class _IndividualPageState extends State<IndividualPage> {
     } else {
       print("Camera or Gallery permission denied");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context)!.cameraGalleryPermission)), // CHANGED
+        SnackBar(
+            content: Text(AppLocalizations.of(context)!
+                .cameraGalleryPermission)), // CHANGED
       );
     }
   }
@@ -1091,7 +1112,6 @@ class _IndividualPageState extends State<IndividualPage> {
     final status = await Permission.microphone.request();
     return status.isGranted;
   }
-
 
   Widget buttonSheet() {
     return Container(
