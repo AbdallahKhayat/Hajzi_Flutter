@@ -6,6 +6,7 @@ import '../Blog/BlogAfterClick.dart';
 import '../Models/addBlogModel.dart';
 import '../NetworkHandler.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../Screen/editshopscreen.dart';
 
@@ -143,23 +144,23 @@ class _BlogCardState extends State<BlogCard> {
                                 return AlertDialog(
                                   title: const Text("Confirm Deletion"),
                                   content: Text(
-                                    "Are you sure you want to delete the Shop with ID: ${widget.addBlogModel.title}?",
+                                    AppLocalizations.of(context)!.methodUnavailableOnWeb,
                                   ),
                                   actions: [
                                     TextButton(
                                       onPressed: () => Navigator.of(context)
                                           .pop(false), // Cancel
-                                      child: const Text(
-                                        "Cancel",
-                                        style: TextStyle(color: Colors.black),
+                                      child: Text(
+                                        AppLocalizations.of(context)!.cancel,
+                                        style: const TextStyle(color: Colors.black),
                                       ),
                                     ),
                                     ElevatedButton(
                                       onPressed: () => Navigator.of(context)
                                           .pop(true), // Confirm
-                                      child: const Text(
-                                        "Delete",
-                                        style: TextStyle(color: Colors.red),
+                                      child: Text(
+                                        AppLocalizations.of(context)!.delete,
+                                        style: const TextStyle(color: Colors.red),
                                       ),
                                     ),
                                   ],
@@ -179,9 +180,9 @@ class _BlogCardState extends State<BlogCard> {
 
                                 if (response['Status'] == false) {
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
+                                    SnackBar(
                                       content: Text(
-                                        "You don’t have permission to delete this blog",
+                                        AppLocalizations.of(context)!.noPermissionToDeleteBlog,
                                       ),
                                     ),
                                   );
@@ -190,16 +191,16 @@ class _BlogCardState extends State<BlogCard> {
                                     context: context,
                                     builder: (BuildContext context) {
                                       return AlertDialog(
-                                        title: const Row(
+                                        title: Row(
                                           children: [
-                                            Icon(
+                                            const Icon(
                                               Icons.check_circle_outline,
                                               color: Colors.green,
                                             ),
-                                            SizedBox(width: 8), // Spacing between icon and text
+                                            const SizedBox(width: 8), // Spacing between icon and text
                                             Text(
-                                              'Deletion Successful',
-                                              style: TextStyle(fontWeight: FontWeight.bold),
+                                              AppLocalizations.of(context)!.deletionSuccessful,
+                                              style: const TextStyle(fontWeight: FontWeight.bold),
                                             ),
                                           ],
                                         ),
@@ -212,7 +213,9 @@ class _BlogCardState extends State<BlogCard> {
                                             ),
                                             SizedBox(width: 10), // Spacing between icon and message
                                             Expanded(
-                                              child: Text('The Shop with title: ${widget.addBlogModel.title} has been deleted successfully!'),
+                                              child: Text(
+                                                "${AppLocalizations.of(context)!.shopDeletedSuccessfully} ${widget.addBlogModel.title} ${AppLocalizations.of(context)!.successfullyDeleted}",
+                                              ),
                                             ),
                                           ],
                                         ),
@@ -221,9 +224,9 @@ class _BlogCardState extends State<BlogCard> {
                                             onPressed: () {
                                               Navigator.of(context).pop(); // Close the dialog
                                             },
-                                            child: const Text(
-                                              'OK',
-                                              style: TextStyle(color: Colors.green),
+                                            child: Text(
+                                            AppLocalizations.of(context)!.ok  ,
+                                              style: const TextStyle(color: Colors.green),
                                             ),
                                           ),
                                         ],
@@ -238,7 +241,9 @@ class _BlogCardState extends State<BlogCard> {
                                 print("Delete Error: $e");
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content: Text("Something went wrong: $e"),
+                                    content: Text(
+                                      "${AppLocalizations.of(context)!.somethingWentWrong}: $e",
+                                    ),
                                   ),
                                 );
                               }
@@ -272,7 +277,7 @@ class _BlogCardState extends State<BlogCard> {
                           ],
                         ),
                         child: Text(
-                          widget.addBlogModel.title ?? "Untitled Blog",
+                          widget.addBlogModel.title ?? AppLocalizations.of(context)!.untitledBlog,
                           textAlign: TextAlign.center,
                           style: const TextStyle(
                             fontSize: 20,
@@ -359,25 +364,25 @@ class _BlogCardState extends State<BlogCard> {
                               context: context,
                               builder: (BuildContext context) {
                                 return AlertDialog(
-                                  title: const Text("Confirm Deletion"),
+                                  title: Text(AppLocalizations.of(context)!.confirmDeletion),
                                   content: Text(
-                                    "Are you sure you want to delete the Shop with title: ${widget.addBlogModel.title}?",
+                                    "${AppLocalizations.of(context)!.deleteShopConfirmationWithTitle} ${widget.addBlogModel.title}?",
                                   ),
                                   actions: [
                                     TextButton(
                                       onPressed: () => Navigator.of(context)
                                           .pop(false), // Cancel
-                                      child: const Text(
-                                        "Cancel",
-                                        style: TextStyle(color: Colors.black),
+                                      child: Text(
+                                        AppLocalizations.of(context)!.cancel,
+                                        style: const TextStyle(color: Colors.black),
                                       ),
                                     ),
                                     ElevatedButton(
                                       onPressed: () => Navigator.of(context)
                                           .pop(true), // Confirm
-                                      child: const Text(
-                                        "Delete",
-                                        style: TextStyle(color: Colors.red),
+                                      child: Text(
+                                        AppLocalizations.of(context)!.delete,
+                                        style: const TextStyle(color: Colors.red),
                                       ),
                                     ),
                                   ],
@@ -397,17 +402,17 @@ class _BlogCardState extends State<BlogCard> {
 
                                 if (response['Status'] == false) {
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
+                                    SnackBar(
                                       content: Text(
-                                        "You don’t have permission to delete this blog",
+                                        AppLocalizations.of(context)!.noPermissionToDeleteBlog,
                                       ),
                                     ),
                                   );
                                 } else {
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
+                                    SnackBar(
                                       content:
-                                          Text("Blog deleted successfully!"),
+                                      Text(AppLocalizations.of(context)!.deletionSuccessful),
                                     ),
                                   );
 
@@ -417,7 +422,9 @@ class _BlogCardState extends State<BlogCard> {
                                 print("Delete Error: $e");
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content: Text("Something went wrong: $e"),
+                                    content: Text(
+                                      "${AppLocalizations.of(context)!.somethingWentWrong}: $e",
+                                    ),
                                   ),
                                 );
                               }
@@ -451,7 +458,7 @@ class _BlogCardState extends State<BlogCard> {
                           ],
                         ),
                         child: Text(
-                          widget.addBlogModel.title ?? "Untitled Blog",
+                          widget.addBlogModel.title ?? AppLocalizations.of(context)!.untitledBlog,
                           textAlign: TextAlign.center,
                           style: const TextStyle(
                             fontSize: 18,
@@ -495,68 +502,3 @@ class _BlogCardState extends State<BlogCard> {
   }
 }
 
-// //this file for Preview button
-//
-// import 'dart:io';
-//
-// import 'package:flutter/material.dart';
-// import 'package:image_picker/image_picker.dart';
-//
-// import '../Models/addBlogModel.dart';
-// import '../NetworkHandler.dart';
-//
-// class BlogCard extends StatefulWidget {
-//   BlogCard({super.key,required this.addBlogModel,required this.networkHandler});
-//
-//
-//   @override
-//   State<BlogCard> createState() => _BlogCardState();
-//
-//   final AddBlogModel addBlogModel;
-//   final NetworkHandler networkHandler;
-// }
-//
-// class _BlogCardState extends State<BlogCard> {
-//   @override
-//   Widget build(BuildContext context) {
-//     return Container(
-//       height: 300,
-//       width: MediaQuery.of(context).size.width,
-//       padding: EdgeInsets.all(15),
-//       child: Card(
-//         child: Stack(
-//           //image and text on top of image
-//           children: [
-//             Container(
-//               height: MediaQuery.of(context).size.height,
-//               width: MediaQuery.of(context).size.width,
-//               decoration: BoxDecoration(
-//                 borderRadius: BorderRadius.circular(20),
-//                 image: DecorationImage(
-//                   image:widget.networkHandler.getImage(widget.addBlogModel.id!),//image name is Blog id
-//                   fit: BoxFit.fitWidth,
-//                 ),
-//               ),
-//             ),
-//             Positioned(
-//               bottom: 2, // set the container on bottom 2 pixels up from bottom
-//               child: Container(//to add title for Profile Picture
-//                 padding: EdgeInsets.only(top: 8,right: 30),
-//                 height: 50, //height of title container
-//                 width: MediaQuery.of(context).size.width,
-//                 decoration: BoxDecoration(
-//                     color: Colors.white.withOpacity(0.83),
-//                     borderRadius: BorderRadius.circular(8)
-//                 ),
-//                 child: Text(widget.addBlogModel.title!,textAlign: TextAlign.center,style: TextStyle(
-//                   fontSize: 17,
-//                   fontWeight: FontWeight.bold,
-//                 ),),
-//               ),
-//             ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }

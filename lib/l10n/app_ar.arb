@@ -372,5 +372,14 @@
   "timeSlotDeleted": "تم حذف الموعد بنجاح!",
   "timeSlotUpdated": "تم تحديث الموعد بنجاح!",
   "email_updated_successfully": "تم تحديث البريد الإلكتروني بنجاح",
-  "selectTime": "اختر الوقت"
+  "selectTime": "اختر الوقت",
+  "noPermissionToDeleteBlog": "ليس لديك الإذن لحذف هذا المتجر ",
+  "deletionSuccessful": "تم الحذف بنجاح",
+  "shopDeletedSuccessfully": "تم حذف المحل بعنوان:",
+  "successfullyDeleted": "بنجاح!",
+  "deleteShopConfirmationWithTitle": "هل أنت متأكد أنك تريد حذف المحل بعنوان:"
+
+
+
+
 }
