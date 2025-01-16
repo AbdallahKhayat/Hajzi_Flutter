@@ -88,7 +88,7 @@ class _CustomerAppointmentPageState extends State<CustomerAppointmentPage> {
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    "User Profile: ${userData['name'] ?? 'Unknown'}",
+                    "${AppLocalizations.of(context)!.userProfile}: ${userData['name'] ?? AppLocalizations.of(context)!.unknown}",
                     style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -136,31 +136,31 @@ class _CustomerAppointmentPageState extends State<CustomerAppointmentPage> {
                   const SizedBox(height: 20),
                   _buildInfoRow(
                     icon: Icons.email,
-                    label: "Email",
+                    label: AppLocalizations.of(context)!.emailLabel,
                     value: userData['email'] ?? 'N/A',
                   ),
                   const SizedBox(height: 12),
                   _buildInfoRow(
                     icon: Icons.work,
-                    label: "Profession",
+                    label: AppLocalizations.of(context)!.professionLabel,
                     value: userData['profession'] ?? 'N/A',
                   ),
                   const SizedBox(height: 12),
                   _buildInfoRow(
                     icon: Icons.cake,
-                    label: "DOB",
+                    label: AppLocalizations.of(context)!.dobLabel,
                     value: userData['DOB'] ?? 'N/A',
                   ),
                   const SizedBox(height: 12),
                   _buildInfoRow(
                     icon: Icons.title,
-                    label: "Titleline",
+                    label: AppLocalizations.of(context)!.titlelineLabel,
                     value: userData['titleline'] ?? 'N/A',
                   ),
                   const SizedBox(height: 12),
                   _buildInfoRow(
                     icon: Icons.info,
-                    label: "About",
+                    label: AppLocalizations.of(context)!.aboutLabel,
                     value: userData['about'] ?? 'N/A',
                   ),
                   const SizedBox(height: 12),
@@ -170,9 +170,9 @@ class _CustomerAppointmentPageState extends State<CustomerAppointmentPage> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: const Text(
-                  "Close",
-                  style: TextStyle(
+                child: Text(
+                  AppLocalizations.of(context)!.close,
+                  style: const TextStyle(
                     color: Colors.black,
                     fontWeight: FontWeight.bold,
                   ),
@@ -449,10 +449,10 @@ class _CustomerAppointmentPageState extends State<CustomerAppointmentPage> {
     final TimeOfDay? picked = await showTimePicker(
       context: context,
       initialTime: TimeOfDay.now(),
-      helpText: 'Select Time',
+      helpText: AppLocalizations.of(context)!.selectTime,
       // Custom help text
-      confirmText: 'OK',
-      cancelText: 'CANCEL',
+      confirmText: AppLocalizations.of(context)!.ok,
+      cancelText: AppLocalizations.of(context)!.cancel,
     );
 
     if (picked != null) {
@@ -555,8 +555,8 @@ class _CustomerAppointmentPageState extends State<CustomerAppointmentPage> {
                   if (response.statusCode == 200) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                          content: Text(responseData['message'] ??
-                              "Email updated successfully")),
+                          content: Text(AppLocalizations.of(context)!
+                              .email_updated_successfully)),
                     );
                     _fetchAppointments(); // Refresh the appointments
                   } else {
@@ -602,36 +602,38 @@ class _CustomerAppointmentPageState extends State<CustomerAppointmentPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text("Edit Time & Duration"),
+          title: Text(AppLocalizations.of(context)!.editTimeDuration),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: timeController,
                 readOnly: true,
-                decoration: const InputDecoration(labelText: "Time (HH:mm)"),
+                decoration: InputDecoration(
+                    labelText: AppLocalizations.of(context)!.timeLabel),
                 onTap: () => _selectTime(context, timeController),
               ),
               const SizedBox(height: 10),
               TextField(
                 controller: durationController,
-                decoration: const InputDecoration(labelText: "Duration (min)"),
+                decoration: InputDecoration(
+                    labelText: AppLocalizations.of(context)!.durationLabel),
                 keyboardType: TextInputType.number,
               ),
             ],
           ),
           actions: [
             TextButton(
-              child:
-                  const Text("Cancel", style: TextStyle(color: Colors.black)),
+              child: Text(AppLocalizations.of(context)!.cancel,
+                  style: TextStyle(color: Colors.black)),
               onPressed: () {
                 Navigator.of(context).pop();
               },
             ),
             ElevatedButton(
-              child: const Text(
-                "Save",
-                style: TextStyle(color: Colors.black),
+              child: Text(
+                AppLocalizations.of(context)!.save,
+                style: const TextStyle(color: Colors.black),
               ),
               onPressed: () async {
                 final newTime = timeController.text.trim();
@@ -640,7 +642,8 @@ class _CustomerAppointmentPageState extends State<CustomerAppointmentPage> {
 
                 if (newTime.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Please select a valid time")),
+                    SnackBar(
+                        content: Text(AppLocalizations.of(context)!.validTime)),
                   );
                   return;
                 }
@@ -659,8 +662,8 @@ class _CustomerAppointmentPageState extends State<CustomerAppointmentPage> {
                   if (response.statusCode == 200) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text(responseData['message'] ??
-                            "Slot updated successfully!"),
+                        content:
+                            Text(AppLocalizations.of(context)!.timeSlotUpdated),
                       ),
                     );
                     Navigator.of(context).pop();
@@ -693,7 +696,7 @@ class _CustomerAppointmentPageState extends State<CustomerAppointmentPage> {
   void _updateTimeUntilNextAppointment() {
     if (appointments.isEmpty) {
       setState(() {
-        _timeUntilNext = "No appointments scheduled";
+        _timeUntilNext = AppLocalizations.of(context)!.noAppointmentsScheduled;
       });
       return;
     }
@@ -729,7 +732,8 @@ class _CustomerAppointmentPageState extends State<CustomerAppointmentPage> {
 
     if (futureAppointmentTimes.isEmpty) {
       setState(() {
-        _timeUntilNext = "No upcoming appointments today";
+        _timeUntilNext =
+            AppLocalizations.of(context)!.noUpcomingAppointmentsToday;
       });
       return;
     }
@@ -745,9 +749,10 @@ class _CustomerAppointmentPageState extends State<CustomerAppointmentPage> {
 
     setState(() {
       if (hours <= 0 && minutes <= 0) {
-        _timeUntilNext = "No upcoming appointments at this moment";
+        _timeUntilNext = AppLocalizations.of(context)!.noUpcomingAppointments;
       } else {
-        _timeUntilNext = "Next appointment in ${hours}h ${minutes}m";
+        _timeUntilNext =
+            "${AppLocalizations.of(context)!.nextAppointmentIn} ${hours}h ${minutes}m";
       }
     });
   }
@@ -901,7 +906,10 @@ class _CustomerAppointmentPageState extends State<CustomerAppointmentPage> {
             ),
             const SizedBox(height: 20),
             appointments.isEmpty
-                ? const Center(child: Text("No appointments booked."))
+                ? Center(
+                    child: Text(
+                        AppLocalizations.of(context)!.noAppointmentsBooked),
+                  )
                 : Expanded(
                     child: SingleChildScrollView(
                       scrollDirection: Axis.vertical,
@@ -1002,7 +1010,8 @@ class _CustomerAppointmentPageState extends State<CustomerAppointmentPage> {
                                         Icons.timer,
                                         color: Colors.teal,
                                       ),
-                                      tooltip: "Edit Time & Duration",
+                                      tooltip: AppLocalizations.of(context)!
+                                          .editTimeDuration,
                                       onPressed: () => _editTimeDuration(
                                         appointment,
                                       ),

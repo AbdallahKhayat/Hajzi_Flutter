@@ -354,6 +354,23 @@
   "i_have_verified": "لقد تحققت",
   "resend_verification_email": "إعادة إرسال رسالة التحقق",
   "complete_profile": "أكمل ملفك الشخصي",
-  "create_profile_prompt": "يرجى إنشاء ملفك الشخصي للاستمرار في استخدام التطبيق."
-
+  "create_profile_prompt": "يرجى إنشاء ملفك الشخصي للاستمرار في استخدام التطبيق.",
+  "rate_this_shop": "قيّم هذا المحل:",
+  "already_rated_message": "لقد قمت بالتقييم مسبقاً لهذا المحل.",
+  "average_rating_label": "متوسط التقييم:",
+  "number_of_ratings_label": "عدد التقييمات:",
+  "nextAppointmentIn": "الموعد التالي خلال",
+  "noAppointmentsScheduled": "لا توجد مواعيد مجدولة",
+  "noUpcomingAppointmentsToday": "لا توجد مواعيد قادمة اليوم",
+  "noUpcomingAppointments": "لا توجد مواعيد قادمة في الوقت الحالي",
+  "error_fetching_profile": "حدث خطأ أثناء جلب بيانات المستخدم",
+  "noAppointmentsBooked": "لا يوجد مواعيد محجوزة",
+  "editTimeDuration": "تحرير الوقت والمدة",
+  "timeLabel": "الوقت (HH:mm)",
+  "durationLabel": "المدة (دقيقة)",
+  "validTime": "الرجاء تحديد وقت صالح",
+  "timeSlotDeleted": "تم حذف الموعد بنجاح!",
+  "timeSlotUpdated": "تم تحديث الموعد بنجاح!",
+  "email_updated_successfully": "تم تحديث البريد الإلكتروني بنجاح",
+  "selectTime": "اختر الوقت"
 }

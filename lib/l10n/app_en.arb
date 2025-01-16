@@ -360,6 +360,23 @@
   "i_have_verified": "I Have Verified",
   "resend_verification_email": "Resend Verification Email",
   "complete_profile": "Complete Your Profile",
-  "create_profile_prompt": "Please create your profile to continue using the app."
-
+  "create_profile_prompt": "Please create your profile to continue using the app.",
+  "rate_this_shop": "Rate This Shop:",
+  "already_rated_message": "You have already rated this shop.",
+  "average_rating_label": "Average Rating:",
+  "number_of_ratings_label": "Number of Ratings:",
+  "nextAppointmentIn": "Next appointment in",
+  "noAppointmentsScheduled": "No appointments scheduled",
+  "noUpcomingAppointmentsToday": "No upcoming appointments today",
+  "noUpcomingAppointments": "No upcoming appointments at this moment",
+  "error_fetching_profile": "Error fetching user profile",
+  "noAppointmentsBooked": "No appointments booked",
+  "editTimeDuration": "Edit Time & Duration",
+  "timeLabel": "Time (HH:mm)",
+  "durationLabel": "Duration (min)",
+  "validTime": "Please select a valid time",
+  "timeSlotDeleted": "Time slot deleted successfully!",
+  "timeSlotUpdated": "Time slot updated successfully!",
+  "email_updated_successfully": "Email updated successfully",
+  "selectTime": "Select Time"
 }

@@ -505,8 +505,8 @@ class _BlogAfterClickState extends State<BlogAfterClick> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            const Text(
-              "Rate This Shop:",
+            Text(
+              AppLocalizations.of(context)!.rate_this_shop,
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
@@ -537,17 +537,17 @@ class _BlogAfterClickState extends State<BlogAfterClick> {
                 itemSize: 30.0,
               ),
               const SizedBox(height: 8),
-              const Text("You have already rated this shop."),
+               Text(AppLocalizations.of(context)!.already_rated_message,),
             ],
 
             const SizedBox(height: 8),
             // Show the average rating
             Text(
-              "Average Rating: ${_averageRating.toStringAsFixed(1)} / 5.0",
+              "${AppLocalizations.of(context)!.average_rating_label} ${_averageRating.toStringAsFixed(1)} / 5.0",
               style: const TextStyle(fontSize: 16),
             ),
             Text(
-              "Number of Ratings: $_numberOfRatings",
+              "${AppLocalizations.of(context)!.number_of_ratings_label} $_numberOfRatings",
               style: const TextStyle(fontSize: 16),
             ),
           ],
