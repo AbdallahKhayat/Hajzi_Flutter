@@ -605,166 +605,174 @@ class _IndividualPageState extends State<IndividualPage> {
               ],
             ),
           ),
-          body: Column(
-            children: [
-              Expanded(
-                child: ListView.builder(
-                  controller: _scrollController,
-                  itemCount: messages.length,
-                  itemBuilder: (context, index) {
-                    final message = messages[index];
-                    bool isOwnMessage =
-                        message['senderEmail'] == loggedInUserEmail;
-                    String displayMessage = message['content'];
+            // REPLACE this entire section:
+//    body: Column( ... ) { ... }
+// with the code below:
 
-                    if (message['content'] == '') {
-                      AppLocalizations.of(context)!.messageDeleted;
-                    }
+            body: Stack(
+              children: [
+                // 1) Your existing Column for messages + input
+                Column(
+                  children: [
+                    Expanded(
+                      child: ListView.builder(
+                        controller: _scrollController,
+                        itemCount: messages.length,
+                        itemBuilder: (context, index) {
+                          final message = messages[index];
+                          bool isOwnMessage =
+                              message['senderEmail'] == loggedInUserEmail;
+                          String displayMessage = message['content'];
 
-                    String formattedTime = formatTime(message['timestamp']);
-                    String formattedDate = formatDate(message['timestamp']);
-
-                    bool showDateSeparator = false;
-                    if (index == 0) {
-                      showDateSeparator = true;
-                    } else {
-                      final previousMessage = messages[index - 1];
-                      String previousDate =
-                          formatDate(previousMessage['timestamp']);
-                      if (previousDate != formattedDate) {
-                        showDateSeparator = true;
-                      }
-                    }
-
-                    // **1) Check if it's audio or text**
-                    bool isAudio = false;
-                    if (displayMessage.contains('/uploads/audio/')) {
-                      isAudio = true;
-                    }
-
-                    return Column(
-                      children: [
-                        if (showDateSeparator)
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 10),
-                            child: Text(
-                              formattedDate,
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.grey[600],
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-
-                        // Check if it's audio or text
-                        if (isAudio)
-                          // If audio and OWN message => OwnAudioMessageCard
-                          if (isOwnMessage)
-                            Directionality(
-                              textDirection: ui.TextDirection.ltr,
-                              child: OwnAudioMessageCard(
-                                audioUrl: displayMessage,
-                                time: formattedTime,
-                                messageColor: lightenColor(mainColor, 0.2),
-                                textColor: Colors.black,
-                                // or your desired color
-                                onLongPress: () {
-                                  _showOwnMessageOptions(message);
-                                },
-                              ),
-                            )
-                          else
-                            // Audio but from someone else => ReplyAudioMessageCard
-                            Directionality(
-                              textDirection: ui.TextDirection.ltr,
-                              child: ReplyAudioMessageCard(
-                                audioUrl: displayMessage,
-                                time: formattedTime,
-                                messageColor: Colors.white,
-                                textColor: Colors.black,
-                                // or your desired color
-                                onLongPress: () {
-                                  _showReplyMessageOptions(message);
-                                },
-                              ),
-                            )
-                        else
-                        // Otherwise TEXT message
-                        if (isOwnMessage)
-                          OwnMessageCard(
-                            message: displayMessage == ""
-                                ? AppLocalizations.of(context)!.messageDeleted
-                                : displayMessage,
-                            time: formattedTime,
-                            messageColor: lightenColor(mainColor, 0.2),
-                            textColor: displayMessage == ""
-                                ? Colors.grey
-                                : Colors.black,
-                            onLongPress: () {
-                              _showOwnMessageOptions(message);
-                            },
-                          )
-                        else
-                          ReplyCard(
-                            message: displayMessage == ""
-                                ? AppLocalizations.of(context)!.messageDeleted
-                                : displayMessage,
-                            time: formattedTime,
-                            messageColor: Colors.white,
-                            textColor: displayMessage == ""
-                                ? Colors.grey
-                                : Colors.black,
-                            onLongPress: () {
-                              _showReplyMessageOptions(message);
-                            },
-                          ),
-                      ],
-                    );
-                  },
-                ),
-              ),
-              Row(
-                children: [
-                  Expanded(
-                    child: Card(
-                      margin: isWeb
-                          ? EdgeInsets.only(left: 10, right: 10, bottom: 15)
-                          : const EdgeInsets.only(left: 2, right: 2, bottom: 8),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(25),
-                      ),
-                      child: TextFormField(
-                        controller: _messageController,
-                        textAlignVertical: TextAlignVertical.center,
-                        keyboardType: TextInputType.multiline,
-                        maxLines: 5,
-                        minLines: 1,
-                        onChanged: (value) {
-                          setState(() {
-                            sendButton = value.isNotEmpty;
-                          });
-                        },
-                        onFieldSubmitted: (value) {
-                          sendMessage(value);
-                          // Clear the selected image after sending the message
-                          if (_imageFile != null) {
-                            setState(() {
-                              _imageFile = null;
-                            });
+                          if (message['content'] == '') {
+                            AppLocalizations.of(context)!.messageDeleted;
                           }
+
+                          String formattedTime = formatTime(message['timestamp']);
+                          String formattedDate = formatDate(message['timestamp']);
+
+                          bool showDateSeparator = false;
+                          if (index == 0) {
+                            showDateSeparator = true;
+                          } else {
+                            final previousMessage = messages[index - 1];
+                            String previousDate =
+                            formatDate(previousMessage['timestamp']);
+                            if (previousDate != formattedDate) {
+                              showDateSeparator = true;
+                            }
+                          }
+
+                          // **1) Check if it's audio or text**
+                          bool isAudio = false;
+                          String lowerMsg = displayMessage.toLowerCase();
+                          if (lowerMsg.endsWith('.aac') ||
+                              lowerMsg.endsWith('.m4a') ||
+                              lowerMsg.endsWith('.mp3') ||
+                              lowerMsg.endsWith('.wav')) {
+                            isAudio = true;
+                          }
+
+                          return Column(
+                            children: [
+                              if (showDateSeparator)
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 10),
+                                  child: Text(
+                                    formattedDate,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.grey[600],
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+
+                              // Check if it's audio or text
+                              if (isAudio)
+                              // If audio and OWN message => OwnAudioMessageCard
+                                if (isOwnMessage)
+                                  Directionality(
+                                    textDirection: ui.TextDirection.ltr,
+                                    child: OwnAudioMessageCard(
+                                      audioUrl: displayMessage,
+                                      time: formattedTime,
+                                      messageColor: lightenColor(mainColor, 0.2),
+                                      textColor: Colors.black,
+                                      onLongPress: () {
+                                        _showOwnMessageOptions(message);
+                                      },
+                                    ),
+                                  )
+                                else
+                                // Audio but from someone else => ReplyAudioMessageCard
+                                  Directionality(
+                                    textDirection: ui.TextDirection.ltr,
+                                    child: ReplyAudioMessageCard(
+                                      audioUrl: displayMessage,
+                                      time: formattedTime,
+                                      messageColor: Colors.white,
+                                      textColor: Colors.black,
+                                      onLongPress: () {
+                                        _showReplyMessageOptions(message);
+                                      },
+                                    ),
+                                  )
+                              else
+                              // Otherwise TEXT message
+                                if (isOwnMessage)
+                                  OwnMessageCard(
+                                    message: displayMessage == ""
+                                        ? AppLocalizations.of(context)!.messageDeleted
+                                        : displayMessage,
+                                    time: formattedTime,
+                                    messageColor: lightenColor(mainColor, 0.2),
+                                    textColor: displayMessage == ""
+                                        ? Colors.grey
+                                        : Colors.black,
+                                    onLongPress: () {
+                                      _showOwnMessageOptions(message);
+                                    },
+                                  )
+                                else
+                                  ReplyCard(
+                                    message: displayMessage == ""
+                                        ? AppLocalizations.of(context)!.messageDeleted
+                                        : displayMessage,
+                                    time: formattedTime,
+                                    messageColor: Colors.white,
+                                    textColor: displayMessage == ""
+                                        ? Colors.grey
+                                        : Colors.black,
+                                    onLongPress: () {
+                                      _showReplyMessageOptions(message);
+                                    },
+                                  ),
+                            ],
+                          );
                         },
-                        // 🔥 Use the sendMessage method here
-                        decoration: InputDecoration(
-                          border: InputBorder.none,
-                          hintText: AppLocalizations.of(context)!.typeMessage,
-                          contentPadding: isWeb
-                              ? EdgeInsets.symmetric(
-                                  horizontal: 20, vertical: 15)
-                              : const EdgeInsets.only(
-                                  left: 20, top: 10, bottom: 10, right: 20),
-                          prefix: _imageFile != null
-                              ? Container(
+                      ),
+                    ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Card(
+                            margin: isWeb
+                                ? EdgeInsets.only(left: 10, right: 10, bottom: 15)
+                                : const EdgeInsets.only(left: 2, right: 2, bottom: 8),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(25),
+                            ),
+                            child: TextFormField(
+                              controller: _messageController,
+                              textAlignVertical: TextAlignVertical.center,
+                              keyboardType: TextInputType.multiline,
+                              maxLines: 5,
+                              minLines: 1,
+                              onChanged: (value) {
+                                setState(() {
+                                  sendButton = value.isNotEmpty;
+                                });
+                              },
+                              onFieldSubmitted: (value) {
+                                sendMessage(value);
+                                // Clear the selected image after sending the message
+                                if (_imageFile != null) {
+                                  setState(() {
+                                    _imageFile = null;
+                                  });
+                                }
+                              },
+                              decoration: InputDecoration(
+                                border: InputBorder.none,
+                                hintText: AppLocalizations.of(context)!.typeMessage,
+                                contentPadding: isWeb
+                                    ? EdgeInsets.symmetric(
+                                    horizontal: 20, vertical: 15)
+                                    : const EdgeInsets.only(
+                                    left: 20, top: 10, bottom: 10, right: 20),
+                                prefix: _imageFile != null
+                                    ? Container(
                                   margin: EdgeInsets.only(right: 8),
                                   child: Stack(
                                     children: [
@@ -800,83 +808,110 @@ class _IndividualPageState extends State<IndividualPage> {
                                     ],
                                   ),
                                 )
-                              : null,
-                          suffixIcon: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              // 🔴 Unimplemented feature: Attach file icon and functionality
-                              // IconButton(
-                              //   onPressed: () {
-                              //     showModalBottomSheet(
-                              //       backgroundColor: Colors.transparent,
-                              //       context: context,
-                              //       builder: (builder) => CustomBottomSheet(),
-                              //     );
-                              //   },
-                              //   icon: Icon(Icons.attach_file),
-                              //   padding:
-                              //       const EdgeInsets.only(right: 0, left: 30),
-                              // ),
-                              // IconButton(
-                              //   onPressed: () {
-                              //     showModalBottomSheet(
-                              //       context: context,
-                              //       builder: ((builder) => buttonSheet()),
-                              //     );
-                              //   },
-                              //   icon: Icon(Icons.camera_alt),
-                              // ),
-                            ],
+                                    : null,
+                                suffixIcon: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    // 🔴 Unimplemented feature: Attach file icon and functionality
+                                    // IconButton(
+                                    //   onPressed: () {
+                                    //     showModalBottomSheet(
+                                    //       backgroundColor: Colors.transparent,
+                                    //       context: context,
+                                    //       builder: (builder) => CustomBottomSheet(),
+                                    //     );
+                                    //   },
+                                    //   icon: Icon(Icons.attach_file),
+                                    //   padding:
+                                    //       const EdgeInsets.only(right: 0, left: 30),
+                                    // ),
+                                    // IconButton(
+                                    //   onPressed: () {
+                                    //     showModalBottomSheet(
+                                    //       context: context,
+                                    //       builder: ((builder) => buttonSheet()),
+                                    //     );
+                                    //   },
+                                    //   icon: Icon(Icons.camera_alt),
+                                    // ),
+                                  ],
+                                ),
+                              ),
+                            ),
                           ),
                         ),
+                        Padding(
+                          padding: isWeb
+                              ? EdgeInsets.only(bottom: 15, right: 15, left: 10)
+                              : const EdgeInsets.only(bottom: 8, right: 10, left: 5),
+                          child: CircleAvatar(
+                            backgroundColor: mainColor,
+                            radius: isWeb ? 20 : 25,
+                            child: GestureDetector(
+                              onLongPressStart: (_) async {
+                                // Start recording
+                                await startRecording();
+                              },
+                              onLongPressEnd: (_) async {
+                                // Stop recording (+ optionally send)
+                                await stopRecording();
+                              },
+                              child: IconButton(
+                                onPressed: () {
+                                  // If there's text in the message input, send text
+                                  if (sendButton) {
+                                    sendMessage(_messageController.text.trim());
+                                  }
+                                },
+                                icon: AnimatedSwitcher(
+                                  duration: const Duration(milliseconds: 200),
+                                  child: _isRecording
+                                      ? const Icon(Icons.stop,
+                                      key: ValueKey('stop'),
+                                      color: Colors.red)
+                                      : (sendButton || _imageFile != null
+                                      ? const Icon(Icons.send,
+                                      key: ValueKey('send'),
+                                      color: Colors.black)
+                                      : const Icon(Icons.mic,
+                                      key: ValueKey('mic'),
+                                      color: Colors.black)),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    )
+                  ],
+                ),
+
+                // ADDED: Show "Recording..." banner if we are recording
+                if (_isRecording)
+                  Center(
+                    child: Container(
+                      width: 120,
+                      height: 120,
+                      decoration: BoxDecoration(
+                        color: Colors.redAccent,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.mic, color: Colors.white, size: 40),
+                          const SizedBox(height: 8),
+                          Text(
+                            AppLocalizations.of(context)!.recording,
+                            style: const TextStyle(color: Colors.white, fontSize: 16),
+                          ),
+                        ],
                       ),
                     ),
                   ),
-                  Padding(
-                    padding: isWeb
-                        ? EdgeInsets.only(bottom: 15, right: 15, left: 10)
-                        : const EdgeInsets.only(bottom: 8, right: 10, left: 5),
-                    child: CircleAvatar(
-                      backgroundColor: mainColor,
-                      radius: isWeb ? 20 : 25,
-                      child: GestureDetector(
-                        onLongPressStart: (_) async {
-                          // Start recording
-                          await startRecording();
-                        },
-                        onLongPressEnd: (_) async {
-                          // Stop recording (+ optionally send)
-                          await stopRecording();
-                        },
-                        child: IconButton(
-                          onPressed: () {
-                            // If there's text in the message input, send text
-                            if (sendButton) {
-                              sendMessage(_messageController.text.trim());
-                            }
-                          },
-                          icon: AnimatedSwitcher(
-                            duration: const Duration(milliseconds: 200),
-                            child: _isRecording
-                                ? const Icon(Icons.stop,
-                                    key: ValueKey('stop'),
-                                    color: Colors.red) // RECORDING icon
-                                : (sendButton || _imageFile != null
-                                    ? const Icon(Icons.send,
-                                        key: ValueKey('send'),
-                                        color: Colors.black)
-                                    : const Icon(Icons.mic,
-                                        key: ValueKey('mic'),
-                                        color: Colors.black)),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              )
-            ],
-          ),
+
+              ],
+            ),
         );
       },
     );

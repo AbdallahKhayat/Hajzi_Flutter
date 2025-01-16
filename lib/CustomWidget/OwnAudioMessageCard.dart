@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_sound/flutter_sound.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class OwnAudioMessageCard extends StatefulWidget {
   final String audioUrl; // Audio file URL
@@ -170,7 +171,7 @@ class _OwnAudioMessageCardState extends State<OwnAudioMessageCard> {
                             onPressed: _playAudio,
                           ),
                           Text(
-                            'Audio Message',
+                            AppLocalizations.of(context)!.audioMessage,
                             style: TextStyle(
                               fontSize: 14,
                               color: widget.textColor,

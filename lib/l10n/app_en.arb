@@ -398,6 +398,10 @@
   "blogAlreadySubmitted": "Shop has already been submitted",
   "submissionError": "Submission Error",
   "failedToLoadBlogs": "Failed to load blogs. Please try again.",
-  "noBlogsAvailable": "No Blogs Currently Available"
+  "noBlogsAvailable": "No Blogs Currently Available",
+  "audioMessage": "Audio Message",
+  "recording": "Recording..."
+
+
 
 }
