@@ -5,6 +5,7 @@ import 'package:blogapp/Models/ListBlogModel.dart';
 import 'package:blogapp/Models/addBlogModel.dart';
 import 'package:blogapp/NetworkHandler.dart';
 import '../CustomWidget/BlogCard.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class Blogs extends StatefulWidget {
   final String url;
@@ -74,7 +75,7 @@ class _BlogsState extends State<Blogs> {
     } catch (e) {
       if(mounted)
       setState(() {
-        errorMessage = "Failed to load blogs. Please try again.";
+        errorMessage = AppLocalizations.of(context)!.failedToLoadBlogs;
         _isLoading = false;
       });
     }
@@ -93,10 +94,10 @@ class _BlogsState extends State<Blogs> {
         ),
       );
     } else if (data.isEmpty) {
-      return const Center(
+      return Center(
         child: Text(
-          "No Blogs Currently Available",
-          style: TextStyle(fontSize: 18, color: Colors.red),
+          AppLocalizations.of(context)!.noBlogsAvailable,
+          style: const TextStyle(fontSize: 18, color: Colors.red),
         ),
       );
     }

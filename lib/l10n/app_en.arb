@@ -396,5 +396,8 @@
   "approvalPending": "Approval Pending",
   "shopNotApproved": "The shop was not approved by the admin.",
   "blogAlreadySubmitted": "Shop has already been submitted",
-  "submissionError": "Submission Error"
+  "submissionError": "Submission Error",
+  "failedToLoadBlogs": "Failed to load blogs. Please try again.",
+  "noBlogsAvailable": "No Blogs Currently Available"
+
 }

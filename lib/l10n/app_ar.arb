@@ -390,5 +390,8 @@
   "approvalPending": "في انتظار الموافقة",
   "shopNotApproved": "لم تتم الموافقة على المحل من قبل المسؤول.",
   "blogAlreadySubmitted": "تم إرسال المحل مسبقاً",
-  "submissionError": "خطأ في الإرسال"
+  "submissionError": "خطأ في الإرسال",
+  "failedToLoadBlogs": "فشل في تحميل المدونات. يرجى المحاولة مرة أخرى.",
+  "noBlogsAvailable": "لا توجد مدونات متاحة حاليًا"
+
 }
