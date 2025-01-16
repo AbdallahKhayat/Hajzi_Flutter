@@ -384,6 +384,11 @@
   "shopCreatedSuccessfully": "تم إنشاء المتجر بنجاح!",
   "shopUploading": "يتم تحميل محلك...",
   "loading": "جارٍ التحميل...",
-  "chatPlaceholder": "وظيفة الدردشة ستكون هنا."
-
+  "chatPlaceholder": "وظيفة الدردشة ستكون هنا.",
+  "success": "تم بنجاح",
+  "shopApprovedAndPublished": "تمت الموافقة على المتجر ونشره بنجاح!",
+  "approvalPending": "في انتظار الموافقة",
+  "shopNotApproved": "لم تتم الموافقة على المحل من قبل المسؤول.",
+  "blogAlreadySubmitted": "تم إرسال المحل مسبقاً",
+  "submissionError": "خطأ في الإرسال"
 }

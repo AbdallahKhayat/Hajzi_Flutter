@@ -937,11 +937,11 @@ class _AddBlogState extends State<AddBlog> {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(15.0),
                         ),
-                        title: const Row(
+                        title: Row(
                           children: [
                             Icon(Icons.check_circle, color: Colors.green),
                             SizedBox(width: 8),
-                            Text('Success'),
+                            Text(AppLocalizations.of(context)!.success,),
                           ],
                         ),
                         //,
@@ -950,8 +950,8 @@ class _AddBlogState extends State<AddBlog> {
                             .shopCreatedSuccessfully),
                         actions: <Widget>[
                           TextButton(
-                            child: const Text('OK',
-                                style: TextStyle(color: Colors.black)),
+                            child:  Text(AppLocalizations.of(context)!.ok,
+                                style: const TextStyle(color: Colors.black)),
                             onPressed: () => Navigator.of(context).pop(),
                           ),
                         ],
@@ -1075,7 +1075,7 @@ class _AddBlogState extends State<AddBlog> {
                               Navigator.of(context).pop(); // Close the dialog
                             },
                             child: Text(
-                              'OK',
+                              AppLocalizations.of(context)!.ok,
                               style: TextStyle(color: Colors.green),
                             ),
                           ),
@@ -1147,19 +1147,20 @@ class _AddBlogState extends State<AddBlog> {
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(15.0),
                             ),
-                            title: const Row(
+                            title: Row(
                               children: [
                                 Icon(Icons.check_circle, color: Colors.green),
                                 SizedBox(width: 8),
-                                Text('Success'),
+                                Text(AppLocalizations.of(context)!.success),
                               ],
                             ),
-                            content: const Text(
-                                'Shop approved and published successfully!'),
+                            //Shop approved and published successfully!
+                            content: Text(
+                                AppLocalizations.of(context)!.shopApprovedAndPublished),
                             actions: <Widget>[
                               TextButton(
-                                child: const Text(
-                                  'OK',
+                                child: Text(
+                                  AppLocalizations.of(context)!.ok,
                                   style: TextStyle(color: Colors.black),
                                 ),
                                 onPressed: () {
@@ -1187,18 +1188,18 @@ class _AddBlogState extends State<AddBlog> {
                       builder: (BuildContext context) {
                         return AlertDialog(
                           title: Text(
-                            'Approval Pending',
+                           AppLocalizations.of(context)!.approvalPending,
                             style: TextStyle(fontWeight: FontWeight.bold),
                           ),
                           content:
-                              Text('The Shop was not approved by the admin.'),
+                              Text(AppLocalizations.of(context)!.shopNotApproved),
                           actions: [
                             TextButton(
                               onPressed: () {
                                 Navigator.of(context).pop(); // Close the dialog
                               },
                               child: Text(
-                                'OK',
+                                AppLocalizations.of(context)!.ok,
                                 style: TextStyle(color: Colors.orange),
                               ),
                             ),
@@ -1214,19 +1215,19 @@ class _AddBlogState extends State<AddBlog> {
                     context: context,
                     builder: (BuildContext context) {
                       return AlertDialog(
-                        title: const Text(
-                          'Submission Error',
+                        title:  Text(
+                          AppLocalizations.of(context)!.submissionError,
                           style: TextStyle(fontWeight: FontWeight.bold),
                         ),
-                        content: Text('Shop has already been submitted.'),
+                        content: Text(AppLocalizations.of(context)!.blogAlreadySubmitted),
                         actions: [
                           TextButton(
                             onPressed: () {
                               Navigator.of(context).pop(); // Close the dialog
                             },
-                            child: const Text(
-                              'OK',
-                              style: TextStyle(color: Colors.red),
+                            child:Text(
+                              AppLocalizations.of(context)!.ok,
+                              style: const TextStyle(color: Colors.red),
                             ),
                           ),
                         ],
