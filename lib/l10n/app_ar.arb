@@ -313,7 +313,7 @@
   "invalidEmail": "البريد الإلكتروني غير صالح!",
   "enterYourEmail": "أدخل بريدك الإلكتروني",
   "enterYourNewPassword": "أدخل كلمة المرور الجديدة",
-  "verifyEmail": "تحقق من البريد الإلكتروني",
+  "verifyEmail": "تأكيد البريد الإلكتروني",
   "updatePassword": "تحديث كلمة المرور",
   "pleaseVerifyYourEmail": "يرجى التحقق من بريدك الإلكتروني!",
   "passwordUpdatedSuccessfully": "تم تحديث كلمة المرور بنجاح!",
