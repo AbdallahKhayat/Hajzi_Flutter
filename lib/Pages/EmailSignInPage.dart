@@ -4,7 +4,7 @@ import 'package:blogapp/Pages/HomePage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
-
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../NetworkHandler.dart';
 import '../Profile/CreateProfile.dart';
 import '../SlideshowPage.dart';
@@ -93,15 +93,15 @@ class _EmailSignInPageState extends State<EmailSignInPage> {
                   const SizedBox(height: 20),
 
                   // Title
-                  const Text(
-                    "Welcome Back!",
+                  Text(
+                    AppLocalizations.of(context)!.welcome_back,
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const Text(
-                    "Sign in to continue",
+                  Text(
+                    AppLocalizations.of(context)!.sign_in_to_continue,
                     style: TextStyle(
                       fontSize: 16,
                     ),
@@ -148,7 +148,8 @@ class _EmailSignInPageState extends State<EmailSignInPage> {
 
                           if (output.containsKey('token')) {
                             String jwtToken = output['token'];
-                            int profileFlag = output['profileFlag'] ?? 0; // Default to 0 if not provided
+                            int profileFlag = output['profileFlag'] ??
+                                0; // Default to 0 if not provided
                             // Store the JWT token in secure storage
                             await storage.write(key: "token", value: jwtToken);
                             await storage.write(
@@ -179,7 +180,7 @@ class _EmailSignInPageState extends State<EmailSignInPage> {
                               widget.setLocale(newLocale);
                             }
                             // Check if profile exists
-                           // bool hasProfile = await checkProfileFlag();
+                            // bool hasProfile = await checkProfileFlag();
                             setState(() {
                               circular = false;
                             });
@@ -214,16 +215,19 @@ class _EmailSignInPageState extends State<EmailSignInPage> {
                                 builder: (BuildContext context) {
                                   return AlertDialog(
                                     title: Text(
-                                      "Complete Your Profile",
+                                      AppLocalizations.of(context)!
+                                          .complete_your_profile,
                                       style: TextStyle(
                                           fontWeight: FontWeight.bold),
                                     ),
                                     content: Text(
-                                        "Please create your profile to continue using the app."),
+                                      AppLocalizations.of(context)!
+                                          .please_create_profile,
+                                    ),
                                     actions: [
                                       TextButton(
                                         child: Text(
-                                          "Cancel",
+                                          AppLocalizations.of(context)!.cancel,
                                           style: TextStyle(color: Colors.red),
                                         ),
                                         onPressed: () {
@@ -234,7 +238,8 @@ class _EmailSignInPageState extends State<EmailSignInPage> {
                                       ),
                                       TextButton(
                                         child: Text(
-                                          "Create Profile",
+                                          AppLocalizations.of(context)!
+                                              .create_profile,
                                           style: TextStyle(color: Colors.black),
                                         ),
                                         onPressed: () {
@@ -257,21 +262,79 @@ class _EmailSignInPageState extends State<EmailSignInPage> {
                             throw Exception("Token not found in the response");
                           }
                         } else {
-                          // Handle unsuccessful login attempts
-                          var output;
-                          try {
-                            output = json.decode(response.body);
+                          // Check for banned account using the response data
+                          var output = json.decode(response.body);
+                          // If the response contains a "message" key that mentions "banned"
+                          if (output is Map &&
+                              output.containsKey('message') &&
+                              output['message']
+                                  .toString()
+                                  .toLowerCase()
+                                  .contains("banned")) {
+                            setState(() {
+                              circular = false;
+                            });
+                            // Show an AlertDialog for banned account
+
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(15),
+                                  ),
+                                  title: Row(
+                                    children: [
+                                      Icon(Icons.block, color: Colors.red),
+                                      SizedBox(width: 10),
+                                      Text(AppLocalizations.of(context)!
+                                          .account_banned),
+                                    ],
+                                  ),
+                                  content: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const Icon(Icons.error_outline,
+                                          color: Colors.orange),
+                                      const SizedBox(width: 10),
+                                      Expanded(
+                                        child: Text(
+                                        AppLocalizations.of(context)!.outputMessage
+                                          ,
+                                          style: const TextStyle(fontSize: 16),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  actions: [
+                                    TextButton.icon(
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                        logout(); // Optionally log the user out
+                                      },
+                                      icon: const Icon(Icons.check_circle,
+                                          color: Colors.green),
+                                      label: Text(
+                                        AppLocalizations.of(context)!.ok,
+                                        style: TextStyle(color: Colors.green),
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+                          } else {
+                            // For other errors, update errorText and UI as before
                             errorText =
                                 output is Map && output.containsKey('msg')
                                     ? output['msg']
                                     : output.toString();
-                          } catch (e) {
-                            errorText = 'An unknown error occurred';
+                            setState(() {
+                              circular = false;
+                              validate = false;
+                            });
                           }
-                          setState(() {
-                            circular = false;
-                            validate = false;
-                          });
                         }
                       } catch (e) {
                         // Handle network or other errors
@@ -296,8 +359,8 @@ class _EmailSignInPageState extends State<EmailSignInPage> {
                         child: circular
                             ? const CircularProgressIndicator(
                                 color: Colors.white)
-                            : const Text(
-                                "Sign In",
+                            :  Text(
+                                AppLocalizations.of(context)!.sign_in,
                                 style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
@@ -325,8 +388,8 @@ class _EmailSignInPageState extends State<EmailSignInPage> {
                                   ),
                                 );
                               },
-                              child: const Text(
-                                "Forgot Password?",
+                              child:  Text(
+                                AppLocalizations.of(context)!.forgot_password,
                                 style: TextStyle(
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -346,8 +409,8 @@ class _EmailSignInPageState extends State<EmailSignInPage> {
                                 ),
                               );
                             },
-                            child: const Text(
-                              "Forgot Password?",
+                            child:  Text(
+                              AppLocalizations.of(context)!.forgot_password,
                               style: TextStyle(
                                 fontWeight: FontWeight.w600,
                               ),
@@ -361,8 +424,8 @@ class _EmailSignInPageState extends State<EmailSignInPage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text(
-                        "Don't have an account? ",
+                       Text(
+                       AppLocalizations.of(context)!.dont_have_account,
                       ),
                       GestureDetector(
                         onTap: () {
@@ -375,8 +438,8 @@ class _EmailSignInPageState extends State<EmailSignInPage> {
                             ),
                           );
                         },
-                        child: const Text(
-                          "Sign Up",
+                        child:  Text(
+                          AppLocalizations.of(context)!.sign_up,
                           style: TextStyle(
                               fontWeight: FontWeight.bold, color: Colors.blue),
                         ),
@@ -401,7 +464,7 @@ class _EmailSignInPageState extends State<EmailSignInPage> {
               child: TextFormField(
                 controller: _usernameController,
                 decoration: InputDecoration(
-                  hintText: "Enter your username",
+                  hintText: AppLocalizations.of(context)!.enter_your_username,
                   filled: true,
                   fillColor: Colors.white.withOpacity(0.9),
                   prefixIcon: const Icon(Icons.person, color: Colors.black),
@@ -419,7 +482,7 @@ class _EmailSignInPageState extends State<EmailSignInPage> {
         : TextFormField(
             controller: _usernameController,
             decoration: InputDecoration(
-              hintText: "Enter your username",
+              hintText: AppLocalizations.of(context)!.enter_your_username,
               filled: true,
               fillColor: Colors.white.withOpacity(0.9),
               prefixIcon: const Icon(Icons.person, color: Colors.black),
@@ -443,15 +506,15 @@ class _EmailSignInPageState extends State<EmailSignInPage> {
                 controller: _emailController,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Email can’t be empty!';
+                    return AppLocalizations.of(context)!.email_cant_be_empty;
                   }
                   if (!value.contains("@")) {
-                    return 'Invalid email!';
+                    return AppLocalizations.of(context)!.invalid_email;
                   }
                   return null;
                 },
                 decoration: InputDecoration(
-                  hintText: "Enter your email",
+                  hintText: AppLocalizations.of(context)!.enter_your_email,
                   filled: true,
                   fillColor: Colors.white.withOpacity(0.9),
                   prefixIcon: const Icon(Icons.email, color: Colors.black),
@@ -469,15 +532,15 @@ class _EmailSignInPageState extends State<EmailSignInPage> {
             controller: _emailController,
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return 'Email can’t be empty!';
+                return AppLocalizations.of(context)!.email_cant_be_empty;
               }
               if (!value.contains("@")) {
-                return 'Invalid email!';
+                return AppLocalizations.of(context)!.invalid_email;
               }
               return null;
             },
             decoration: InputDecoration(
-              hintText: "Enter your email",
+              hintText: AppLocalizations.of(context)!.enter_your_email,
               filled: true,
               fillColor: Colors.white.withOpacity(0.9),
               prefixIcon: const Icon(Icons.email, color: Colors.black),
@@ -500,7 +563,7 @@ class _EmailSignInPageState extends State<EmailSignInPage> {
                 controller: _passwordController,
                 obscureText: visible,
                 decoration: InputDecoration(
-                  hintText: "Enter your password",
+                  hintText: AppLocalizations.of(context)!.enter_your_password,
                   filled: true,
                   fillColor: Colors.white.withOpacity(0.9),
                   prefixIcon: const Icon(Icons.lock, color: Colors.black),
@@ -528,7 +591,7 @@ class _EmailSignInPageState extends State<EmailSignInPage> {
             controller: _passwordController,
             obscureText: visible,
             decoration: InputDecoration(
-              hintText: "Enter your password",
+              hintText: AppLocalizations.of(context)!.enter_your_password,
               filled: true,
               fillColor: Colors.white.withOpacity(0.9),
               prefixIcon: const Icon(Icons.lock, color: Colors.black),

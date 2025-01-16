@@ -11,6 +11,7 @@ import '../SlideshowPage.dart';
 import 'CheckVerificationPage.dart';
 import 'HomePage.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class EmailSignUpPage extends StatefulWidget {
   const EmailSignUpPage({
@@ -71,7 +72,7 @@ class _EmailSignUpPageState extends State<EmailSignUpPage> {
 
       if (response.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Verification email sent!')),
+           SnackBar(content: Text(AppLocalizations.of(context)!.verification_email_sent)),
         );
       } else {
         throw Exception('Failed to send email: ${response.body}');
@@ -117,15 +118,15 @@ class _EmailSignUpPageState extends State<EmailSignUpPage> {
                   // Role Dropdown
 
                   // Title
-                  const Text(
-                    "Create an Account",
+                   Text(
+                    AppLocalizations.of(context)!.create_account,
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const Text(
-                    "Sign up to get started",
+                   Text(
+                    AppLocalizations.of(context)!.sign_up_get_started,
                     style: TextStyle(
                       fontSize: 16,
                     ),
@@ -260,7 +261,7 @@ class _EmailSignUpPageState extends State<EmailSignUpPage> {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text(
-                                    "Verification email sent! Please verify your email before logging in."),
+                                    AppLocalizations.of(context)!.verification_email_sent),
                               ),
                             );
 
@@ -310,8 +311,8 @@ class _EmailSignUpPageState extends State<EmailSignUpPage> {
                             ),
                             child: Center(
                               child: Text(
-                                "Sign Up",
-                                style: TextStyle(
+                                AppLocalizations.of(context)!.sign_up,
+                                style: const TextStyle(
                                     color: Colors.white,
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold),
@@ -381,16 +382,16 @@ class _EmailSignUpPageState extends State<EmailSignUpPage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text(
-                        "Already have an account? ",
+                       Text(
+                        AppLocalizations.of(context)!.already_have_account,
                       ),
                       GestureDetector(
                         onTap: () {
                           Navigator.pop(context);
                         },
-                        child: const Text(
-                          "Sign In",
-                          style: TextStyle(
+                        child:  Text(
+                          AppLocalizations.of(context)!.sign_in,
+                          style: const TextStyle(
                             color: Colors.blue,
                             fontWeight: FontWeight.bold,
                           ),
@@ -413,7 +414,7 @@ class _EmailSignUpPageState extends State<EmailSignUpPage> {
         setState(() {
           circular = false;
           validate = false;
-          errorText = "Username can’t be empty";
+          errorText = AppLocalizations.of(context)!.username_empty;
         });
       } else {
         var response = await networkHandler
@@ -423,7 +424,7 @@ class _EmailSignUpPageState extends State<EmailSignUpPage> {
             setState(() {
               circular = false;
               validate = false;
-              errorText = "email already taken";
+              errorText = AppLocalizations.of(context)!.email_taken;
             });
           } else {
             setState(() {
@@ -435,7 +436,7 @@ class _EmailSignUpPageState extends State<EmailSignUpPage> {
           setState(() {
             circular = false;
             validate = false;
-            errorText = "Error checking email. Try again.";
+            errorText = AppLocalizations.of(context)!.error_checking_email;
           });
         }
       }
@@ -444,7 +445,7 @@ class _EmailSignUpPageState extends State<EmailSignUpPage> {
       setState(() {
         circular = false;
         validate = false;
-        errorText = "Network error. Please try again later.";
+        errorText = AppLocalizations.of(context)!.network_error;
       });
     }
   }
@@ -458,7 +459,7 @@ class _EmailSignUpPageState extends State<EmailSignUpPage> {
               child: TextFormField(
                 controller: _usernameController,
                 decoration: InputDecoration(
-                  hintText: "Enter your username",
+                  hintText: AppLocalizations.of(context)!.enter_your_username,
                   hintStyle: TextStyle(
                     color: Colors.grey.shade600, // Subtle hint text color
                     fontSize: 14, // Slightly smaller font for a cleaner look
@@ -481,7 +482,7 @@ class _EmailSignUpPageState extends State<EmailSignUpPage> {
         : TextFormField(
             controller: _usernameController,
             decoration: InputDecoration(
-              hintText: "Enter your username",
+              hintText: AppLocalizations.of(context)!.enter_your_username,
               filled: true,
               fillColor: Colors.white.withOpacity(0.9),
               prefixIcon: const Icon(Icons.person, color: Colors.black),
@@ -505,15 +506,15 @@ class _EmailSignUpPageState extends State<EmailSignUpPage> {
                 controller: _emailController,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Email can’t be empty!';
+                    return AppLocalizations.of(context)!.email_cant_be_empty;
                   }
                   if (!value.contains("@")) {
-                    return 'Invalid email!';
+                    return AppLocalizations.of(context)!.invalid_email;
                   }
                   return null;
                 },
                 decoration: InputDecoration(
-                  hintText: "Enter your email",
+                  hintText: AppLocalizations.of(context)!.enter_your_email,
                   filled: true,
                   fillColor: Colors.white.withOpacity(0.9),
                   prefixIcon: const Icon(Icons.email, color: Colors.black),
@@ -531,15 +532,15 @@ class _EmailSignUpPageState extends State<EmailSignUpPage> {
             controller: _emailController,
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return 'Email can’t be empty!';
+                return AppLocalizations.of(context)!.email_cant_be_empty;
               }
               if (!value.contains("@")) {
-                return 'Invalid email!';
+                return AppLocalizations.of(context)!.invalid_email;
               }
               return null;
             },
             decoration: InputDecoration(
-              hintText: "Enter your email",
+              hintText: AppLocalizations.of(context)!.enter_your_email,
               filled: true,
               fillColor: Colors.white.withOpacity(0.9),
               prefixIcon: const Icon(Icons.email, color: Colors.black),
@@ -563,15 +564,15 @@ class _EmailSignUpPageState extends State<EmailSignUpPage> {
                 obscureText: visible,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Password can’t be empty!';
+                    return AppLocalizations.of(context)!.password_empty;
                   }
                   if (value.length < 8) {
-                    return 'Password must be at least 8 characters!';
+                    return AppLocalizations.of(context)!.password_min_length;
                   }
                   return null;
                 },
                 decoration: InputDecoration(
-                  hintText: "Enter your password",
+                  hintText: AppLocalizations.of(context)!.enter_your_password,
                   filled: true,
                   fillColor: Colors.white.withOpacity(0.9),
                   prefixIcon: const Icon(Icons.lock, color: Colors.black),
@@ -599,15 +600,15 @@ class _EmailSignUpPageState extends State<EmailSignUpPage> {
             obscureText: visible,
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return 'Password can’t be empty!';
+                return AppLocalizations.of(context)!.password_empty;
               }
               if (value.length < 8) {
-                return 'Password must be at least 8 characters!';
+                return AppLocalizations.of(context)!.password_min_length;
               }
               return null;
             },
             decoration: InputDecoration(
-              hintText: "Enter your password",
+              hintText: AppLocalizations.of(context)!.enter_your_password,
               filled: true,
               fillColor: Colors.white.withOpacity(0.9),
               prefixIcon: const Icon(Icons.lock, color: Colors.black),

@@ -11,7 +11,7 @@ import 'HomePage.dart';
 import 'package:http/http.dart' as http;
 
 import 'WelcomePage.dart';
-
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 class CheckVerificationPage extends StatefulWidget {
   final Function(Locale) setLocale;
   final String email; // Add email as a parameter
@@ -71,13 +71,13 @@ class _CheckVerificationPageState extends State<CheckVerificationPage> {
 
       if (response.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Verification email sent!')),
+           SnackBar(content: Text(AppLocalizations.of(context)!.verification_email_sent)),
         );
       } else {
         throw Exception('Failed to send email: ${response.body}');
       }
     } catch (e) {
-      errorText = 'Error while sending email: $e';
+      errorText = AppLocalizations.of(context)!.error_sending_email;;
     }
   }
 
@@ -97,7 +97,7 @@ class _CheckVerificationPageState extends State<CheckVerificationPage> {
     await sendVerificationEmail(widget.email);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text("Verification email has been sent."),
+        content: Text(AppLocalizations.of(context)!.verification_email_resent),
       ),
     );
   }
@@ -172,15 +172,15 @@ class _CheckVerificationPageState extends State<CheckVerificationPage> {
             builder: (BuildContext context) {
               return AlertDialog(
                 title: Text(
-                  "Complete Your Profile",
+                  AppLocalizations.of(context)!.complete_profile,
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
                 content: Text(
-                    "Please create your profile to continue using the app."),
+                    AppLocalizations.of(context)!.please_create_profile),
                 actions: [
                   TextButton(
                     child: Text(
-                      "Cancel",
+                      AppLocalizations.of(context)!.cancel,
                       style: TextStyle(color: Colors.red),
                     ),
                     onPressed: () {
@@ -189,7 +189,7 @@ class _CheckVerificationPageState extends State<CheckVerificationPage> {
                     },
                   ),
                   TextButton(
-                    child: Text("Create Profile",
+                    child: Text(AppLocalizations.of(context)!.create_profile,
                         style: TextStyle(color: Colors.black)),
                     onPressed: () {
                       Navigator.of(context).pop(); // Close the dialog
@@ -266,19 +266,19 @@ class _CheckVerificationPageState extends State<CheckVerificationPage> {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20.0),
                       child: Text(
-                        "Please verify your email. Check your inbox and click 'I Have Verified' once you complete verification.",
+                       AppLocalizations.of(context)!.verify_email_instruction,
                         textAlign: TextAlign.center,
                         style: TextStyle(fontSize: 16, color: Colors.black),
                       ),
                     ),
                     SizedBox(height: 20),
                     buildStyledButton(
-                      label: "I Have Verified",
+                      label: AppLocalizations.of(context)!.i_have_verified,
                       onPressed: checkVerification,
                     ),
                     SizedBox(height: 10),
                     buildStyledButton(
-                      label: "Resend Verification Email",
+                      label: AppLocalizations.of(context)!.resend_verification_email,
                       onPressed: resendVerificationEmail,
                     ),
                   ],

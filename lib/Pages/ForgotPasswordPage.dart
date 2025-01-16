@@ -58,7 +58,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
 
       if (response.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Verification email sent!')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.verifyYourEmail)),
         );
       } else {
         throw Exception('Failed to send email: ${response.body}');
@@ -310,6 +310,15 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
         child: TextFormField(
           controller: _passwordController,
           obscureText: visible,
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return AppLocalizations.of(context)!.passwordEmpty; // e.g., "Password cannot be empty"
+            }
+            if (value.length < 8) {
+              return AppLocalizations.of(context)!.passwordMinLength; // e.g., "Password must be at least 8 characters"
+            }
+            return null;
+          },
           decoration: InputDecoration(
             hintText: AppLocalizations.of(context)!.enterYourNewPassword, // CHANGED
             filled: true,
@@ -338,6 +347,15 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
    TextFormField(
       controller: _passwordController,
       obscureText: visible,
+     validator: (value) {
+       if (value == null || value.isEmpty) {
+         return AppLocalizations.of(context)!.passwordEmpty; // e.g., "Password cannot be empty"
+       }
+       if (value.length < 8) {
+         return AppLocalizations.of(context)!.passwordMinLength; // e.g., "Password must be at least 8 characters"
+       }
+       return null;
+     },
       decoration: InputDecoration(
         hintText: AppLocalizations.of(context)!.enterYourNewPassword, // CHANGED
         filled: true,

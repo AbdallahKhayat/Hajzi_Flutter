@@ -12,20 +12,16 @@
   "name": "الاسم",
   "profession": "المهنة",
   "dob": "تاريخ الولادة",
-
   "myblogs": "محلاتي",
   "searchBlogs": "ابحث عن المحلات",
   "searchBlogsDescription": "Text displayed in the search bar for blogs",
-
   "requests": "طلبات",
-  "customer":"ترقية لمتجر",
-
+  "customer": "ترقية لمتجر",
   "barberShopPosts": "محلات الحلاقة",
   "hospitalPosts": "المستشفيات",
-  "chat" : "المحادثات",
+  "chat": "المحادثات",
   "myshops": "محلاتي",
   "users": "المستخدمين",
-
   "chooseMode": "اختر نوع المحادثة",
   "aiMode": "تكلم مع AI",
   "predefinedMode": "استخدم اسئلة تطبيق حجزي",
@@ -320,11 +316,44 @@
   "verifyEmail": "تحقق من البريد الإلكتروني",
   "updatePassword": "تحديث كلمة المرور",
   "pleaseVerifyYourEmail": "يرجى التحقق من بريدك الإلكتروني!",
-  "passwordUpdatedSuccessfully": "تم تحديث كلمة المرور بنجاح!"
+  "passwordUpdatedSuccessfully": "تم تحديث كلمة المرور بنجاح!",
+  "passwordEmpty": "لا يمكن أن تكون كلمة المرور فارغة",
+  "passwordMinLength": "يجب أن تتكون كلمة المرور من 8 أحرف على الأقل",
+  "verifyYourEmail": "تم إرسال بريد إلكتروني للتحقق!",
+  "welcome_back": "مرحباً بعودتك!",
+  "sign_in_to_continue": "قم بتسجيل الدخول للاستمرار",
+  "enter_your_email": "أدخل بريدك الإلكتروني",
+  "enter_your_password": "أدخل كلمة المرور",
+  "sign_in": "تسجيل الدخول",
+  "forgot_password": "نسيت كلمة المرور؟",
+  "dont_have_account": "ليس لديك حساب؟",
+  "sign_up": "سجل",
+  "complete_your_profile": "أكمل ملفك الشخصي",
+  "please_create_profile": "يرجى إنشاء ملفك الشخصي للاستمرار باستخدام التطبيق.",
+  "create_profile": "إنشاء الملف الشخصي",
+  "account_banned": "تم حظر الحساب",
+  "enter_your_username": "أدخل اسم المستخدم الخاص بك",
+  "invalid_email": "البريد الإلكتروني غير صالح!",
+  "email_cant_be_empty": "لا يمكن أن يكون البريد الإلكتروني فارغًا!",
+  "outputMessage": "تم حظر حسابك. اتصل بالدعم.",
 
-
-
-
-
+  "create_account": "إنشاء حساب",
+  "sign_up_get_started": "سجل للبدء",
+  "username_empty": "اسم المستخدم لا يمكن أن يكون فارغاً",
+  "email_empty": "البريد الإلكتروني لا يمكن أن يكون فارغاً!",
+  "password_empty": "كلمة المرور لا يمكن أن تكون فارغة!",
+  "password_min_length": "يجب أن تتكون كلمة المرور من 8 أحرف على الأقل!",
+  "email_taken": "البريد الإلكتروني مستخدم",
+  "error_checking_email": "خطأ في التحقق من البريد الإلكتروني. حاول مرة أخرى.",
+  "network_error": "خطأ في الشبكة. يرجى المحاولة لاحقاً.",
+  "verification_email_sent": "تم إرسال رسالة تحقق. يرجى التحقق من بريدك الإلكتروني قبل تسجيل الدخول.",
+  "already_have_account": "هل لديك حساب بالفعل؟ ",
+  "error_sending_email": "حدث خطأ أثناء إرسال البريد الإلكتروني",
+  "verification_email_resent": "تم إعادة إرسال رسالة التحقق.",
+  "verify_email_instruction": "يرجى التحقق من بريدك الإلكتروني. تحقق من صندوق الوارد واضغط على 'لقد تحققت' بعد إتمام عملية التحقق.",
+  "i_have_verified": "لقد تحققت",
+  "resend_verification_email": "إعادة إرسال رسالة التحقق",
+  "complete_profile": "أكمل ملفك الشخصي",
+  "create_profile_prompt": "يرجى إنشاء ملفك الشخصي للاستمرار في استخدام التطبيق."
 
 }
