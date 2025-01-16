@@ -388,5 +388,8 @@
   "shopSubmittedForApproval": "Your shop has been submitted for approval!",
   "failedToCreateShop": "Failed to create shop",
   "shopCreatedSuccessfully": "Shop created successfully!",
-  "shopUploading": "Your Shop is Uploading..."
+  "shopUploading": "Your Shop is Uploading...",
+  "loading": "Loading...",
+  "chatPlaceholder": "Chat functionality will go here."
+
 }

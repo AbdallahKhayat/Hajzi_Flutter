@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:blogapp/NetworkHandler.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class BlogsChatPage extends StatefulWidget {
-  final String blogId; // Accept the blogId to fetch details
+  final String blogId;
 
   const BlogsChatPage({super.key, required this.blogId});
 
@@ -23,7 +24,8 @@ class _BlogsChatPageState extends State<BlogsChatPage> {
 
   Future<void> fetchBlogDetails() async {
     try {
-      final response = await networkHandler.get("/blogpost/getBlogDetails/${widget.blogId}");
+      final response =
+      await networkHandler.get("/blogpost/getBlogDetails/${widget.blogId}");
       if (response['blogTitle'] != null && response['authorName'] != null) {
         setState(() {
           blogTitle = response['blogTitle'];
@@ -35,18 +37,17 @@ class _BlogsChatPageState extends State<BlogsChatPage> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: blogTitle.isEmpty || authorName.isEmpty
-            ? Text("Loading...")
+            ? Text(AppLocalizations.of(context)!.loading)
             : Text("$authorName - $blogTitle"),
         centerTitle: true,
       ),
       body: Center(
-        child: Text("Chat functionality will go here."),
+        child: Text(AppLocalizations.of(context)!.chatPlaceholder),
       ),
     );
   }
