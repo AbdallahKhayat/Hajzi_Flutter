@@ -377,9 +377,10 @@
   "deletionSuccessful": "تم الحذف بنجاح",
   "shopDeletedSuccessfully": "تم حذف المحل بعنوان:",
   "successfullyDeleted": "بنجاح!",
-  "deleteShopConfirmationWithTitle": "هل أنت متأكد أنك تريد حذف المحل بعنوان:"
-
-
-
-
+  "deleteShopConfirmationWithTitle": "هل أنت متأكد أنك تريد حذف المحل بعنوان:",
+  "submissionSuccessful": "تم الإرسال بنجاح",
+  "shopSubmittedForApproval": "لقد تم تقديم متجرك للموافقة!",
+  "failedToCreateShop" :"فشل في إنشاء المتجر",
+  "shopCreatedSuccessfully": "تم إنشاء المتجر بنجاح!",
+  "shopUploading": "يتم تحميل محلك..."
 }

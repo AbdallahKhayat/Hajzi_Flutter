@@ -383,9 +383,10 @@
   "deletionSuccessful": "Deletion Successful",
   "shopDeletedSuccessfully": "The Shop with title:",
   "successfullyDeleted": "has been deleted successfully!",
-  "deleteShopConfirmationWithTitle": "Are you sure you want to delete the Shop with title:"
-
-
-
-
+  "deleteShopConfirmationWithTitle": "Are you sure you want to delete the Shop with title:",
+  "submissionSuccessful": "Submission Successful",
+  "shopSubmittedForApproval": "Your shop has been submitted for approval!",
+  "failedToCreateShop": "Failed to create shop",
+  "shopCreatedSuccessfully": "Shop created successfully!",
+  "shopUploading": "Your Shop is Uploading..."
 }
