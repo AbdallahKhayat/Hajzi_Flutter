@@ -220,6 +220,18 @@ class _HomePageState extends State<HomePage>
           content: SingleChildScrollView(
             child: BlockPicker(
               pickerColor: tempColor,
+              availableColors: const [
+                Color(0xFFA4433B), // Dark Soft Red
+                Color(0xFF5A8F7B), // Dark Soft Green
+                Color(0xFF3D76A8), // Dark Soft Blue
+                Color(0xFF7D5BA1), // Dark Soft Purple
+                Colors.green, // Additional Dark (Charcoal Gray)
+                Color(0xFFdfdfdf), // White
+                Color(0xff2e2e2e),
+                Color(0xFFFFD700)
+
+                // Add any other colors you prefer
+              ],
               onColorChanged: (color) {
                 tempColor = color;
               },
