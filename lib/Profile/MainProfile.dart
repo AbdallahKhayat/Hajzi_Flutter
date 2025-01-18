@@ -230,7 +230,7 @@ class _MainProfileState extends State<MainProfile> {
               backgroundImage: (profileModel.img != null &&
                   profileModel.img!.isNotEmpty)
                   ? CachedNetworkImageProvider(profileModel.img!)
-                  : const AssetImage('assets/images/placeholder.png')
+                  : const AssetImage('assets/placeholder.png')
               as ImageProvider,
             ),
             const SizedBox(height: 16),
