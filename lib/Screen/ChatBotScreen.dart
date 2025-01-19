@@ -128,7 +128,7 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
     if (!isAIMode) {
       // Handle predefined Hajzi questions
       switch (userMessage.trim()) {
-        case "1": // Book an appointment
+        case "1"||"١": // Book an appointment
           _addAssistantMessage(
             AppLocalizations.of(context)!.bookAppointmentHelp,
           );
@@ -137,16 +137,16 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
               {"role": "assistant", "content": "__SHOW_ALL_SHOPS_BUTTON__"});
           break;
 
-        case "2": // Transfer to customer
+        case "2"||"٢": // Transfer to customer
           _addAssistantMessage(
                AppLocalizations.of(context)!.transferPaymentHelp); // CHANGED
           messages
               .add({"role": "assistant", "content": "__SHOW_PAYMENT_BUTTON__"});
           break;
-        case "3":
+        case "3"||"٣":
           _addAssistantMessage(AppLocalizations.of(context)!.appAssistanceHelp);
           break;
-        case "4":
+        case "4"||"٤":
           _addAssistantMessage(AppLocalizations.of(context)!.contactAdminHelp);
           break;
         default:
