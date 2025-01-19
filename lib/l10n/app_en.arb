@@ -20,7 +20,7 @@
   "requests": "Requests",
   "customer":"Shop Owner",
   "barberShopPosts": "BarberShop Posts",
-  "hospitalPosts": "Hospital Posts",
+  "hospitalPosts": "Clinic Posts",
   "chat" : "Chat",
 
   "myshops": "MyShops",
@@ -86,7 +86,7 @@
   "postTitle": "Post Title",
   "general": "General",
   "barbershop": "Barbershop",
-  "hospital": "Hospital",
+  "hospital": "Clinic",
   "addImageAndTitle": "Add Image and Title",
   "postContent": "Post Content",
   "provideBlogBody": "Provide Body of Your Blog",
