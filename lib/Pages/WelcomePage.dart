@@ -221,14 +221,14 @@ class _WelcomePageState extends State<WelcomePage>
                       ),
                     ),
                     const SizedBox(height: 30),
-                    boxContainer("assets/google.png",
-                        AppLocalizations.of(context)!.signUpWithGoogle, null),
-                    const SizedBox(height: 20),
-                    boxContainer(
-                        "assets/Facebook_logo.png",
-                        AppLocalizations.of(context)!.signUpWithFacebook,
-                        onFBLogin),
-                    const SizedBox(height: 20),
+                    // boxContainer("assets/google.png",
+                    //     AppLocalizations.of(context)!.signUpWithGoogle, null),
+                    // const SizedBox(height: 20),
+                    // boxContainer(
+                    //     "assets/Facebook_logo.png",
+                    //     AppLocalizations.of(context)!.signUpWithFacebook,
+                    //     onFBLogin),
+                    // const SizedBox(height: 20),
                     boxContainer(
                         "assets/email.png",
                         AppLocalizations.of(context)!.signUpWithEmail,
