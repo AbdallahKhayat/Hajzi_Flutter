@@ -65,7 +65,7 @@ class _EmailSignUpPageState extends State<EmailSignUpPage> {
             'to_name': email,
             'to_email': email,
             'reset_link':
-                'https://hajzi-6883b1f029cf.herokuapp.com/user/verify/$email',
+                'https://hajziapp-98152e888858.herokuapp.com/user/verify/$email',
           },
         }),
       );

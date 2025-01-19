@@ -11,8 +11,8 @@ import 'package:socket_io_client/socket_io_client.dart' as IO; // ✅ Import Soc
 
 class NetworkHandler{
 
-  String baseurl = "https://hajzi-6883b1f029cf.herokuapp.com";
-  String baseurl2="https://hajzi-6883b1f029cf.herokuapp.com/";
+  String baseurl = "https://hajziapp-98152e888858.herokuapp.com";
+  String baseurl2="https://hajziapp-98152e888858.herokuapp.com/";
  // String baseurl = "https://flutter-sign-up-production.up.railway.app";
 
   var log = Logger();
