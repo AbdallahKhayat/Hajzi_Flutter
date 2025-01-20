@@ -150,8 +150,8 @@
   "shopLocation": "Shop Location",
   "upgradeToCustomer": "Upgrade To Shop Owner",
   "searchUsers": "Search Users...",
-  "usernameLabel": "Username",
-  "emailLabel": "Email",
+  "usernameLabel": "Username: ",
+  "emailLabel": "Email: ",
   "roleLabel": "Role",
   "statusLabel": "Status",
   "banned": "Banned",
@@ -400,7 +400,10 @@
   "failedToLoadBlogs": "Failed to load blogs. Please try again.",
   "noBlogsAvailable": "No Shops Currently Available",
   "audioMessage": "Audio Message",
-  "recording": "Recording..."
+  "recording": "Recording...",
+  "titleLabel": "Title: ",
+  "bodyLabel": "Body: "
+
 
 
 

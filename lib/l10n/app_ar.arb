@@ -144,8 +144,8 @@
   "shopLocation": "موقع المحل",
   "upgradeToCustomer": "الترقية إلى متجر",
   "searchUsers": "ابحث عن المستخدمين...",
-  "usernameLabel": "اسم المستخدم",
-  "emailLabel": "البريد الإلكتروني",
+  "usernameLabel": "اسم المستخدم: ",
+  "emailLabel": "البريد الإلكتروني: ",
   "roleLabel": "الدور",
   "statusLabel": "الحالة",
   "banned": "محظور",
@@ -394,7 +394,9 @@
   "failedToLoadBlogs": "فشل في تحميل المدونات. يرجى المحاولة مرة أخرى.",
   "noBlogsAvailable": "لا توجد محلات متاحة حاليًا",
   "audioMessage": "رسالة صوتية",
-  "recording": "جارٍ التسجيل..."
+  "recording": "جارٍ التسجيل...",
+  "titleLabel": "العنوان: ",
+  "bodyLabel": "المعلومات"
 
 
 

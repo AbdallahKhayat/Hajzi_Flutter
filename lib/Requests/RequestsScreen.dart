@@ -57,7 +57,9 @@ class _RequestsScreenState extends State<RequestsScreen> {
       });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(AppLocalizations.of(context)!.failedToFetchBlogRequests), // CHANGED
+          content:
+              Text(AppLocalizations.of(context)!.failedToFetchBlogRequests),
+          // CHANGED
           backgroundColor: Colors.red,
         ),
       );
@@ -102,9 +104,9 @@ class _RequestsScreenState extends State<RequestsScreen> {
       // Send notification to the customer
       await sendNotification(
         email: customerEmail!,
-        title:   AppLocalizations.of(context)!.shopStatusUpdated, // CHANGED
+        title: AppLocalizations.of(context)!.shopStatusUpdated, // CHANGED
         body:
-        "Your Shop with title: ${blog.title} has been $status by the admin.",
+            "Your Shop with title: ${blog.title} has been $status by the admin.",
       );
 
       showDialog(
@@ -119,10 +121,10 @@ class _RequestsScreenState extends State<RequestsScreen> {
               ),
             ),
             content: Text(
-              AppLocalizations.of(context)!.shopStatusUpdatedMessage(blog.title ?? "N/A", status),
+              AppLocalizations.of(context)!
+                  .shopStatusUpdatedMessage(blog.title ?? "N/A", status),
               style: TextStyle(color: Colors.black),
             ),
-
             actions: [
               TextButton(
                 onPressed: () {
@@ -221,13 +223,13 @@ class _RequestsScreenState extends State<RequestsScreen> {
   Future<bool> _isImageAccessible(String url) async {
     try {
       final response = await http.head(Uri.parse(url));
-      return response.statusCode == 200 && response.headers['content-length'] != '0';
+      return response.statusCode == 200 &&
+          response.headers['content-length'] != '0';
     } catch (e) {
       print("Error checking image accessibility: $e");
       return false;
     }
   }
-
 
   Future<void> _showDetails(AddBlogApproval blog) async {
     // Fetch all images associated with this blog request
@@ -251,33 +253,33 @@ class _RequestsScreenState extends State<RequestsScreen> {
                 // Username
                 Row(
                   children: [
-                    const Icon(Icons.person, color: Colors.teal),
+                    const Icon(Icons.title, color: Colors.teal),
                     const SizedBox(width: 10),
                     Text(
-                      AppLocalizations.of(context)!.usernameLabel, // CHANGED
+                      AppLocalizations.of(context)!.titleLabel, // CHANGED
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
-                    Text(blog.username ?? "N/A"),
+                    Text(blog.title ?? "N/A"),
                   ],
                 ),
                 const SizedBox(height: 10),
                 // Email
                 Row(
                   children: [
-                    const Icon(Icons.email, color: Colors.teal),
+                    const Icon(Icons.info, color: Colors.teal),
                     const SizedBox(width: 10),
                     Text(
-                      AppLocalizations.of(context)!.emailLabel, // CHANGED
+                      AppLocalizations.of(context)!.bodyLabel, // CHANGED
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),
 
                 Text(
-                  blog.email ?? "N/A",
+                  blog.body ?? "N/A",
                   style: const TextStyle(color: Colors.black87),
                 ),
-                const SizedBox(height:20),
+                const SizedBox(height: 20),
                 // Preview Image
                 Text(
                   AppLocalizations.of(context)!.previewImage, // CHANGED
@@ -286,20 +288,21 @@ class _RequestsScreenState extends State<RequestsScreen> {
                 const SizedBox(height: 10),
                 previewImage != null
                     ? Container(
-                  width: double.infinity,
-                  height: 200,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                    image: DecorationImage(
-                      image: NetworkImage(previewImage),
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                )
+                        width: double.infinity,
+                        height: 200,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          image: DecorationImage(
+                            image: NetworkImage(previewImage),
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      )
                     : Text(
-                  AppLocalizations.of(context)!.noPreviewImageUploaded, // CHANGED
-                  style: const TextStyle(color: Colors.grey),
-                ),
+                        AppLocalizations.of(context)!.noPreviewImageUploaded,
+                        // CHANGED
+                        style: const TextStyle(color: Colors.grey),
+                      ),
                 const SizedBox(height: 20),
                 // Cover Images
                 Text(
@@ -309,28 +312,29 @@ class _RequestsScreenState extends State<RequestsScreen> {
                 const SizedBox(height: 10),
                 coverImages.isNotEmpty
                     ? Wrap(
-                  spacing: 10,
-                  runSpacing: 10,
-                  children: coverImages
-                      .map(
-                        (url) => Container(
-                      width: 100,
-                      height: 100,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8),
-                        image: DecorationImage(
-                          image: NetworkImage(url),
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ),
-                  )
-                      .toList(),
-                )
+                        spacing: 10,
+                        runSpacing: 10,
+                        children: coverImages
+                            .map(
+                              (url) => Container(
+                                width: 100,
+                                height: 100,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(8),
+                                  image: DecorationImage(
+                                    image: NetworkImage(url),
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                              ),
+                            )
+                            .toList(),
+                      )
                     : Text(
-                  AppLocalizations.of(context)!.noCoverImagesUploaded, // CHANGED
-                  style: const TextStyle(color: Colors.grey),
-                ),
+                        AppLocalizations.of(context)!.noCoverImagesUploaded,
+                        // CHANGED
+                        style: const TextStyle(color: Colors.grey),
+                      ),
               ],
             ),
           ),
@@ -377,252 +381,284 @@ class _RequestsScreenState extends State<RequestsScreen> {
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : filteredRequests.isEmpty
-          ? Center(
-        child: Text(
-          AppLocalizations.of(context)!.noShopRequestsFound, // CHANGED
-          style: const TextStyle(fontSize: 18, color: Colors.grey),
-        ),
-      )
-          : ListView.builder(
-        itemCount: filteredRequests.length,
-        itemBuilder: (context, index) {
-          final blog = filteredRequests[index];
-          return kIsWeb
               ? Center(
-            child: SizedBox(
-              width: 650,
-              // height: 200,
-              child: Card(
-                margin: const EdgeInsets.symmetric(
-                    horizontal: 15, vertical: 10),
-                elevation: 3,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment:
-                    CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        blog.title ?? AppLocalizations.of(context)!.untitledBlog, // CHANGED
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.teal,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        blog.body ?? AppLocalizations.of(context)!.noContentAvailable, // CHANGED
-                        maxLines: 3,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          color: Colors.black87,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Row(
-                        mainAxisAlignment:
-                        MainAxisAlignment.spaceBetween,
-                        children: [
-                          ElevatedButton.icon(
-                            onPressed: () => updateBlogStatus(
-                                blog.id!, "approved"),
-                            icon: const Icon(
-                              Icons.check,
-                              color: Colors.black,
-                            ),
-                            label: Text(
-                              AppLocalizations.of(context)!.approve, // CHANGED
-                              style: const TextStyle(
-                                color: Colors.black,
-                              ),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              padding:
-                              const EdgeInsets.symmetric(
-                                  horizontal: 20,
-                                  vertical: 12),
-                              backgroundColor: Colors.green,
-                              shape: RoundedRectangleBorder(
-                                borderRadius:
-                                BorderRadius.circular(20),
-                              ),
-                            ),
-                          ),
-                          ElevatedButton.icon(
-                            onPressed: () => updateBlogStatus(
-                                blog.id!, "rejected"),
-                            icon: const Icon(
-                              Icons.cancel,
-                              color: Colors.black,
-                            ),
-                            label: Text(
-                              AppLocalizations.of(context)!.deny, // CHANGED
-                              style: const TextStyle(
-                                color: Colors.black,
-                              ),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              padding:
-                              const EdgeInsets.symmetric(
-                                  horizontal: 20,
-                                  vertical: 12),
-                              backgroundColor: Colors.red,
-                              shape: RoundedRectangleBorder(
-                                borderRadius:
-                                BorderRadius.circular(20),
-                              ),
-                            ),
-                          ),
+                  child: Text(
+                    AppLocalizations.of(context)!
+                        .noShopRequestsFound, // CHANGED
+                    style: const TextStyle(fontSize: 18, color: Colors.grey),
+                  ),
+                )
+              : ListView.builder(
+                  itemCount: filteredRequests.length,
+                  itemBuilder: (context, index) {
+                    final blog = filteredRequests[index];
+                    return kIsWeb
+                        ? Center(
+                            child: SizedBox(
+                              width: 650,
+                              // height: 200,
+                              child: Card(
+                                margin: const EdgeInsets.symmetric(
+                                    horizontal: 15, vertical: 10),
+                                elevation: 3,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(15),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          const Icon(Icons.person,
+                                              color: Colors.teal),
+                                          const SizedBox(width: 10),
+                                          Text(
+                                            AppLocalizations.of(context)!
+                                                .usernameLabel,
+                                            // CHANGED
+                                            style: const TextStyle(
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                          Text(blog.username ?? "N/A"),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Row(
+                                        children: [
+                                          const Icon(Icons.email,
+                                              color: Colors.teal),
+                                          const SizedBox(width: 10),
+                                          Text(
+                                            AppLocalizations.of(context)!
+                                                .emailLabel, // CHANGED
+                                            style: const TextStyle(
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                          Text(blog.email ?? "N/A"),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 12),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          ElevatedButton.icon(
+                                            onPressed: () => updateBlogStatus(
+                                                blog.id!, "approved"),
+                                            icon: const Icon(
+                                              Icons.check,
+                                              color: Colors.black,
+                                            ),
+                                            label: Text(
+                                              AppLocalizations.of(context)!
+                                                  .approve, // CHANGED
+                                              style: const TextStyle(
+                                                color: Colors.black,
+                                              ),
+                                            ),
+                                            style: ElevatedButton.styleFrom(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 20,
+                                                      vertical: 12),
+                                              backgroundColor: Colors.green,
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(20),
+                                              ),
+                                            ),
+                                          ),
+                                          ElevatedButton.icon(
+                                            onPressed: () => updateBlogStatus(
+                                                blog.id!, "rejected"),
+                                            icon: const Icon(
+                                              Icons.cancel,
+                                              color: Colors.black,
+                                            ),
+                                            label: Text(
+                                              AppLocalizations.of(context)!
+                                                  .deny, // CHANGED
+                                              style: const TextStyle(
+                                                color: Colors.black,
+                                              ),
+                                            ),
+                                            style: ElevatedButton.styleFrom(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 20,
+                                                      vertical: 12),
+                                              backgroundColor: Colors.red,
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(20),
+                                              ),
+                                            ),
+                                          ),
 
-                          // View Details Button
-                          ElevatedButton.icon(
-                            onPressed: () => _showDetails(blog),
-                            icon: const Icon(Icons.info,
-                                color: Colors.black),
-                            label: Text(
-                              AppLocalizations.of(context)!.viewDetails, // CHANGED
-                              style: const TextStyle(
-                                  color: Colors.black),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              padding:
-                              const EdgeInsets.symmetric(
-                                  horizontal: 20,
-                                  vertical: 12),
-                              backgroundColor: Colors.blue,
-                              shape: RoundedRectangleBorder(
-                                borderRadius:
-                                BorderRadius.circular(20),
+                                          // View Details Button
+                                          ElevatedButton.icon(
+                                            onPressed: () => _showDetails(blog),
+                                            icon: const Icon(Icons.info,
+                                                color: Colors.black),
+                                            label: Text(
+                                              AppLocalizations.of(context)!
+                                                  .viewDetails,
+                                              // CHANGED
+                                              style: const TextStyle(
+                                                  color: Colors.black),
+                                            ),
+                                            style: ElevatedButton.styleFrom(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 20,
+                                                      vertical: 12),
+                                              backgroundColor: Colors.blue,
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(20),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          )
-              : Stack(children: [
-            Card(
-              margin: const EdgeInsets.symmetric(
-                  horizontal: 15, vertical: 10),
-              elevation: 3,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(15),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      blog.title ?? AppLocalizations.of(context)!.untitledBlog, // CHANGED
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.teal,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      blog.body ?? AppLocalizations.of(context)!.noContentAvailable, // CHANGED
-                      maxLines: 3,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        color: Colors.black87,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      mainAxisAlignment:
-                      MainAxisAlignment.spaceBetween,
-                      children: [
-                        ElevatedButton.icon(
-                          onPressed: () => updateBlogStatus(
-                              blog.id!, "approved"),
-                          icon: const Icon(
-                            Icons.check,
-                            color: Colors.black,
-                          ),
-                          label: Text(
-                            AppLocalizations.of(context)!.approve, // CHANGED
-                            style: const TextStyle(
-                              color: Colors.black,
+                          )
+                        : Stack(children: [
+                            Card(
+                              margin: const EdgeInsets.symmetric(
+                                  horizontal: 15, vertical: 10),
+                              elevation: 3,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(15),
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.all(16),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        const Icon(Icons.person,
+                                            color: Colors.teal),
+                                        const SizedBox(width: 10),
+                                        Text(
+                                          AppLocalizations.of(context)!
+                                              .usernameLabel,
+                                          // CHANGED
+                                          style: const TextStyle(
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                        Text(blog.username ?? "N/A"),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Row(
+                                      children: [
+                                        const Icon(Icons.email,
+                                            color: Colors.teal),
+                                        const SizedBox(width: 10),
+                                        Text(
+                                          AppLocalizations.of(context)!
+                                              .emailLabel, // CHANGED
+                                          style: const TextStyle(
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                        Text(blog.email ?? "N/A"),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 12),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        ElevatedButton.icon(
+                                          onPressed: () => updateBlogStatus(
+                                              blog.id!, "approved"),
+                                          icon: const Icon(
+                                            Icons.check,
+                                            color: Colors.black,
+                                          ),
+                                          label: Text(
+                                            AppLocalizations.of(context)!
+                                                .approve, // CHANGED
+                                            style: const TextStyle(
+                                              color: Colors.black,
+                                            ),
+                                          ),
+                                          style: ElevatedButton.styleFrom(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 20, vertical: 12),
+                                            backgroundColor: Colors.green,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(20),
+                                            ),
+                                          ),
+                                        ),
+                                        ElevatedButton.icon(
+                                          onPressed: () => updateBlogStatus(
+                                              blog.id!, "rejected"),
+                                          icon: const Icon(
+                                            Icons.cancel,
+                                            color: Colors.black,
+                                          ),
+                                          label: Text(
+                                            AppLocalizations.of(context)!
+                                                .deny, // CHANGED
+                                            style: const TextStyle(
+                                              color: Colors.black,
+                                            ),
+                                          ),
+                                          style: ElevatedButton.styleFrom(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 20, vertical: 12),
+                                            backgroundColor: Colors.red,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(20),
+                                            ),
+                                          ),
+                                        ),
+                                        // View Details Button
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 20, vertical: 12),
-                            backgroundColor: Colors.green,
-                            shape: RoundedRectangleBorder(
-                              borderRadius:
-                              BorderRadius.circular(20),
+                            Positioned(
+                              top: 15,
+                              right: 35,
+                              child: ElevatedButton.icon(
+                                onPressed: () => _showDetails(blog),
+                                icon: const Icon(Icons.info_outline,
+                                    color: Colors.white, size: 18),
+                                label: Text(
+                                  AppLocalizations.of(context)!
+                                      .details, // CHANGED
+                                  style: const TextStyle(
+                                      color: Colors.white, fontSize: 12),
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 5),
+                                  backgroundColor: Colors.blue,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
-                        ElevatedButton.icon(
-                          onPressed: () => updateBlogStatus(
-                              blog.id!, "rejected"),
-                          icon: const Icon(
-                            Icons.cancel,
-                            color: Colors.black,
-                          ),
-                          label: Text(
-                            AppLocalizations.of(context)!.deny, // CHANGED
-                            style: const TextStyle(
-                              color: Colors.black,
-                            ),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 20, vertical: 12),
-                            backgroundColor: Colors.red,
-                            shape: RoundedRectangleBorder(
-                              borderRadius:
-                              BorderRadius.circular(20),
-                            ),
-                          ),
-                        ),
-                        // View Details Button
-                      ],
-                    ),
-                  ],
+                          ]);
+                  },
                 ),
-              ),
-            ),
-            Positioned(
-              top: 15,
-              right: 35,
-              child: ElevatedButton.icon(
-                onPressed: () => _showDetails(blog),
-                icon: const Icon(Icons.info_outline,
-                    color: Colors.white, size: 18),
-                label: Text(
-                  AppLocalizations.of(context)!.details, // CHANGED
-                  style: const TextStyle(
-                      color: Colors.white, fontSize: 12),
-                ),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 10, vertical: 5),
-                  backgroundColor: Colors.blue,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                ),
-              ),
-            ),
-          ]);
-        },
-      ),
     );
   }
 }
