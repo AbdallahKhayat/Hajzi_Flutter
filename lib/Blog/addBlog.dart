@@ -928,6 +928,7 @@ class _AddBlogState extends State<AddBlog> {
 
                 // close loading dialog
                 Navigator.of(context).pop();
+                Navigator.of(context).pop();
                 // Show success
                 if (mounted) {
                   showDialog<void>(
@@ -1055,7 +1056,7 @@ class _AddBlogState extends State<AddBlog> {
                 // CLOSE LOADING DIALOG before showing next dialog
                 // -------------------------------------------------------------
                 Navigator.of(context).pop(); // close loading dialog
-
+                Navigator.of(context).pop();
                 if (mounted) {
                   showDialog(
                     context: context,
