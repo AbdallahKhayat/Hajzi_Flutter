@@ -33,6 +33,7 @@ class _AddBlogState extends State<AddBlog> {
   TextEditingController _bodyController = TextEditingController();
   ImagePicker _picker = ImagePicker(); // for camera part
   List<XFile> imageFiles = []; // Changed to a list to store multiple images
+  List<Uint8List> _webImages = [];
   IconData? iconPhoto = Icons.image;
   String? selectedRole = "general";
   String email = "";
@@ -57,43 +58,60 @@ class _AddBlogState extends State<AddBlog> {
   }
 
   // Function to upload preview image to BlogPost
-  Future<void> uploadPreviewImageToBlogPost(
-      String blogId, String filePath) async {
-    try {
-      String url = "/blogpost/update/previewImage/$blogId"; // Correct Endpoint
-      var response = await networkHandler.patchImage(url, filePath);
-
-      if (response.statusCode == 200) {
-        print("Preview image uploaded successfully to BlogPost");
-      } else {
-        print(
-            "Failed to upload preview image to BlogPost: ${response.statusCode}, Reason: ${await response.stream.bytesToString()}");
+  Future<void> uploadPreviewImageToBlogPost(String blogId) async {
+    if (kIsWeb && _webImages.isNotEmpty) {
+      // The first image is the preview
+      final imageBytes = _webImages.first;
+      final imageResponse = await networkHandler.patchImageWeb(
+        "/blogpost/update/previewImage/$blogId",
+        imageBytes,
+      );
+      if (imageResponse.statusCode != 200 && imageResponse.statusCode != 201) {
+        throw Exception("Preview image upload (web) failed.");
       }
-    } catch (e) {
-      print("Error uploading preview image to BlogPost: $e");
+    } else if (!kIsWeb && imageFiles.isNotEmpty) {
+      // Mobile
+      final imageFile = imageFiles.first;
+      final imageResponse = await networkHandler.patchImage(
+        "/blogpost/update/previewImage/$blogId",
+        imageFile.path,
+      );
+      if (imageResponse.statusCode != 200 && imageResponse.statusCode != 201) {
+        throw Exception("Preview image upload (mobile) failed.");
+      }
     }
   }
 
 // Function to upload cover images to BlogPost
-  Future<void> uploadCoverImagesToBlogPost(
-      String blogId, List<XFile> images) async {
-    for (XFile image in images) {
-      try {
-        String url = "/blogpost/add/coverImages/$blogId"; // Correct Endpoint
-        var imageResponse = await networkHandler.patchImage(url, image.path);
-
+  Future<void> uploadCoverImagesToBlogPost(String blogId) async {
+    // For web
+    if (kIsWeb && _webImages.length > 1) {
+      // Start from index 1 for cover images
+      for (int i = 1; i < _webImages.length; i++) {
+        final imageBytes = _webImages[i];
+        final imageResponse = await networkHandler.patchImageWeb(
+          "/blogpost/add/coverImages/$blogId",
+          imageBytes,
+        );
         if (imageResponse.statusCode != 200 &&
             imageResponse.statusCode != 201) {
-          if (mounted)
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                  content: Text('Failed to upload image: ${image.name}'),
-                  backgroundColor: Colors.red),
-            );
-          return;
+          throw Exception("Cover image #$i (web) failed to upload.");
         }
-      } catch (e) {
-        print("Error uploading cover image ${image.name} to BlogPost: $e");
+      }
+    }
+
+    // For mobile
+    else if (!kIsWeb && imageFiles.length > 1) {
+      for (int i = 1; i < imageFiles.length; i++) {
+        final imageFile = imageFiles[i];
+        final imageResponse = await networkHandler.patchImage(
+          "/blogpost/add/coverImages/$blogId",
+          imageFile.path,
+        );
+        if (imageResponse.statusCode != 200 &&
+            imageResponse.statusCode != 201) {
+          throw Exception("Cover image #$i (mobile) failed to upload.");
+        }
       }
     }
   }
@@ -142,7 +160,7 @@ class _AddBlogState extends State<AddBlog> {
                 CircularProgressIndicator(
                   strokeWidth: 3,
                   valueColor:
-                      AlwaysStoppedAnimation<Color>(appColorNotifier.value),
+                  AlwaysStoppedAnimation<Color>(appColorNotifier.value),
                 ),
                 const SizedBox(height: 20),
                 // Optional tagline
@@ -223,7 +241,7 @@ class _AddBlogState extends State<AddBlog> {
             responseData["usernames"] != null &&
             responseData["usernames"].isNotEmpty) {
           username = responseData["usernames"]
-              [0]; // Extract the first username from the list
+          [0]; // Extract the first username from the list
           print("Username loaded successfully: $username");
         } else {
           print("No username found for the given email.");
@@ -273,37 +291,53 @@ class _AddBlogState extends State<AddBlog> {
   }
 
   // Updated function to upload a preview image using patchImage
-  Future<void> uploadPreviewImage(String blogId, String filePath) async {
-    try {
-      String url = "/AddBlogApproval/previewImage/$blogId";
-      var response = await networkHandler.patchImage(url, filePath);
-
-      if (response.statusCode == 200) {
-        print("Preview image uploaded successfully");
-      } else {
-        print(
-            "Failed to upload preview image: ${response.statusCode}, Reason: ${await response.stream.bytesToString()}");
+  Future<void> uploadPreviewImage(String blogId) async {
+    if (kIsWeb && _webImages.isNotEmpty) {
+      final imageBytes = _webImages.first;
+      final imageResponse = await networkHandler.patchImageWeb(
+        "/AddBlogApproval/previewImage/$blogId",
+        imageBytes,
+      );
+      if (imageResponse.statusCode != 200 && imageResponse.statusCode != 201) {
+        throw Exception("Preview image upload (web) to approval failed.");
       }
-    } catch (e) {
-      print("Error uploading preview image: $e");
+    } else if (!kIsWeb && imageFiles.isNotEmpty) {
+      final imageFile = imageFiles.first;
+      final imageResponse = await networkHandler.patchImage(
+        "/AddBlogApproval/previewImage/$blogId",
+        imageFile.path,
+      );
+      if (imageResponse.statusCode != 200 && imageResponse.statusCode != 201) {
+        throw Exception("Preview image upload (mobile) to approval failed.");
+      }
     }
   }
 
 // Updated function to upload cover images using patchImage
-  Future<void> uploadCoverImages(String blogId, List<XFile> images) async {
-    for (XFile image in images) {
-      try {
-        String url = "/AddBlogApproval/coverImages/$blogId";
-        var response = await networkHandler.patchImage(url, image.path);
-
-        if (response.statusCode == 200) {
-          print("Cover image ${image.name} uploaded successfully");
-        } else {
-          print(
-              "Failed to upload cover image: ${image.name}, Reason: ${await response.stream.bytesToString()}");
+  Future<void> uploadCoverImages(String blogId) async {
+    if (kIsWeb && _webImages.length > 1) {
+      for (int i = 1; i < _webImages.length; i++) {
+        final bytes = _webImages[i];
+        final imageResponse = await networkHandler.patchImageWeb(
+          "/AddBlogApproval/coverImages/$blogId",
+          bytes,
+        );
+        if (imageResponse.statusCode != 200 &&
+            imageResponse.statusCode != 201) {
+          throw Exception("Cover image #$i (web) to approval failed.");
         }
-      } catch (e) {
-        print("Error uploading cover image ${image.name}: $e");
+      }
+    } else if (!kIsWeb && imageFiles.length > 1) {
+      for (int i = 1; i < imageFiles.length; i++) {
+        final file = imageFiles[i];
+        final imageResponse = await networkHandler.patchImage(
+          "/AddBlogApproval/coverImages/$blogId",
+          file.path,
+        );
+        if (imageResponse.statusCode != 200 &&
+            imageResponse.statusCode != 201) {
+          throw Exception("Cover image #$i (mobile) to approval failed.");
+        }
       }
     }
   }
@@ -344,21 +378,28 @@ class _AddBlogState extends State<AddBlog> {
         actions: [
           TextButton(
             onPressed: () {
-              if (imageFiles.isNotEmpty &&
-                  _GlobalKey.currentState!.validate()) {
-                // Show preview modal
-                showModalBottomSheet(
-                  context: context,
-                  shape: RoundedRectangleBorder(
-                    borderRadius:
-                        BorderRadius.vertical(top: Radius.circular(20)),
-                  ),
-                  builder: (context) => OverlayCard(
-                    imageFile: imageFiles.first,
-                    // Pass the first image for preview
-                    title: _titleController.text,
-                  ),
-                );
+              // We have two separate lists, but let's unify them:
+              if ((!kIsWeb && imageFiles.isNotEmpty) ||
+                  (kIsWeb && _webImages.isNotEmpty)) {
+                if (_GlobalKey.currentState!.validate()) {
+                  // Show preview modal with the "first" image
+                  showModalBottomSheet(
+                    context: context,
+                    shape: const RoundedRectangleBorder(
+                      borderRadius:
+                      BorderRadius.vertical(top: Radius.circular(20)),
+                    ),
+                    builder: (context) => OverlayCard(
+                      // If you have a web image, pass it here:
+                      webImage: kIsWeb && _webImages.isNotEmpty ? _webImages.first : null,
+                      // If you have a mobile file, pass it here:
+                      imageFile: !kIsWeb && imageFiles.isNotEmpty
+                          ? XFile(imageFiles.first.path)
+                          : null,
+                      title: _titleController.text,
+                    ),
+                  );
+                }
               }
             },
             child: Text(
@@ -379,320 +420,322 @@ class _AddBlogState extends State<AddBlog> {
           child: SingleChildScrollView(
             child: kIsWeb
                 ? Center(
-                    child: SizedBox(
-                      width: 800,
-                      child: Card(
-                        elevation: 3,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              ValueListenableBuilder<Color>(
-                                valueListenable: appColorNotifier,
-                                builder: (context, appColor, child) {
-                                  return ShaderMask(
-                                    shaderCallback: (bounds) {
-                                      return LinearGradient(
-                                        colors: [
-                                          appColor.withOpacity(1),
-                                          appColor
-                                        ],
-                                        begin: Alignment.topLeft,
-                                        end: Alignment.bottomRight,
-                                      ).createShader(bounds);
-                                    },
-                                    child: Text(
-                                      AppLocalizations.of(context)!.postTitle,
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 18,
-                                        color: Colors
-                                            .white, // Required but overridden by the shader
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
-                              SizedBox(height: 10),
-                              DropdownButtonFormField<String>(
-                                value: selectedRole,
-                                onChanged: (value) {
-                                  setState(() {
-                                    selectedRole = value;
-                                  });
-                                },
-                                items: [
-                                  DropdownMenuItem(
-                                    value: "general",
-                                    child: Text(
-                                        AppLocalizations.of(context)!.general),
-                                  ),
-                                  DropdownMenuItem(
-                                    value: "barbershop",
-                                    child: Text(AppLocalizations.of(context)!
-                                        .barbershop),
-                                  ),
-                                  DropdownMenuItem(
-                                    value: "hospital",
-                                    child: Text(
-                                        AppLocalizations.of(context)!.hospital),
-                                  ),
-                                ],
-                                decoration: InputDecoration(
-                                  labelText:
-                                      AppLocalizations.of(context)!.selectRole,
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                ),
-                              ),
-                              SizedBox(height: 10),
-                              titleTextField(),
-                              SizedBox(height: 20),
-                              ValueListenableBuilder<Color>(
-                                valueListenable: appColorNotifier,
-                                builder: (context, appColor, child) {
-                                  return ShaderMask(
-                                    shaderCallback: (bounds) {
-                                      return LinearGradient(
-                                        colors: [
-                                          appColor.withOpacity(1),
-                                          appColor
-                                        ],
-                                        begin: Alignment.topLeft,
-                                        end: Alignment.bottomRight,
-                                      ).createShader(bounds);
-                                    },
-                                    child: Text(
-                                      AppLocalizations.of(context)!.postContent,
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 18,
-                                        color: Colors
-                                            .white, // Required but overridden by the shader
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
-                              SizedBox(height: 10),
-                              bodyTextField(),
-                              SizedBox(height: 20),
-                              imagePreview(),
-                              SizedBox(height: 30),
-                              SizedBox(height: 30),
-                              ElevatedButton(
-                                onPressed: () async {
-                                  final chosenLocation = await Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) =>
-                                            const SelectLocationPage()),
-                                  );
-                                  if (chosenLocation != null) {
-                                    LatLng loc = chosenLocation;
-                                    setState(() {
-                                      selectedLat = loc.latitude;
-                                      selectedLng = loc.longitude;
-                                    });
-                                  }
-                                },
-                                child: ValueListenableBuilder<Color>(
-                                  valueListenable: appColorNotifier,
-                                  builder: (context, appColor, child) {
-                                    return ShaderMask(
-                                      shaderCallback: (bounds) {
-                                        return LinearGradient(
-                                          colors: [
-                                            appColor.withOpacity(1),
-                                            appColor
-                                          ],
-                                          begin: Alignment.topLeft,
-                                          end: Alignment.bottomRight,
-                                        ).createShader(bounds);
-                                      },
-                                      child: Text(
-                                        AppLocalizations.of(context)!
-                                            .selectShopLocation,
-                                        style: const TextStyle(
-                                          color: Colors
-                                              .white, // Required but overridden by the shader
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
-                              if (selectedLat != null && selectedLng != null)
-                                Text(
-                                  "${AppLocalizations.of(context)!.locationSelected}: $selectedLat, $selectedLng",
-                                ),
-                              SizedBox(height: 30),
-                              Center(
-                                child: addButton(),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  )
-                : Card(
-                    elevation: 3,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          ValueListenableBuilder<Color>(
-                            valueListenable: appColorNotifier,
-                            builder: (context, appColor, child) {
-                              return ShaderMask(
-                                shaderCallback: (bounds) {
-                                  return LinearGradient(
-                                    colors: [appColor.withOpacity(1), appColor],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                  ).createShader(bounds);
-                                },
-                                child: Text(
-                                  AppLocalizations.of(context)!.postTitle,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 18,
-                                    color: Colors
-                                        .white, // Required but overridden by the shader
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                          SizedBox(height: 10),
-                          DropdownButtonFormField<String>(
-                            value: selectedRole,
-                            onChanged: (value) {
-                              setState(() {
-                                selectedRole = value;
-                              });
-                            },
-                            items: [
-                              DropdownMenuItem(
-                                value: "general",
-                                child:
-                                    Text(AppLocalizations.of(context)!.general),
-                              ),
-                              DropdownMenuItem(
-                                value: "barbershop",
-                                child: Text(
-                                    AppLocalizations.of(context)!.barbershop),
-                              ),
-                              DropdownMenuItem(
-                                value: "hospital",
-                                child: Text(
-                                    AppLocalizations.of(context)!.hospital),
-                              ),
-                            ],
-                            decoration: InputDecoration(
-                              labelText:
-                                  AppLocalizations.of(context)!.selectRole,
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                            ),
-                          ),
-                          SizedBox(height: 10),
-                          titleTextField(),
-                          SizedBox(height: 20),
-                          ValueListenableBuilder<Color>(
-                            valueListenable: appColorNotifier,
-                            builder: (context, appColor, child) {
-                              return ShaderMask(
-                                shaderCallback: (bounds) {
-                                  return LinearGradient(
-                                    colors: [appColor.withOpacity(1), appColor],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                  ).createShader(bounds);
-                                },
-                                child: Text(
-                                  AppLocalizations.of(context)!.postContent,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 18,
-                                    color: Colors
-                                        .white, // Required but overridden by the shader
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                          SizedBox(height: 10),
-                          bodyTextField(),
-                          SizedBox(height: 20),
-                          imagePreview(),
-                          SizedBox(height: 30),
-                          SizedBox(height: 30),
-                          ElevatedButton(
-                            onPressed: () async {
-                              final chosenLocation = await Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) =>
-                                        const SelectLocationPage()),
-                              );
-                              if (chosenLocation != null) {
-                                LatLng loc = chosenLocation;
-                                setState(() {
-                                  selectedLat = loc.latitude;
-                                  selectedLng = loc.longitude;
-                                });
-                              }
-                            },
-                            child: ValueListenableBuilder<Color>(
-                              valueListenable: appColorNotifier,
-                              builder: (context, appColor, child) {
-                                return ShaderMask(
-                                  shaderCallback: (bounds) {
-                                    return LinearGradient(
-                                      colors: [
-                                        appColor.withOpacity(1),
-                                        appColor
-                                      ],
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                    ).createShader(bounds);
-                                  },
-                                  child: Text(
-                                    AppLocalizations.of(context)!
-                                        .selectShopLocation,
-                                    style: const TextStyle(
-                                      color: Colors
-                                          .white, // Required but overridden by the shader
-                                    ),
-                                  ),
-                                );
+              child: SizedBox(
+                width: 800,
+                child: Card(
+                  elevation: 3,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        ValueListenableBuilder<Color>(
+                          valueListenable: appColorNotifier,
+                          builder: (context, appColor, child) {
+                            return ShaderMask(
+                              shaderCallback: (bounds) {
+                                return LinearGradient(
+                                  colors: [
+                                    appColor.withOpacity(1),
+                                    appColor
+                                  ],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ).createShader(bounds);
                               },
+                              child: Text(
+                                AppLocalizations.of(context)!.postTitle,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 18,
+                                  color: Colors
+                                      .white, // Required but overridden by the shader
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                        SizedBox(height: 10),
+                        DropdownButtonFormField<String>(
+                          value: selectedRole,
+                          onChanged: (value) {
+                            setState(() {
+                              selectedRole = value;
+                            });
+                          },
+                          items: [
+                            DropdownMenuItem(
+                              value: "general",
+                              child: Text(
+                                  AppLocalizations.of(context)!.general),
+                            ),
+                            DropdownMenuItem(
+                              value: "barbershop",
+                              child: Text(AppLocalizations.of(context)!
+                                  .barbershop),
+                            ),
+                            DropdownMenuItem(
+                              value: "hospital",
+                              child: Text(
+                                  AppLocalizations.of(context)!.hospital),
+                            ),
+                          ],
+                          decoration: InputDecoration(
+                            labelText:
+                            AppLocalizations.of(context)!.selectRole,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
                             ),
                           ),
-                          if (selectedLat != null && selectedLng != null)
-                            Text(
-                              "${AppLocalizations.of(context)!.locationSelected}: $selectedLat, $selectedLng",
-                            ),
-                          SizedBox(height: 30),
-                          Center(
-                            child: addButton(),
+                        ),
+                        SizedBox(height: 10),
+                        titleTextField(),
+                        SizedBox(height: 20),
+                        ValueListenableBuilder<Color>(
+                          valueListenable: appColorNotifier,
+                          builder: (context, appColor, child) {
+                            return ShaderMask(
+                              shaderCallback: (bounds) {
+                                return LinearGradient(
+                                  colors: [
+                                    appColor.withOpacity(1),
+                                    appColor
+                                  ],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ).createShader(bounds);
+                              },
+                              child: Text(
+                                AppLocalizations.of(context)!.postContent,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 18,
+                                  color: Colors
+                                      .white, // Required but overridden by the shader
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                        SizedBox(height: 10),
+                        bodyTextField(),
+                        SizedBox(height: 20),
+                        imagePreview(),
+                        SizedBox(height: 30),
+                        SizedBox(height: 30),
+                        ElevatedButton(
+                          onPressed: () async {
+                            final chosenLocation = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                  const SelectLocationPage()),
+                            );
+                            if (chosenLocation != null) {
+                              LatLng loc = chosenLocation;
+                              setState(() {
+                                selectedLat = loc.latitude;
+                                selectedLng = loc.longitude;
+                              });
+                            }
+                          },
+                          child: ValueListenableBuilder<Color>(
+                            valueListenable: appColorNotifier,
+                            builder: (context, appColor, child) {
+                              return ShaderMask(
+                                shaderCallback: (bounds) {
+                                  return LinearGradient(
+                                    colors: [
+                                      appColor.withOpacity(1),
+                                      appColor
+                                    ],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  ).createShader(bounds);
+                                },
+                                child: Text(
+                                  AppLocalizations.of(context)!
+                                      .selectShopLocation,
+                                  style: const TextStyle(
+                                    color: Colors
+                                        .white, // Required but overridden by the shader
+                                  ),
+                                ),
+                              );
+                            },
                           ),
-                        ],
-                      ),
+                        ),
+                        if (selectedLat != null && selectedLng != null)
+                          Text(
+                            "${AppLocalizations.of(context)!
+                                .locationSelected}: $selectedLat, $selectedLng",
+                          ),
+                        SizedBox(height: 30),
+                        Center(
+                          child: addButton(),
+                        ),
+                      ],
                     ),
                   ),
+                ),
+              ),
+            )
+                : Card(
+              elevation: 3,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ValueListenableBuilder<Color>(
+                      valueListenable: appColorNotifier,
+                      builder: (context, appColor, child) {
+                        return ShaderMask(
+                          shaderCallback: (bounds) {
+                            return LinearGradient(
+                              colors: [appColor.withOpacity(1), appColor],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ).createShader(bounds);
+                          },
+                          child: Text(
+                            AppLocalizations.of(context)!.postTitle,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                              color: Colors
+                                  .white, // Required but overridden by the shader
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    SizedBox(height: 10),
+                    DropdownButtonFormField<String>(
+                      value: selectedRole,
+                      onChanged: (value) {
+                        setState(() {
+                          selectedRole = value;
+                        });
+                      },
+                      items: [
+                        DropdownMenuItem(
+                          value: "general",
+                          child:
+                          Text(AppLocalizations.of(context)!.general),
+                        ),
+                        DropdownMenuItem(
+                          value: "barbershop",
+                          child: Text(
+                              AppLocalizations.of(context)!.barbershop),
+                        ),
+                        DropdownMenuItem(
+                          value: "hospital",
+                          child: Text(
+                              AppLocalizations.of(context)!.hospital),
+                        ),
+                      ],
+                      decoration: InputDecoration(
+                        labelText:
+                        AppLocalizations.of(context)!.selectRole,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    titleTextField(),
+                    SizedBox(height: 20),
+                    ValueListenableBuilder<Color>(
+                      valueListenable: appColorNotifier,
+                      builder: (context, appColor, child) {
+                        return ShaderMask(
+                          shaderCallback: (bounds) {
+                            return LinearGradient(
+                              colors: [appColor.withOpacity(1), appColor],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ).createShader(bounds);
+                          },
+                          child: Text(
+                            AppLocalizations.of(context)!.postContent,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                              color: Colors
+                                  .white, // Required but overridden by the shader
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    SizedBox(height: 10),
+                    bodyTextField(),
+                    SizedBox(height: 20),
+                    imagePreview(),
+                    SizedBox(height: 30),
+                    SizedBox(height: 30),
+                    ElevatedButton(
+                      onPressed: () async {
+                        final chosenLocation = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) =>
+                              const SelectLocationPage()),
+                        );
+                        if (chosenLocation != null) {
+                          LatLng loc = chosenLocation;
+                          setState(() {
+                            selectedLat = loc.latitude;
+                            selectedLng = loc.longitude;
+                          });
+                        }
+                      },
+                      child: ValueListenableBuilder<Color>(
+                        valueListenable: appColorNotifier,
+                        builder: (context, appColor, child) {
+                          return ShaderMask(
+                            shaderCallback: (bounds) {
+                              return LinearGradient(
+                                colors: [
+                                  appColor.withOpacity(1),
+                                  appColor
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ).createShader(bounds);
+                            },
+                            child: Text(
+                              AppLocalizations.of(context)!
+                                  .selectShopLocation,
+                              style: const TextStyle(
+                                color: Colors
+                                    .white, // Required but overridden by the shader
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    if (selectedLat != null && selectedLng != null)
+                      Text(
+                        "${AppLocalizations.of(context)!
+                            .locationSelected}: $selectedLat, $selectedLng",
+                      ),
+                    SizedBox(height: 30),
+                    Center(
+                      child: addButton(),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
         ),
       ),
@@ -783,67 +826,107 @@ class _AddBlogState extends State<AddBlog> {
   }
 
   Widget imagePreview() {
+    // On mobile => _mobileImages
+    // On web => _webImages
+    //
+    // We'll unify them in a single "preview" so you can see them in a Wrap.
+    final imagesCount = kIsWeb ? _webImages.length : imageFiles.length;
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Wrap(
           spacing: 10,
           runSpacing: 10,
-          children: imageFiles
-              .map(
-                (image) => Stack(
-                  children: [
-                    // Display the image
-                    Container(
-                      width: 100,
-                      height: 100,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8),
-                        image: DecorationImage(
-                          image: FileImage(File(image.path)),
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ),
-                    // Add a delete button on top
-                    Positioned(
-                      top: 5,
-                      right: 5,
-                      child: GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            imageFiles
-                                .remove(image); // Remove the selected image
-                          });
-                        },
-                        child: CircleAvatar(
-                          radius: 12,
-                          backgroundColor: Colors.red,
-                          child: Icon(
-                            Icons.close,
-                            color: Colors.white,
-                            size: 16,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              )
-              .toList(),
+          children: List.generate(imagesCount, (index) {
+            return _buildSingleImagePreview(index);
+          }),
         ),
-        if (imageFiles.isEmpty)
+        if (imagesCount == 0)
           Text(
             AppLocalizations.of(context)!.noImagesSelected,
-            style: TextStyle(color: Colors.grey),
+            style: const TextStyle(color: Colors.grey),
           ),
       ],
     );
   }
 
+  Widget _buildSingleImagePreview(int index) {
+    if (kIsWeb) {
+      // Web
+      final bytes = _webImages[index];
+      return Stack(
+        children: [
+          Container(
+            width: 100,
+            height: 100,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+              image: DecorationImage(
+                image: MemoryImage(bytes),
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          Positioned(
+            top: 5,
+            right: 5,
+            child: GestureDetector(
+              onTap: () {
+                setState(() {
+                  _webImages.removeAt(index);
+                });
+              },
+              child: const CircleAvatar(
+                radius: 12,
+                backgroundColor: Colors.red,
+                child: Icon(Icons.close, color: Colors.white, size: 16),
+              ),
+            ),
+          ),
+        ],
+      );
+    } else {
+      // Mobile
+      final xfile = imageFiles[index];
+      return Stack(
+        children: [
+          Container(
+            width: 100,
+            height: 100,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+              image: DecorationImage(
+                image: FileImage(File(xfile.path)),
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          Positioned(
+            top: 5,
+            right: 5,
+            child: GestureDetector(
+              onTap: () {
+                setState(() {
+                  imageFiles.removeAt(index);
+                });
+              },
+              child: const CircleAvatar(
+                radius: 12,
+                backgroundColor: Colors.red,
+                child: Icon(Icons.close, color: Colors.white, size: 16),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+  }
+
   Widget addButton() {
     return InkWell(
       onTap: () async {
-        if (_GlobalKey.currentState!.validate() && imageFiles.isNotEmpty) {
+        if (_GlobalKey.currentState!.validate() && imageFiles.isNotEmpty ||
+            _webImages.isNotEmpty) {
           // Show confirmation dialog before proceeding
           bool? confirm = await showDialog<bool>(
             context: context,
@@ -851,7 +934,7 @@ class _AddBlogState extends State<AddBlog> {
               return AlertDialog(
                 title: Text(AppLocalizations.of(context)!.confirmSubmission),
                 content:
-                    Text(AppLocalizations.of(context)!.areYouSureSubmitShop),
+                Text(AppLocalizations.of(context)!.areYouSureSubmitShop),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(false), // Cancel
@@ -888,7 +971,7 @@ class _AddBlogState extends State<AddBlog> {
             }
 
             var shopCountResponse =
-                await networkHandler.get("/blogpost/countUserShops");
+            await networkHandler.get("/blogpost/countUserShops");
             int userShopsCount = 0;
             if (shopCountResponse is Map<String, dynamic> &&
                 shopCountResponse.containsKey("shopCount")) {
@@ -910,21 +993,17 @@ class _AddBlogState extends State<AddBlog> {
               );
 
               var addResponse =
-                  await networkHandler.post("/blogpost/Add", newShop.toJson());
+              await networkHandler.post("/blogpost/Add", newShop.toJson());
 
               if (addResponse.statusCode == 200 ||
                   addResponse.statusCode == 201) {
                 String newBlogId = json.decode(addResponse.body)["data"];
 
                 // Upload images to the new BlogPost
-                if (imageFiles.isNotEmpty) {
-                  await uploadPreviewImageToBlogPost(
-                      newBlogId, imageFiles.first.path);
-                  if (imageFiles.length > 1) {
-                    await uploadCoverImagesToBlogPost(
-                        newBlogId, imageFiles.sublist(1));
-                  }
-                }
+                // 1) Upload preview
+                await uploadPreviewImageToBlogPost(newBlogId);
+                // 2) Upload covers
+                await uploadCoverImagesToBlogPost(newBlogId);
 
                 // close loading dialog
                 Navigator.of(context).pop();
@@ -942,7 +1021,9 @@ class _AddBlogState extends State<AddBlog> {
                           children: [
                             Icon(Icons.check_circle, color: Colors.green),
                             SizedBox(width: 8),
-                            Text(AppLocalizations.of(context)!.success,),
+                            Text(
+                              AppLocalizations.of(context)!.success,
+                            ),
                           ],
                         ),
                         //,
@@ -951,7 +1032,7 @@ class _AddBlogState extends State<AddBlog> {
                             .shopCreatedSuccessfully),
                         actions: <Widget>[
                           TextButton(
-                            child:  Text(AppLocalizations.of(context)!.ok,
+                            child: Text(AppLocalizations.of(context)!.ok,
                                 style: const TextStyle(color: Colors.black)),
                             onPressed: () => Navigator.of(context).pop(),
                           ),
@@ -995,7 +1076,7 @@ class _AddBlogState extends State<AddBlog> {
               final templateId = 'template_fon03t7';
               final userId = 'tPJQRVN9PQ2jjZ_6C';
               final url =
-                  Uri.parse('https://api.emailjs.com/api/v1.0/email/send');
+              Uri.parse('https://api.emailjs.com/api/v1.0/email/send');
 
               final emailResponse = await http.post(
                 url,
@@ -1025,7 +1106,8 @@ class _AddBlogState extends State<AddBlog> {
               );
 
               print(
-                  "Notification Response Code: ${notificationResponse.statusCode}");
+                  "Notification Response Code: ${notificationResponse
+                      .statusCode}");
               print("Notification Response Body: ${notificationResponse.body}");
 
               if (notificationResponse.statusCode == 200) {
@@ -1042,15 +1124,15 @@ class _AddBlogState extends State<AddBlog> {
                 await sendNotification(
                   title: "New Shop Approval Request",
                   body:
-                      "${addBlogApproval.email} has applied for a shop with the title: ${addBlogApproval.title}. Please review it.",
+                  "${addBlogApproval
+                      .email} has applied for a shop with the title: ${addBlogApproval
+                      .title}. Please review it.",
                 );
 
-                // Upload images
-                // Upload preview image
-                if (imageFiles.isNotEmpty) {
-                  await uploadPreviewImage(blogId, imageFiles.first.path);
-                  await uploadCoverImages(blogId, imageFiles.sublist(1));
-                }
+                // 1) Upload preview to approval
+                await uploadPreviewImage(blogId);
+                // 2) Upload covers to approval
+                await uploadCoverImages(blogId);
 
                 // -------------------------------------------------------------
                 // CLOSE LOADING DIALOG before showing next dialog
@@ -1132,12 +1214,10 @@ class _AddBlogState extends State<AddBlog> {
                     print("New BlogPost ID: $newBlogId");
 
                     // Step 6: Upload preview image to BlogPost
-                    if (imageFiles.isNotEmpty) {
-                      await uploadPreviewImageToBlogPost(
-                          newBlogId, imageFiles.first.path);
-                      await uploadCoverImagesToBlogPost(
-                          newBlogId, imageFiles.sublist(1));
-                    }
+
+                      await uploadPreviewImageToBlogPost(newBlogId);
+                      await uploadCoverImagesToBlogPost(newBlogId);
+
 
                     if (mounted) Navigator.pop(context);
                     if (mounted) {
@@ -1156,8 +1236,8 @@ class _AddBlogState extends State<AddBlog> {
                               ],
                             ),
                             //Shop approved and published successfully!
-                            content: Text(
-                                AppLocalizations.of(context)!.shopApprovedAndPublished),
+                            content: Text(AppLocalizations.of(context)!
+                                .shopApprovedAndPublished),
                             actions: <Widget>[
                               TextButton(
                                 child: Text(
@@ -1178,7 +1258,7 @@ class _AddBlogState extends State<AddBlog> {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                             content:
-                                Text('Failed to add blog to blogpost schema'),
+                            Text('Failed to add blog to blogpost schema'),
                             backgroundColor: Colors.red),
                       );
                   }
@@ -1189,11 +1269,11 @@ class _AddBlogState extends State<AddBlog> {
                       builder: (BuildContext context) {
                         return AlertDialog(
                           title: Text(
-                           AppLocalizations.of(context)!.approvalPending,
+                            AppLocalizations.of(context)!.approvalPending,
                             style: TextStyle(fontWeight: FontWeight.bold),
                           ),
-                          content:
-                              Text(AppLocalizations.of(context)!.shopNotApproved),
+                          content: Text(
+                              AppLocalizations.of(context)!.shopNotApproved),
                           actions: [
                             TextButton(
                               onPressed: () {
@@ -1216,17 +1296,18 @@ class _AddBlogState extends State<AddBlog> {
                     context: context,
                     builder: (BuildContext context) {
                       return AlertDialog(
-                        title:  Text(
+                        title: Text(
                           AppLocalizations.of(context)!.submissionError,
                           style: TextStyle(fontWeight: FontWeight.bold),
                         ),
-                        content: Text(AppLocalizations.of(context)!.blogAlreadySubmitted),
+                        content: Text(
+                            AppLocalizations.of(context)!.blogAlreadySubmitted),
                         actions: [
                           TextButton(
                             onPressed: () {
                               Navigator.of(context).pop(); // Close the dialog
                             },
-                            child:Text(
+                            child: Text(
                               AppLocalizations.of(context)!.ok,
                               style: const TextStyle(color: Colors.red),
                             ),
@@ -1253,42 +1334,106 @@ class _AddBlogState extends State<AddBlog> {
       },
       child: Center(
           child: ValueListenableBuilder<Color>(
-        valueListenable: appColorNotifier,
-        builder: (context, appColor, child) {
-          return Container(
-            height: 50,
-            width: 170,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-              gradient: LinearGradient(
-                colors: [appColor.withOpacity(1), appColor],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-            ),
-            child: Center(
-              child: Text(
-                AppLocalizations.of(context)!.addShop,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
+            valueListenable: appColorNotifier,
+            builder: (context, appColor, child) {
+              return Container(
+                height: 50,
+                width: 170,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  gradient: LinearGradient(
+                    colors: [appColor.withOpacity(1), appColor],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
                 ),
-              ),
-            ),
-          );
-        },
-      )),
+                child: Center(
+                  child: Text(
+                    AppLocalizations.of(context)!.addShop,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              );
+            },
+          )),
     );
   }
 
-  void takeCoverPhotos() async {
-    final List<XFile>? selectedImages = await _picker.pickMultiImage();
+  Future<void> takeCoverPhotos() async {
+    final selectedImages = await _picker.pickMultiImage();
     if (selectedImages != null && selectedImages.isNotEmpty) {
+      // Clear existing images
+      imageFiles.clear();
+      _webImages.clear();
+
+      if (kIsWeb) {
+        // On Web, read each image as bytes
+        for (XFile xfile in selectedImages) {
+          final bytes = await xfile.readAsBytes();
+          _webImages.add(bytes);
+        }
+      } else {
+        // On Mobile, just store the XFile objects
+        for (XFile xfile in selectedImages) {
+          imageFiles.add(
+              xfile); // <-- FIXED: add the entire XFile, not xfile.path
+        }
+      }
+
       setState(() {
-        imageFiles = selectedImages;
-        iconPhoto = Icons.check_box;
+        iconPhoto = Icons.check_box; // Update the icon
       });
     }
+  }
+
+
+}
+class OverlayCard extends StatelessWidget {
+  final XFile? imageFile;       // still for mobile
+  final Uint8List? webImage;    // new for web
+  final String title;
+
+  const OverlayCard({
+    Key? key,
+    this.imageFile,
+    this.webImage,
+    required this.title,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      // For example
+      height: 300,
+      child: Column(
+        children: [
+          // The image
+          if (webImage != null)
+            Image.memory(
+              webImage!,
+              fit: BoxFit.cover,
+              height: 250,
+            )
+          else if (imageFile != null)
+            Image.file(
+              File(imageFile!.path),
+              fit: BoxFit.cover,
+              height: 200,
+            )
+          else
+            const Text("No image selected"),
+          const SizedBox(height: 10),
+          // The title
+          Text(
+            title,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+        ],
+      ),
+    );
   }
 }

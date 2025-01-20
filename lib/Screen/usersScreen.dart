@@ -609,34 +609,29 @@ class _UsersScreenState extends State<UsersScreen> {
         ),
         elevation: 0, // Optional: Remove shadow from AppBar
       ),
-      body: users.isEmpty
-          ? const Center(child: CircularProgressIndicator())
-          : kIsWeb
-          ? Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              // Prevent GridView from scrolling separately
-              gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-                maxCrossAxisExtent: 400, // Maximum width of each card
-                mainAxisSpacing: 16.0, // Spacing between rows
-                crossAxisSpacing: 16.0, // Spacing between columns
-                childAspectRatio:
-                5 / 4, // Adjust the aspect ratio as needed
-              ),
-              itemCount: users.length,
-              itemBuilder: (context, index) =>
-                  _buildUserCard(users[index]),
-            );
-          },
+      // Wrap the body in a Scrollbar:
+      body: Scrollbar(
+        thumbVisibility: true, // always show the scrollbar thumb on web
+        child: kIsWeb
+            ? Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: GridView.builder(
+            // Let GridView handle its own scrolling
+            itemCount: users.length,
+            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+              maxCrossAxisExtent: 400,
+              mainAxisSpacing: 16.0,
+              crossAxisSpacing: 16.0,
+              childAspectRatio: 5 / 4,
+            ),
+            itemBuilder: (context, index) =>
+                _buildUserCard(users[index]),
+          ),
+        )
+            : ListView.builder(
+          itemCount: users.length,
+          itemBuilder: (context, index) => _buildUserCard(users[index]),
         ),
-      )
-          : ListView.builder(
-        itemCount: users.length,
-        itemBuilder: (context, index) => _buildUserCard(users[index]),
       ),
     );
   }

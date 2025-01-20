@@ -1,6 +1,8 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:blogapp/Pages/HomePage.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:image_picker/image_picker.dart';
@@ -18,6 +20,7 @@ class CreateProfile extends StatefulWidget {
 
 class _CreateProfileState extends State<CreateProfile> {
   XFile? _imageFile;
+  Uint8List? _webImage;
   final ImagePicker _picker = ImagePicker();
 
   final _globalkey =
@@ -115,7 +118,35 @@ class _CreateProfileState extends State<CreateProfile> {
                           var response = await networkHandler.post("/profile/add", data);
 
                           if (response.statusCode == 200 || response.statusCode == 201) {
-                            if (_imageFile != null) {
+                            if (_webImage != null) {
+                              // Web
+                              final imageResponse =
+                              await networkHandler.patchImageWeb("/profile/add/image", _webImage!);
+
+                              if (imageResponse.statusCode == 200 || imageResponse.statusCode == 201) {
+                                // All good, proceed to home
+                                Navigator.of(context).pushAndRemoveUntil(
+                                    MaterialPageRoute(
+                                        builder: (context) => HomePage(
+                                          setLocale: (Locale) {},
+                                          filterState: 0,
+                                        )),
+                                        (route) => false);
+                              } else {
+                                setState(() {
+                                  circular = false; // Hide the loading indicator
+                                });
+                                Navigator.of(context).pushAndRemoveUntil(
+                                  MaterialPageRoute(
+                                      builder: (context) => HomePage(
+                                        setLocale: (Locale) {},
+                                        filterState: 0,
+                                      )),
+                                      (route) => false,
+                                );
+                              }
+                            }
+                            else if (_imageFile != null) {
                               var imageResponse = await networkHandler.patchImage(
                                   "/profile/add/image", _imageFile!.path);
                               if (imageResponse.statusCode == 200) {
@@ -194,9 +225,14 @@ class _CreateProfileState extends State<CreateProfile> {
         children: [
           CircleAvatar(
             radius: 80,
-            backgroundImage: _imageFile == null
-                ? AssetImage("assets/profileImage.png")
-                : FileImage(File(_imageFile!.path)) as ImageProvider,
+            backgroundColor: Colors.grey.shade300,
+            backgroundImage: kIsWeb
+                ? _webImage != null
+                ? MemoryImage(_webImage!)
+                : const AssetImage("assets/profileImage.png") as ImageProvider
+                : _imageFile != null
+                ? FileImage(File(_imageFile!.path))
+                : const AssetImage("assets/profileImage.png"),
           ),
           Positioned(
             bottom: 25,
@@ -296,18 +332,33 @@ class _CreateProfileState extends State<CreateProfile> {
     );
   }
 
-  void takePhoto(ImageSource source) async {
-    await requestPermissions(); // Request permissions
+  Future<void> takePhoto(ImageSource source) async {
+    if (!kIsWeb) {
+      // On mobile, request camera permissions
+      await requestPermissions();
+    }
 
     final XFile? pickedFile = await _picker.pickImage(source: source);
     if (pickedFile != null) {
-      setState(() {
-        _imageFile = pickedFile;
-      });
+      if (kIsWeb) {
+        // For web, load bytes in memory
+        final bytes = await pickedFile.readAsBytes();
+        setState(() {
+          _webImage = bytes;
+          _imageFile = null; // clear the mobile file reference
+        });
+      } else {
+        // For mobile
+        setState(() {
+          _imageFile = pickedFile;
+          _webImage = null; // clear the web bytes
+        });
+      }
     } else {
       print("No image selected.");
     }
   }
+
 
   Widget nameTextField() {
     return TextFormField(

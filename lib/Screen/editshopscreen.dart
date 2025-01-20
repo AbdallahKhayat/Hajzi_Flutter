@@ -19,6 +19,7 @@ class EditShopScreen extends StatefulWidget {
     required this.addBlogModel,
     required this.networkHandler,
   });
+
 //hello
   @override
   State<EditShopScreen> createState() => _EditShopScreenState();
@@ -33,8 +34,9 @@ class _EditShopScreenState extends State<EditShopScreen> {
   List<File> newCoverImages = []; // For new slideshow images
   List<String> existingCoverImages = [];
   final ImagePicker _picker = ImagePicker();
-  NetworkHandler networkHandler=NetworkHandler();
-
+  NetworkHandler networkHandler = NetworkHandler();
+  Uint8List? _previewImageBytes; // Web (in-memory bytes)
+  List<Uint8List> _newCoverImageBytes = []; // Web
   @override
   void initState() {
     super.initState();
@@ -88,7 +90,8 @@ class _EditShopScreenState extends State<EditShopScreen> {
                 // Circular progress indicator
                 CircularProgressIndicator(
                   strokeWidth: 3,
-                  valueColor: AlwaysStoppedAnimation<Color>(appColorNotifier.value),
+                  valueColor:
+                      AlwaysStoppedAnimation<Color>(appColorNotifier.value),
                 ),
                 const SizedBox(height: 20),
                 // Optional tagline
@@ -136,18 +139,21 @@ class _EditShopScreenState extends State<EditShopScreen> {
       print("Error sending notification: $error");
     }
   }
+
   Future<void> _submitChanges() async {
     if (_formKey.currentState!.validate()) {
       // Show the loading dialog before starting network operations
       showLoadingDialog(context, AppLocalizations.of(context)!.updatingShop);
       try {
         AddBlogModel updatedBlog = AddBlogModel(
-          id: widget.addBlogModel.id, // Retain the same blog ID
+          id: widget.addBlogModel.id,
+          // Retain the same blog ID
           title: _titleController.text,
           body: _bodyController.text,
           type: selectedRole ?? "general",
           createdAt: widget.addBlogModel.createdAt,
-          status: "approved", // Keep the status
+          status: "approved",
+          // Keep the status
           email: widget.addBlogModel.email,
         );
 
@@ -159,29 +165,62 @@ class _EditShopScreenState extends State<EditShopScreen> {
 
         if (response.statusCode == 200 || response.statusCode == 201) {
           // Update the preview image if a new one was selected
-          if (previewImageFile != null) {
-            await widget.networkHandler.patchImage(
+          // If user picked a new preview image on web:
+          if (_previewImageBytes != null) {
+            final imageResponse = await widget.networkHandler.patchImageWeb(
+              "/blogpost/update/previewImage/${widget.addBlogModel.id}",
+              _previewImageBytes!,
+            );
+            if (imageResponse.statusCode != 200 &&
+                imageResponse.statusCode != 201) {
+              throw Exception("Preview image upload (web) failed.");
+            }
+          }
+          // If user picked a new preview image on mobile:
+          else if (previewImageFile != null) {
+            final imageResponse = await widget.networkHandler.patchImage(
               "/blogpost/update/previewImage/${widget.addBlogModel.id}",
               previewImageFile!.path,
             );
+            if (imageResponse.statusCode != 200 &&
+                imageResponse.statusCode != 201) {
+              throw Exception("Preview image upload (mobile) failed.");
+            }
           }
+          // Otherwise, user didn't change preview image => do nothing
 
           // Upload new slideshow images if added
-          if (newCoverImages.isNotEmpty) {
-            for (var image in newCoverImages) {
-              await widget.networkHandler.patchImage(
-                "/blogpost/add/coverImages/${widget.addBlogModel.id}",
-                image.path,
-              );
+          for (Uint8List bytes in _newCoverImageBytes) {
+            final imageResponse = await widget.networkHandler.patchImageWeb(
+              "/blogpost/add/coverImages/${widget.addBlogModel.id}",
+              bytes,
+            );
+            if (imageResponse.statusCode != 200 &&
+                imageResponse.statusCode != 201) {
+              throw Exception("Cover image upload (web) failed.");
+            }
+          }
+
+          // 2) If user picked new cover images on mobile
+          for (File file in newCoverImages) {
+            final imageResponse = await widget.networkHandler.patchImage(
+              "/blogpost/add/coverImages/${widget.addBlogModel.id}",
+              file.path,
+            );
+            if (imageResponse.statusCode != 200 &&
+                imageResponse.statusCode != 201) {
+              throw Exception("Cover image upload (mobile) failed.");
             }
           }
 
           final notificationResponse = await networkHandler.post(
-            "/notifications/notifyAdmins/updateShop/${widget.addBlogModel.email}/${widget.addBlogModel.id}", // Note: Ensure proper string interpolation
+            "/notifications/notifyAdmins/updateShop/${widget.addBlogModel.email}/${widget.addBlogModel.id}",
+            // Note: Ensure proper string interpolation
             {},
           );
 
-          print("Notification Response Code: ${notificationResponse.statusCode}");
+          print(
+              "Notification Response Code: ${notificationResponse.statusCode}");
           print("Notification Response Body: ${notificationResponse.body}");
 
           if (notificationResponse.statusCode == 200) {
@@ -191,10 +230,10 @@ class _EditShopScreenState extends State<EditShopScreen> {
             print("Failed to notify admins");
           }
 
-
           await sendNotification(
             title: "Shop Modifications",
-            body: "${widget.addBlogModel.email} has modified on his shop with the title: ${widget.addBlogModel.title}...",
+            body:
+                "${widget.addBlogModel.email} has modified on his shop with the title: ${widget.addBlogModel.title}...",
           );
           // Dismiss the loading dialog before showing the success dialog
           Navigator.pop(context);
@@ -203,77 +242,100 @@ class _EditShopScreenState extends State<EditShopScreen> {
               context: context,
               builder: (BuildContext context) {
                 return AlertDialog(
-                    title: Row(
-                      children: [
-                        Icon(
-                          Icons.check_circle_outline,
-                          color: appColorNotifier.value, // Use main color
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          AppLocalizations.of(context)!.shopUpdated,
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
-                    content: Row(
-                      children: [
-                        Icon(
-                          Icons.store_outlined,
-                          color: appColorNotifier.value,
-                          size: 36,
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Text(AppLocalizations.of(context)!.shopUpdatedSuccessfully),
-                        ),
-                      ],
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () {
-                          Navigator.pop(context); // Close the dialog
-                          Navigator.pop(context); // Navigate back
-                        },
-                        child: Text(
-                          AppLocalizations.of(context)!.ok,
-                          style: TextStyle(color: appColorNotifier.value),
-                        ),
+                  title: Row(
+                    children: [
+                      Icon(
+                        Icons.check_circle_outline,
+                        color: appColorNotifier.value, // Use main color
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        AppLocalizations.of(context)!.shopUpdated,
+                        style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                     ],
+                  ),
+                  content: Row(
+                    children: [
+                      Icon(
+                        Icons.store_outlined,
+                        color: appColorNotifier.value,
+                        size: 36,
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(AppLocalizations.of(context)!
+                            .shopUpdatedSuccessfully),
+                      ),
+                    ],
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pop(context); // Close the dialog
+                        Navigator.pop(context); // Navigate back
+                      },
+                      child: Text(
+                        AppLocalizations.of(context)!.ok,
+                        style: TextStyle(color: appColorNotifier.value),
+                      ),
+                    ),
+                  ],
                 );
               },
             );
           }
-
         } else {
           throw Exception("Failed to update blog");
         }
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(AppLocalizations.of(context)!.errorUpdatingShop))
-          );
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: Text(AppLocalizations.of(context)!.errorUpdatingShop)));
         }
       }
     }
   }
 
   void _pickPreviewImage() async {
-    final XFile? pickedImage = await _picker.pickImage(source: ImageSource.gallery);
+    final XFile? pickedImage = await _picker.pickImage(
+      source: ImageSource.gallery,
+    );
     if (pickedImage != null) {
-      setState(() {
-        previewImageFile = File(pickedImage.path);
-      });
+      if (kIsWeb) {
+        // Web => read bytes
+        final bytes = await pickedImage.readAsBytes();
+        setState(() {
+          _previewImageBytes = bytes;
+          previewImageFile = null;
+        });
+      } else {
+        // Mobile => store as File
+        setState(() {
+          previewImageFile = File(pickedImage.path);
+          _previewImageBytes = null;
+        });
+      }
     }
   }
 
   void _pickNewCoverImages() async {
     final List<XFile>? pickedImages = await _picker.pickMultiImage();
     if (pickedImages != null && pickedImages.isNotEmpty) {
-      setState(() {
-        newCoverImages = pickedImages.map((image) => File(image.path)).toList();
-      });
+      if (kIsWeb) {
+        // Web => read bytes for each
+        for (var img in pickedImages) {
+          final bytes = await img.readAsBytes();
+          _newCoverImageBytes.add(bytes);
+        }
+        setState(() {}); // Refresh
+      } else {
+        // Mobile => store as File
+        setState(() {
+          newCoverImages=
+              pickedImages.map((image) => File(image.path)).toList();
+        });
+      }
     }
   }
 
@@ -281,7 +343,8 @@ class _EditShopScreenState extends State<EditShopScreen> {
     try {
       final response = await widget.networkHandler.delete2(
         "/blogpost/remove/coverImage/${widget.addBlogModel.id}",
-        body: jsonEncode({"imageUrl": imageUrl}), // Pass the imageUrl in the request body
+        body: jsonEncode(
+            {"imageUrl": imageUrl}), // Pass the imageUrl in the request body
       );
 
       if (response['message'] == "Cover image removed successfully") {
@@ -289,15 +352,25 @@ class _EditShopScreenState extends State<EditShopScreen> {
           existingCoverImages.remove(imageUrl); // Remove from the UI
         });
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(AppLocalizations.of(context)!.failedToRemoveImage))
-        );
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(AppLocalizations.of(context)!.failedToRemoveImage)));
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Error: $e")),
       );
     }
+  }
+
+  /// Remove a newly selected cover image before uploading
+  void _removeNewCoverImageAtIndex(int index, bool isWeb) {
+    setState(() {
+      if (isWeb) {
+        _newCoverImageBytes.removeAt(index);
+      } else {
+        newCoverImages.removeAt(index);
+      }
+    });
   }
 
   @override
@@ -336,8 +409,8 @@ class _EditShopScreenState extends State<EditShopScreen> {
           child: ConstrainedBox(
             constraints: isWeb
                 ? BoxConstraints(
-              maxWidth: maxWidth,
-            )
+                    maxWidth: maxWidth,
+                  )
                 : BoxConstraints(), // No constraints on mobile
             child: Padding(
               padding: const EdgeInsets.all(16.0),
@@ -363,14 +436,20 @@ class _EditShopScreenState extends State<EditShopScreen> {
                           },
                           items: [
                             DropdownMenuItem(
-                                value: "general", child: Text(AppLocalizations.of(context)!.general)),
+                                value: "general",
+                                child: Text(
+                                    AppLocalizations.of(context)!.general)),
                             DropdownMenuItem(
-                                value: "barbershop", child: Text(AppLocalizations.of(context)!.barbershop)),
+                                value: "barbershop",
+                                child: Text(
+                                    AppLocalizations.of(context)!.barbershop)),
                             DropdownMenuItem(
-                                value: "hospital", child: Text(AppLocalizations.of(context)!.hospital)),
-
+                                value: "hospital",
+                                child: Text(
+                                    AppLocalizations.of(context)!.hospital)),
                           ],
-                          decoration: InputDecoration(labelText: AppLocalizations.of(context)!.type),
+                          decoration: InputDecoration(
+                              labelText: AppLocalizations.of(context)!.type),
                         ),
                         const SizedBox(height: 24),
 
@@ -421,32 +500,47 @@ class _EditShopScreenState extends State<EditShopScreen> {
                           ),
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(8.0),
-                            child: previewImageFile != null
-                                ? Image.file(
-                              previewImageFile!,
-                              width: double.infinity,
-                              height: double.infinity,
-                              fit: BoxFit.cover,
-                            )
-                                : widget.addBlogModel.previewImage != null
-                                ? Image.network(
-                              widget.networkHandler
-                                  .formater2(widget.addBlogModel.previewImage!),
-                              width: double.infinity,
-                              height: double.infinity,
-                              fit: BoxFit.cover,
-                            )
-                                : Center(
-                              child: Text(
-                                AppLocalizations.of(context)!.noPreviewImageSelected,
-                                style: const TextStyle(color: Colors.grey),
-                              ),
-                            ),
+                            child: () {
+                              // 1) If user picked a new preview image on web:
+                              if (_previewImageBytes != null) {
+                                return Image.memory(
+                                  _previewImageBytes!,
+                                  width: double.infinity,
+                                  height: double.infinity,
+                                  fit: BoxFit.cover,
+                                );
+                              }
+                              // 2) If user picked a new preview image on mobile:
+                              if (previewImageFile != null) {
+                                return Image.file(
+                                  previewImageFile!,
+                                  width: double.infinity,
+                                  height: double.infinity,
+                                  fit: BoxFit.cover,
+                                );
+                              }
+                              // 3) Otherwise, show existing from the server (if any)
+                              if (widget.addBlogModel.previewImage != null) {
+                                return Image.network(
+                                  widget.networkHandler.formater2(
+                                    widget.addBlogModel.previewImage!,
+                                  ),
+                                  width: double.infinity,
+                                  height: double.infinity,
+                                  fit: BoxFit.cover,
+                                );
+                              }
+                              // 4) No preview image
+                              return Center(
+                                child: Text(
+                                  AppLocalizations.of(context)!.noPreviewImageSelected,
+                                  style: const TextStyle(color: Colors.grey),
+                                ),
+                              );
+                            }(),
                           ),
                         ),
                         const SizedBox(height: 12),
-
-                        // Button to Change Preview Image (Centered)
                         Align(
                           alignment: Alignment.center,
                           child: ValueListenableBuilder<Color>(
@@ -454,34 +548,41 @@ class _EditShopScreenState extends State<EditShopScreen> {
                             builder: (context, color, child) {
                               return TextButton(
                                 onPressed: _pickPreviewImage,
-                                child: Text(AppLocalizations.of(context)!.changePreviewImage),
                                 style: ButtonStyle(
                                   foregroundColor:
                                   MaterialStateProperty.all<Color>(Colors.black),
                                   backgroundColor:
                                   MaterialStateProperty.all<Color>(color),
                                   padding: MaterialStateProperty.all<EdgeInsets>(
-                                      const EdgeInsets.symmetric(
-                                          horizontal: 16.0, vertical: 8.0)),
+                                    const EdgeInsets.symmetric(
+                                      horizontal: 16.0,
+                                      vertical: 8.0,
+                                    ),
+                                  ),
                                 ),
+                                child:
+                                Text(AppLocalizations.of(context)!.changePreviewImage),
                               );
                             },
                           ),
                         ),
                         const SizedBox(height: 24),
 
-                        // Slideshow Images Section
+                        // COVER IMAGES
                         Text(
                           AppLocalizations.of(context)!.slideshowImages,
                           style: Theme.of(context).textTheme.titleMedium,
                         ),
                         const SizedBox(height: 12),
+
+                        // Display existing cover images + newly selected
                         Wrap(
                           spacing: 8,
                           runSpacing: 8,
                           children: [
-                            ...existingCoverImages.map(
-                                  (imageUrl) => Stack(
+                            // 1) Existing from server
+                            for (String imageUrl in existingCoverImages)
+                              Stack(
                                 children: [
                                   Container(
                                     width: 100,
@@ -490,8 +591,7 @@ class _EditShopScreenState extends State<EditShopScreen> {
                                       borderRadius: BorderRadius.circular(8.0),
                                       image: DecorationImage(
                                         image: NetworkImage(
-                                          widget.networkHandler
-                                              .formater2(imageUrl),
+                                          widget.networkHandler.formater2(imageUrl),
                                         ),
                                         fit: BoxFit.cover,
                                       ),
@@ -501,7 +601,7 @@ class _EditShopScreenState extends State<EditShopScreen> {
                                     top: 0,
                                     right: 0,
                                     child: Container(
-                                      decoration: BoxDecoration(
+                                      decoration: const BoxDecoration(
                                         color: Colors.black54,
                                         shape: BoxShape.circle,
                                       ),
@@ -515,9 +615,10 @@ class _EditShopScreenState extends State<EditShopScreen> {
                                   ),
                                 ],
                               ),
-                            ),
-                            ...newCoverImages.map(
-                                  (imageFile) => Stack(
+
+                            // 2) Newly selected on WEB
+                            for (int i = 0; i < _newCoverImageBytes.length; i++)
+                              Stack(
                                 children: [
                                   Container(
                                     width: 100,
@@ -525,7 +626,7 @@ class _EditShopScreenState extends State<EditShopScreen> {
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(8.0),
                                       image: DecorationImage(
-                                        image: FileImage(imageFile),
+                                        image: MemoryImage(_newCoverImageBytes[i]),
                                         fit: BoxFit.cover,
                                       ),
                                     ),
@@ -534,26 +635,63 @@ class _EditShopScreenState extends State<EditShopScreen> {
                                     top: 0,
                                     right: 0,
                                     child: Container(
-                                      decoration: BoxDecoration(
+                                      decoration: const BoxDecoration(
                                         color: Colors.black54,
                                         shape: BoxShape.circle,
                                       ),
                                       child: IconButton(
                                         icon: const Icon(Icons.close,
                                             color: Colors.red, size: 20),
-                                        onPressed: () =>
-                                            _removeExistingCoverImage(imageFile as String),
+                                        onPressed: () => _removeNewCoverImageAtIndex(
+                                          i,
+                                          true, // isWeb = true
+                                        ),
                                       ),
                                     ),
                                   ),
                                 ],
                               ),
-                            ),
+
+                            // 3) Newly selected on MOBILE
+                            for (int i = 0; i < newCoverImages.length; i++)
+                              Stack(
+                                children: [
+                                  Container(
+                                    width: 100,
+                                    height: 100,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(8.0),
+                                      image: DecorationImage(
+                                        image: FileImage(newCoverImages[i]),
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                  ),
+                                  Positioned(
+                                    top: 0,
+                                    right: 0,
+                                    child: Container(
+                                      decoration: const BoxDecoration(
+                                        color: Colors.black54,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: IconButton(
+                                        icon: const Icon(Icons.close,
+                                            color: Colors.red, size: 20),
+                                        onPressed: () => _removeNewCoverImageAtIndex(
+                                          i,
+                                          false, // isWeb = false
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
                           ],
                         ),
                         const SizedBox(height: 12),
 
-                        // Button to Add New Slideshow Images (Centered)
+                        // Button to pick new cover images
                         Align(
                           alignment: Alignment.center,
                           child: ValueListenableBuilder<Color>(
@@ -561,37 +699,40 @@ class _EditShopScreenState extends State<EditShopScreen> {
                             builder: (context, color, child) {
                               return TextButton(
                                 onPressed: _pickNewCoverImages,
-                                child: Text(AppLocalizations.of(context)!.addNewImages),
                                 style: ButtonStyle(
                                   foregroundColor:
                                   MaterialStateProperty.all<Color>(Colors.black),
                                   backgroundColor:
                                   MaterialStateProperty.all<Color>(color),
                                   padding: MaterialStateProperty.all<EdgeInsets>(
-                                      const EdgeInsets.symmetric(
-                                          horizontal: 16.0, vertical: 8.0)),
+                                    const EdgeInsets.symmetric(
+                                        horizontal: 16.0, vertical: 8.0),
+                                  ),
                                 ),
+                                child: Text(AppLocalizations.of(context)!.addNewImages),
                               );
                             },
                           ),
                         ),
                         const SizedBox(height: 24),
 
-                        // Save Changes Button (Aligned to Right)
+                        // Save Changes
                         Align(
                           alignment: Alignment.centerRight,
                           child: ElevatedButton(
                             onPressed: _submitChanges,
-                            child: Text(AppLocalizations.of(context)!.saveChanges),
                             style: ElevatedButton.styleFrom(
                               foregroundColor: Colors.black,
                               backgroundColor: Colors.blueGrey,
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 24.0, vertical: 12.0),
+                                horizontal: 24.0,
+                                vertical: 12.0,
+                              ),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8.0),
                               ),
                             ),
+                            child: Text(AppLocalizations.of(context)!.saveChanges),
                           ),
                         ),
                       ],

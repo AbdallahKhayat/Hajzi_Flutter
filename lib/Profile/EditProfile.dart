@@ -55,18 +55,37 @@ class _EditProfileState extends State<EditProfile> {
     super.dispose();
   }
 
+  // Future<void> _pickImage() async {
+  //   if (kIsWeb) {
+  //     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+  //     if (image != null) {
+  //       final bytes = await image.readAsBytes();
+  //       setState(() {
+  //         _webImage = bytes;
+  //       });
+  //     }
+  //   } else {
+  //     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+  //     if (image != null) {
+  //       setState(() {
+  //         _selectedImage = File(image.path);
+  //       });
+  //     }
+  //   }
+  // }
+
   Future<void> _pickImage() async {
-    if (kIsWeb) {
-      final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-      if (image != null) {
+    // Same method for both web and mobile, but store differently
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    if (image != null) {
+      if (kIsWeb) {
+        // On web, read the bytes into memory
         final bytes = await image.readAsBytes();
         setState(() {
           _webImage = bytes;
         });
-      }
-    } else {
-      final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-      if (image != null) {
+      } else {
+        // On mobile, store the File path
         setState(() {
           _selectedImage = File(image.path);
         });
@@ -96,20 +115,30 @@ class _EditProfileState extends State<EditProfile> {
         print("Response Body: ${response.body}");
 
         if (response.statusCode == 200 || response.statusCode == 201) {
-          // If image is selected, upload it
-          if (_selectedImage != null || _webImage != null) {
-            var imageResponse;
-            if (kIsWeb && _webImage != null) {
-              // Handle web image upload if supported
-              // Currently, patchImage expects a file path, which isn't available on web
-              // Consider modifying patchImage to accept bytes or handle differently
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                    content: Text("Image upload on web is not supported yet.")),
+          if (response.statusCode == 200 || response.statusCode == 201) {
+            // 2) If image is selected, upload it
+            if (_webImage != null) {
+              // On web, call patchImageWeb
+              final imageResponse = await networkHandler.patchImageWeb(
+                "/profile/add/image",
+                _webImage!,
               );
-            } else if (_selectedImage != null) {
+
+              if (imageResponse.statusCode == 200 ||
+                  imageResponse.statusCode == 201) {
+                print("Web image uploaded successfully.");
+              } else {
+                print("Image upload failed (web).");
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content:
+                    Text(AppLocalizations.of(context)!.imageUploadFailed),
+                  ),
+                );
+              }
+            }  else if (_selectedImage != null) {
               // For mobile
-              imageResponse = await networkHandler.patchImage(
+             final imageResponse = await networkHandler.patchImage(
                   "/profile/add/image", _selectedImage!.path);
               if (imageResponse.statusCode == 200 ||
                   imageResponse.statusCode == 201) {

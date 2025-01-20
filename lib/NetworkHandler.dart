@@ -1,8 +1,10 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 import 'package:logger/logger.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO; // ✅ Import Socket.io Client
 
@@ -124,6 +126,30 @@ class NetworkHandler{
     return await request.send();
   }
 
+  /// Upload an image from memory bytes (web platforms)
+  Future<http.StreamedResponse> patchImageWeb(String url, Uint8List bytes) async {
+    url = formater(url);
+    var uri = Uri.parse(url);
+
+    String? token = await storage.read(key: "token");
+
+    // We must specify a filename and contentType for fromBytes
+    var request = http.MultipartRequest('PATCH', uri);
+    request.files.add(
+      http.MultipartFile.fromBytes(
+        'img',
+        bytes,
+        filename: 'upload.jpg',
+        contentType: MediaType.parse('image/jpeg'),
+      ),
+    );
+    request.headers.addAll({
+      "Authorization": "Bearer $token",
+    });
+
+    var response = await request.send();
+    return response;
+  }
 
 
 
