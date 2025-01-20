@@ -142,9 +142,9 @@ class _BlogCardState extends State<BlogCard> {
                               context: context,
                               builder: (BuildContext context) {
                                 return AlertDialog(
-                                  title: const Text("Confirm Deletion"),
+                                  title:  Text(AppLocalizations.of(context)!.confirmDeletion),
                                   content: Text(
-                                    AppLocalizations.of(context)!.methodUnavailableOnWeb,
+                                    "${AppLocalizations.of(context)!.deleteShopConfirmationWithTitle} ${widget.addBlogModel.title}?",
                                   ),
                                   actions: [
                                     TextButton(
