@@ -112,9 +112,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
                   onPressed: () {
                     Navigator.of(context).pop(); // Close the dialog
                   },
-                  child: const Text(
-                    'OK',
-                    style: TextStyle(color: Colors.green),
+                  child:  Text(
+                    AppLocalizations.of(context)!.ok,
+                    style: const TextStyle(color: Colors.green),
                   ),
                 ),
               ],
