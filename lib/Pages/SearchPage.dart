@@ -62,6 +62,23 @@ class _SearchPageState extends State<SearchPage> {
     });
   }
 
+  // 🔥 ADDED: Fetch the shops owned by a given user (by email).
+  Future<List<dynamic>> fetchUserShops(String email) async {
+    try {
+      // Make sure this path matches your new endpoint from the Node server
+      final response =
+          await NetworkHandler().get('/blogpost/getShopsByEmail/$email');
+      if (response != null && response is Map && response['data'] != null) {
+        return response['data']; // This should be the List of shops
+      } else {
+        return [];
+      }
+    } catch (e) {
+      print("Error fetching user shops: $e");
+      return [];
+    }
+  }
+
   Future<String?> fetchExistingChatId(String partnerEmail) async {
     try {
       final response = await NetworkHandler()
@@ -152,9 +169,54 @@ class _SearchPageState extends State<SearchPage> {
                           ),
                         );
                       },
+                      // 🔥 ADDED: Provide a callback to show shops when info icon is tapped
+                      onInfoTap: () async {
+                        final userShops = await fetchUserShops(customer['email']);
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(15.0),
+                              ),
+                              title: Row(
+                                children: [
+                                  const Icon(Icons.store, color: Colors.blue),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    "${customer['username']} ${AppLocalizations.of(context)!.shops}",
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              content: userShops.isEmpty
+                                  ? Text(AppLocalizations.of(context)!.noShopsFoundSearch)
+                                  : SizedBox(
+                                width: double.maxFinite,
+                                child: ListView.builder(
+                                  shrinkWrap: true,
+                                  itemCount: userShops.length,
+                                  itemBuilder: (context, idx) {
+                                    final shop = userShops[idx];
+                                    return ShopPreviewItem(shop: shop);
+                                  },
+                                ),
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  child:  Text(AppLocalizations.of(context)!.close,style: TextStyle(color: Colors.black),),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      },
                     );
                   },
-                ),
+      ),
     );
   }
 }
@@ -166,12 +228,16 @@ class UserCard extends StatelessWidget {
   final String imgPath;
   final VoidCallback onTap;
 
+// 🔥 ADDED: A separate callback for the info icon
+  final VoidCallback onInfoTap;
+
   const UserCard({
     Key? key,
     required this.email,
     required this.username,
     required this.imgPath,
     required this.onTap,
+    required this.onInfoTap,
   }) : super(key: key);
 
   @override
@@ -220,10 +286,88 @@ class UserCard extends StatelessWidget {
               email,
               style: const TextStyle(fontSize: 14, color: Colors.grey),
             ),
+            // 🔥 ADDED: trailing icon button
+            trailing: IconButton(
+              icon: const Icon(Icons.info_outline),
+              onPressed: onInfoTap,
+            ),
           ),
           const Padding(
             padding: EdgeInsets.only(right: 20, left: 80),
             child: Divider(thickness: 1),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Displays the preview image (if any) and the shop title.
+class ShopPreviewItem extends StatelessWidget {
+  final Map<String, dynamic> shop;
+  const ShopPreviewItem({Key? key, required this.shop}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final String? previewUrl = shop['previewImage'];
+    final String title = shop['title'] ?? 'Untitled Shop';
+
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        children: [
+          // Show shop preview image or a gray placeholder
+          if (previewUrl != null && previewUrl.isNotEmpty)
+            ClipRRect(
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(12),
+                topRight: Radius.circular(12),
+              ),
+              child: CachedNetworkImage(
+                imageUrl: previewUrl,
+                width: double.infinity,
+                height: 150,
+                fit: BoxFit.cover,
+                placeholder: (context, url) => Container(
+                  height: 150,
+                  color: Colors.grey[300],
+                  child: const Center(child: CircularProgressIndicator()),
+                ),
+                errorWidget: (context, url, error) => Container(
+                  height: 150,
+                  color: Colors.grey[300],
+                  child: const Icon(Icons.broken_image, size: 50),
+                ),
+              ),
+            )
+          else
+            Container(
+              height: 150,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(12),
+                  topRight: Radius.circular(12),
+                ),
+              ),
+              child: const Icon(Icons.image_not_supported, size: 50),
+            ),
+
+          // The Shop title
+          Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Text(
+              title,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
           ),
         ],
       ),

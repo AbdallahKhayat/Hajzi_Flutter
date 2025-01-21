@@ -402,7 +402,10 @@
   "audioMessage": "Audio Message",
   "recording": "Recording...",
   "titleLabel": "Title: ",
-  "bodyLabel": "Body: "
+  "bodyLabel": "Body: ",
+  "shops": "shops",
+  "noShopsFoundSearch": "No shops found for this shop owner."
+
 
 
 

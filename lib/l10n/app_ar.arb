@@ -396,7 +396,9 @@
   "audioMessage": "رسالة صوتية",
   "recording": "جارٍ التسجيل...",
   "titleLabel": "العنوان: ",
-  "bodyLabel": "المعلومات"
+  "bodyLabel": "المعلومات",
+  "shops": "محلات",
+  "noShopsFoundSearch": "لم يتم العثور على متاجر لصاحب هذا المتجر."
 
 
 
