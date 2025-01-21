@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../NetworkHandler.dart';
 import '../constants.dart';
@@ -171,11 +172,17 @@ class _SearchPageState extends State<SearchPage> {
                       },
                       // 🔥 ADDED: Provide a callback to show shops when info icon is tapped
                       onInfoTap: () async {
-                        final userShops = await fetchUserShops(customer['email']);
+                        final userShops =
+                            await fetchUserShops(customer['email']);
                         showDialog(
                           context: context,
                           builder: (BuildContext context) {
                             return AlertDialog(
+                              // Adjust the insetPadding to decrease the dialog width on web.
+                              insetPadding: kIsWeb
+                                  ? const EdgeInsets.symmetric(horizontal: 490)
+                                  : const EdgeInsets.symmetric(
+                                      horizontal: 40.0),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(15.0),
                               ),
@@ -192,22 +199,26 @@ class _SearchPageState extends State<SearchPage> {
                                 ],
                               ),
                               content: userShops.isEmpty
-                                  ? Text(AppLocalizations.of(context)!.noShopsFoundSearch)
+                                  ? Text(AppLocalizations.of(context)!
+                                      .noShopsFoundSearch)
                                   : SizedBox(
-                                width: double.maxFinite,
-                                child: ListView.builder(
-                                  shrinkWrap: true,
-                                  itemCount: userShops.length,
-                                  itemBuilder: (context, idx) {
-                                    final shop = userShops[idx];
-                                    return ShopPreviewItem(shop: shop);
-                                  },
-                                ),
-                              ),
+                                      width: double.maxFinite,
+                                      child: ListView.builder(
+                                        shrinkWrap: true,
+                                        itemCount: userShops.length,
+                                        itemBuilder: (context, idx) {
+                                          final shop = userShops[idx];
+                                          return ShopPreviewItem(shop: shop);
+                                        },
+                                      ),
+                                    ),
                               actions: [
                                 TextButton(
                                   onPressed: () => Navigator.pop(context),
-                                  child:  Text(AppLocalizations.of(context)!.close,style: TextStyle(color: Colors.black),),
+                                  child: Text(
+                                    AppLocalizations.of(context)!.close,
+                                    style: const TextStyle(color: Colors.black),
+                                  ),
                                 ),
                               ],
                             );
@@ -216,7 +227,7 @@ class _SearchPageState extends State<SearchPage> {
                       },
                     );
                   },
-      ),
+                ),
     );
   }
 }
@@ -305,6 +316,7 @@ class UserCard extends StatelessWidget {
 /// Displays the preview image (if any) and the shop title.
 class ShopPreviewItem extends StatelessWidget {
   final Map<String, dynamic> shop;
+
   const ShopPreviewItem({Key? key, required this.shop}) : super(key: key);
 
   @override
@@ -312,64 +324,75 @@ class ShopPreviewItem extends StatelessWidget {
     final String? previewUrl = shop['previewImage'];
     final String title = shop['title'] ?? 'Untitled Shop';
 
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        children: [
-          // Show shop preview image or a gray placeholder
-          if (previewUrl != null && previewUrl.isNotEmpty)
-            ClipRRect(
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(12),
-                topRight: Radius.circular(12),
-              ),
-              child: CachedNetworkImage(
-                imageUrl: previewUrl,
-                width: double.infinity,
-                height: 150,
-                fit: BoxFit.cover,
-                placeholder: (context, url) => Container(
-                  height: 150,
-                  color: Colors.grey[300],
-                  child: const Center(child: CircularProgressIndicator()),
-                ),
-                errorWidget: (context, url, error) => Container(
-                  height: 150,
-                  color: Colors.grey[300],
-                  child: const Icon(Icons.broken_image, size: 50),
-                ),
-              ),
-            )
-          else
-            Container(
-              height: 150,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(12),
-                  topRight: Radius.circular(12),
-                ),
-              ),
-              child: const Icon(Icons.image_not_supported, size: 50),
-            ),
+    // Define a target width for web.
+    final double targetWidth = kIsWeb ? 500.0 : double.infinity;
 
-          // The Shop title
-          Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: Text(
-              title,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
+    return Center(
+      // The Center widget constrains the Card to its intrinsic size.
+      child: Card(
+        margin: const EdgeInsets.symmetric(vertical: 8),
+        elevation: 2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Container(
+          width: targetWidth,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Show shop preview image or a gray placeholder
+              if (previewUrl != null && previewUrl.isNotEmpty)
+                ClipRRect(
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(12),
+                    topRight: Radius.circular(12),
+                  ),
+                  child: CachedNetworkImage(
+                    imageUrl: previewUrl,
+                    width: targetWidth,
+                    height: 150,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) => Container(
+                      height: 150,
+                      color: Colors.grey[300],
+                      child: const Center(child: CircularProgressIndicator()),
+                    ),
+                    errorWidget: (context, url, error) => Container(
+                      height: 150,
+                      color: Colors.grey[300],
+                      child: const Icon(Icons.broken_image, size: 50),
+                    ),
+                  ),
+                )
+              else
+                Container(
+                  height: 150,
+                  width: targetWidth,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(12),
+                      topRight: Radius.circular(12),
+                    ),
+                  ),
+                  child: const Icon(Icons.image_not_supported, size: 50),
+                ),
+              // The Shop title
+              Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Center(
+                  child: Text(
+                    title,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
               ),
-            ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
