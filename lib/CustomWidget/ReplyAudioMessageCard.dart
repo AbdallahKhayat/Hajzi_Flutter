@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -140,7 +141,7 @@ class _ReplyAudioMessageCardState extends State<ReplyAudioMessageCard> {
         alignment: Alignment.centerLeft, // REPLY => left-aligned
         child: ConstrainedBox(
           constraints: BoxConstraints(
-            maxWidth: MediaQuery.of(context).size.width - 145, // Reflecting the own message card width
+            maxWidth:kIsWeb ? 300 : MediaQuery.of(context).size.width - 145, // Reflecting the own message card width
             maxHeight: MediaQuery.of(context).size.height - 760, // Reflecting the own message height constraints
           ),
           child: Card(

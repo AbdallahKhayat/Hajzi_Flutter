@@ -3,6 +3,8 @@ import 'dart:io';
 
 import 'package:blogapp/CustomWidget/OwnMessageCard.dart';
 import 'package:blogapp/CustomWidget/ReplyCard.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import '../CustomWidget/OwnAudioMessageCard.dart';
@@ -64,6 +66,74 @@ class _IndividualPageState extends State<IndividualPage> {
     } catch (e) {
       print('❌ Error formatting time: $e');
       return '';
+    }
+  }
+
+  Future<void> _showPartnerShops() async {
+    try {
+      // 1) Fetch the partner's shops by email
+      final response = await NetworkHandler().get('/blogpost/getShopsByEmail/${widget.chatPartnerEmail}');
+      if (response == null || response['data'] == null) {
+        throw Exception("No shops found for this user.");
+      }
+
+      final userShops = response['data'];
+      // 2) Show them in a dialog
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            // Adjust the insetPadding to decrease the dialog width on web.
+            insetPadding: kIsWeb
+                ? const EdgeInsets.symmetric(horizontal: 490)
+                : const EdgeInsets.symmetric(
+                horizontal: 40.0),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15.0),
+            ),
+            title: Row(
+              children: [
+                const Icon(Icons.store, color: Colors.blue),
+                const SizedBox(width: 8),
+                Text(
+                  "${widget.chatPartnerName} ${AppLocalizations.of(context)!.shops}",
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            content: userShops.isEmpty
+                ? Text(AppLocalizations.of(context)!
+                .noShopsFoundSearch)
+                : SizedBox(
+              width: double.maxFinite,
+              child: ListView.builder(
+                shrinkWrap: true,
+                itemCount: userShops.length,
+                itemBuilder: (context, idx) {
+                  final shop = userShops[idx];
+                  return ShopPreviewItem(shop: shop);
+                },
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(
+                  AppLocalizations.of(context)!.close,
+                  style: const TextStyle(color: Colors.black),
+                ),
+              ),
+            ],
+          );
+        },
+      );
+    } catch (e) {
+      debugPrint("Error fetching user shops: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Error fetching user shops.")),
+      );
     }
   }
 
@@ -477,50 +547,56 @@ class _IndividualPageState extends State<IndividualPage> {
               backgroundColor: mainColor,
               // Main color used for AppBar
 
-              titleSpacing: isWeb ? screenWidth * 0.01 : 0,
-              leadingWidth: isWeb ? screenWidth * 0.15 : screenWidth * 0.25,
-              leading: InkWell(
-                onTap: () {
-                  Navigator.pop(context);
-                },
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    SizedBox(
-                        width: isWeb ? screenWidth * 0.01 : screenWidth * 0.02),
-                    Icon(
+           //   titleSpacing: isWeb ? screenWidth * 0.01 : 0,
+              leadingWidth: isWeb ? 280 : 90,
+              leading:  Row(
+                children: [
+                  // 1) The Back Arrow
+                  IconButton(
+                    icon: Icon(
                       Icons.arrow_back,
-                      size: isWeb ? screenWidth * 0.02 : screenWidth * 0.06,
+                      size: isWeb ? screenWidth * 0.02 : 24,
                       color: Colors.white,
                     ),
-                    SizedBox(
-                        width: isWeb ? screenWidth * 0.02 : screenWidth * 0.03),
-                    chatPartnerImageUrl != null
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                  ),
+
+                  // 2) The Chat Partner's Avatar
+                  GestureDetector(
+                    onTap: _showPartnerShops, // <-- Show shops on tap
+                    child: chatPartnerImageUrl != null
                         ? CircleAvatar(
-                            radius:
-                                isWeb ? screenWidth * 0.03 : screenWidth * 0.05,
-                            backgroundColor: Colors.transparent,
-                            backgroundImage: NetworkImage(chatPartnerImageUrl!),
-                          )
+                      radius: isWeb ? 100 : 20,
+                      backgroundColor: Colors.transparent,
+                      child: ClipOval(
+                        child: Image.network(
+                          chatPartnerImageUrl!,
+                       //  width: screenWidth * 0.1,
+                          // Twice the radius to fill the avatar
+                        // height: screenWidth * 0.1,
+                          fit: BoxFit
+                              .cover, // Ensures the image covers the circle without distortion
+                        ),
+                    ),
+                    )
                         : CircleAvatar(
-                            radius:
-                                isWeb ? screenWidth * 0.03 : screenWidth * 0.05,
-                            backgroundColor: Colors.white,
-                            child: Text(
-                              widget.chatPartnerName.isNotEmpty
-                                  ? widget.chatPartnerName[0].toUpperCase()
-                                  : 'U',
-                              style: TextStyle(
-                                color: mainColor,
-                                fontWeight: FontWeight.bold,
-                                fontSize: isWeb
-                                    ? screenWidth * 0.03
-                                    : screenWidth * 0.05,
-                              ),
-                            ),
-                          ),
-                  ],
-                ),
+                      radius: isWeb ? 80 : 20,
+                      backgroundColor: Colors.white,
+                      child: Text(
+                        widget.chatPartnerName.isNotEmpty
+                            ? widget.chatPartnerName[0].toUpperCase()
+                            : 'U',
+                        style: TextStyle(
+                          color: mainColor,
+                          fontWeight: FontWeight.bold,
+                          fontSize: isWeb ? 18 : 16,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
               title: InkWell(
                 // 🔥 Keep only this title, as it's interactive and supports tap actions
@@ -1338,5 +1414,92 @@ class _IndividualPageState extends State<IndividualPage> {
       print("Contact button pressed");
       // TODO: Get contacts using contacts_service
     }
+  }
+}
+/// Displays the preview image (if any) and the shop title.
+class ShopPreviewItem extends StatelessWidget {
+  final Map<String, dynamic> shop;
+
+  const ShopPreviewItem({Key? key, required this.shop}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final String? previewUrl = shop['previewImage'];
+    final String title = shop['title'] ?? 'Untitled Shop';
+
+    // Define a target width for web.
+    final double targetWidth = kIsWeb ? 500.0 : double.infinity;
+
+    return Center(
+      // The Center widget constrains the Card to its intrinsic size.
+      child: Card(
+        margin: const EdgeInsets.symmetric(vertical: 8),
+        elevation: 2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Container(
+          width: targetWidth,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Show shop preview image or a gray placeholder
+              if (previewUrl != null && previewUrl.isNotEmpty)
+                ClipRRect(
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(12),
+                    topRight: Radius.circular(12),
+                  ),
+                  child: CachedNetworkImage(
+                    imageUrl: previewUrl,
+                    width: targetWidth,
+                    height: 150,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) =>
+                        Container(
+                          height: 150,
+                          color: Colors.grey[300],
+                          child: const Center(
+                              child: CircularProgressIndicator()),
+                        ),
+                    errorWidget: (context, url, error) =>
+                        Container(
+                          height: 150,
+                          color: Colors.grey[300],
+                          child: const Icon(Icons.broken_image, size: 50),
+                        ),
+                  ),
+                )
+              else
+                Container(
+                  height: 150,
+                  width: targetWidth,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(12),
+                      topRight: Radius.circular(12),
+                    ),
+                  ),
+                  child: const Icon(Icons.image_not_supported, size: 50),
+                ),
+              // The Shop title
+              Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Center(
+                  child: Text(
+                    title,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

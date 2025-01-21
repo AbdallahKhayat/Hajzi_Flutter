@@ -21,6 +21,9 @@ import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
+import '../CustomWidget/OwnAudioMessageCard.dart';
+import '../CustomWidget/ReplyAudioMessageCard.dart';
+import 'dart:ui' as ui;
 /// The SINGLE entry point for ChatScreen.
 /// We use `kIsWeb` to decide which layout/class to show.
 class ChatScreen extends StatelessWidget {
@@ -410,6 +413,16 @@ class _ChatScreenWebState extends State<_ChatScreenWeb>
       }
     });
   }
+  /// Function to create a lighter version of a color
+  Color lightenColor(Color color, [double amount = 0.2]) {
+    if (color == Colors.black) {
+      return Colors.grey[850]!; // Special case for black
+    }
+    final hsl = HSLColor.fromColor(color);
+    final lighterHSL =
+    hsl.withLightness((hsl.lightness + amount).clamp(0.0, 1.0));
+    return lighterHSL.toColor();
+  }
 
   // Format timestamp for messages
   String _formatTime(String? isoString) {
@@ -613,7 +626,16 @@ class _ChatScreenWebState extends State<_ChatScreenWeb>
               final isOwnMessage = msg['senderEmail'] == _loggedInUserEmail;
               final timeString = _formatTime(msg['timestamp']);
               final formattedDate = _formatDate(msg['timestamp']);
+              String displayMessage =msg['content'];
 
+              bool isAudio = false;
+              String lowerMsg = displayMessage.toLowerCase();
+              if (lowerMsg.endsWith('.aac') ||
+                  lowerMsg.endsWith('.m4a') ||
+                  lowerMsg.endsWith('.mp3') ||
+                  lowerMsg.endsWith('.wav')) {
+                isAudio = true;
+              }
               bool showDateSeparator = false;
               if (index == 0) {
                 showDateSeparator = true;
@@ -639,6 +661,35 @@ class _ChatScreenWebState extends State<_ChatScreenWeb>
                   ),
                 ),
               ),
+                    if (isAudio)
+                    if (isOwnMessage)
+                      Directionality(
+                        textDirection: ui.TextDirection.ltr,
+                        child: OwnAudioMessageCard(
+                          audioUrl: displayMessage,
+                          time: timeString,
+                          messageColor: lightenColor(mainColor, 0.2),
+                          textColor: Colors.black,
+                          onLongPress: () {
+                            _showOwnMessageOptions(msg);
+                          },
+                        ),
+                      )
+                    else
+                    // Audio but from someone else => ReplyAudioMessageCard
+                      Directionality(
+                        textDirection: ui.TextDirection.ltr,
+                        child: ReplyAudioMessageCard(
+                          audioUrl: displayMessage,
+                          time: timeString,
+                          messageColor: Colors.white,
+                          textColor: Colors.black,
+                          onLongPress: () {
+                            _showReplyMessageOptions(msg);
+                          },
+                        ),
+                      ),
+
                     isOwnMessage
                         ? OwnMessageCard(
                       message: msg['content'] == ""

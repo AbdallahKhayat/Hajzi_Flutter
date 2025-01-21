@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -140,7 +141,7 @@ class _OwnAudioMessageCardState extends State<OwnAudioMessageCard> {
         alignment: Alignment.centerRight,
         child: ConstrainedBox(
           constraints: BoxConstraints(
-            maxWidth: MediaQuery.of(context).size.width - 145,),
+            maxWidth: kIsWeb ? 300 : MediaQuery.of(context).size.width - 145,),
           child: Card(
             elevation: 5,
             shape: RoundedRectangleBorder(
