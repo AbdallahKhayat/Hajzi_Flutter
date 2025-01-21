@@ -343,7 +343,7 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
                 color: Colors.white,
               ),
               IconButton(
-                icon: const Icon(Icons.delete, color: Colors.black),
+                icon: const Icon(Icons.delete, color: Colors.white),
                 onPressed: _confirmDeleteHistory, // Open confirmation dialog
               ),
             ],
@@ -475,6 +475,7 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
                       ),
                     ),
                     Container(
+                      width: 500,
                       alignment:
                           isUser ? Alignment.centerRight : Alignment.centerLeft,
                       margin: const EdgeInsets.symmetric(
