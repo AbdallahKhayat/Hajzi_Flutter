@@ -660,7 +660,7 @@ class _UsersScreenState extends State<UsersScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "${AppLocalizations.of(context)!.usernameLabel}: ${user['username']}",
+              "${AppLocalizations.of(context)!.usernameLabel} ${user['username']}",
               style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,

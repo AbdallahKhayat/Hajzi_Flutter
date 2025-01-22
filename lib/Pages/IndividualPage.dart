@@ -570,16 +570,12 @@ class _IndividualPageState extends State<IndividualPage> {
                         ? CircleAvatar(
                       radius: isWeb ? 100 : 20,
                       backgroundColor: Colors.transparent,
-                      child: ClipOval(
-                        child: Image.network(
-                          chatPartnerImageUrl!,
-                       //  width: screenWidth * 0.1,
-                          // Twice the radius to fill the avatar
-                        // height: screenWidth * 0.1,
-                          fit: BoxFit
-                              .cover, // Ensures the image covers the circle without distortion
-                        ),
-                    ),
+                      child:CircleAvatar(
+                        radius: 30,
+                        backgroundColor: Colors.transparent,
+                        backgroundImage:
+                        CachedNetworkImageProvider(chatPartnerImageUrl!),
+                      )
                     )
                         : CircleAvatar(
                       radius: isWeb ? 80 : 20,
