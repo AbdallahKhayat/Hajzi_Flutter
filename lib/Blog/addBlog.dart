@@ -1422,7 +1422,7 @@ class OverlayCard extends StatelessWidget {
             Image.file(
               File(imageFile!.path),
               fit: BoxFit.cover,
-              height: 200,
+              height: 250,
             )
           else
             const Text("No image selected"),
