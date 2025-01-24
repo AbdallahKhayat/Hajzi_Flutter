@@ -91,19 +91,19 @@ class _BlogCardState extends State<BlogCard> {
       child: kIsWeb //web part//////////////////////////
           ? Container(
               padding: const EdgeInsets.all(8.0),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12.0),
-                border: Border.all(color: Colors.grey.shade300, width: 1),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.shade200,
-                    blurRadius: 8.0,
-                    spreadRadius: 2.0,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
+              // decoration: BoxDecoration(
+              //   color: Colors.white,
+              //   borderRadius: BorderRadius.circular(12.0),
+              //   border: Border.all(color: Colors.grey.shade300, width: 1),
+              //   boxShadow: [
+              //     BoxShadow(
+              //       color: Colors.grey.shade200,
+              //       blurRadius: 8.0,
+              //       spreadRadius: 2.0,
+              //       offset: const Offset(0, 4),
+              //     ),
+              //   ],
+              // ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(16),
                 child: Stack(
