@@ -690,8 +690,8 @@ class _ChatScreenWebState extends State<_ChatScreenWeb>
                         ),
                       ),
 
-                    isOwnMessage
-                        ? OwnMessageCard(
+                    if (isOwnMessage && !isAudio)
+                        OwnMessageCard(
                       message: msg['content'] == ""
                           ? AppLocalizations.of(context)!.messageDeleted
                           : msg['content'],
@@ -700,7 +700,8 @@ class _ChatScreenWebState extends State<_ChatScreenWeb>
                       textColor: msg['content'] == "" ? Colors.grey : Colors.black,
                       onLongPress: () => _showOwnMessageOptions(msg),
                     )
-                        : ReplyCard(
+                    else if (!isAudio)
+                      ReplyCard(
                       message: msg['content'] == ""
                           ? AppLocalizations.of(context)!.messageDeleted
                           : msg['content'],
