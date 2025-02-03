@@ -20,7 +20,7 @@ final navigationKey=GlobalKey<NavigatorState>();
 
 //function to listen to background changes
 Future _firebaseBackgroundMessage(RemoteMessage message)async{
-  
+
   if(message.notification!=null){
     print("Some Notification Recieved");
   }
@@ -102,7 +102,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   Widget page =
-      const Center(child: CircularProgressIndicator()); // default page value
+  const Center(child: CircularProgressIndicator()); // default page value
   final storage = FlutterSecureStorage();
   Locale _locale = const Locale('en', 'US'); // Default locale
 
