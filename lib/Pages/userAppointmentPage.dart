@@ -7,6 +7,8 @@ import '../NetworkHandler.dart';
 import '../constants.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:http/http.dart' as http;
+import 'package:workmanager/workmanager.dart';
+
 class UserAppointmentPage extends StatefulWidget {
   final NetworkHandler networkHandler;
   final String blogId;
@@ -23,6 +25,19 @@ class UserAppointmentPage extends StatefulWidget {
 
   @override
   _UserAppointmentPageState createState() => _UserAppointmentPageState();
+}
+
+@pragma('vm:entry-point')
+void callbackDispatcher() {
+  Workmanager().executeTask((task, inputData) async {
+    if (task == "emailReminder") {
+      final email = inputData?['email'];
+      final blogOwnerEmail = inputData?['blogOwnerEmail'];
+// You'll need to recreate the email sending logic here
+      debugPrint('Scheduled email to $email from $blogOwnerEmail');
+    }
+    return true;
+  });
 }
 
 class _UserAppointmentPageState extends State<UserAppointmentPage> {
@@ -58,7 +73,7 @@ class _UserAppointmentPageState extends State<UserAppointmentPage> {
             'from_name': "Hajzi Team",
             'to_name': email,
             'to_email': email,
-            'from_email':widget.blogOwnerEmail,
+            'from_email': widget.blogOwnerEmail,
           },
         }),
       );
@@ -84,9 +99,10 @@ class _UserAppointmentPageState extends State<UserAppointmentPage> {
     } catch (e) {
       debugPrint("Error fetching appointments: $e");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context)!.failedToFetchAvailableSlots)), // CHANGED
+        SnackBar(
+            content: Text(AppLocalizations.of(context)!
+                .failedToFetchAvailableSlots)), // CHANGED
       );
-
     }
   }
 
@@ -163,7 +179,9 @@ class _UserAppointmentPageState extends State<UserAppointmentPage> {
 
       if (response.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.appointmentBookedSuccessfully)), // CHANGED
+          SnackBar(
+              content: Text(AppLocalizations.of(context)!
+                  .appointmentBookedSuccessfully)), // CHANGED
         );
 
         // Schedule the verification email
@@ -191,7 +209,17 @@ class _UserAppointmentPageState extends State<UserAppointmentPage> {
           // Schedule email 15 minutes before appointment
           final reminderTime = appointmentTime.subtract(Duration(minutes: 15));
           final durationUntilReminder = reminderTime.difference(now);
-
+          if (durationUntilReminder > Duration.zero) {
+            Workmanager().registerOneOffTask(
+              "emailReminder-${DateTime.now().millisecondsSinceEpoch}",
+              "emailReminder",
+              inputData: {
+                "email": widget.userName,
+                "blogOwnerEmail": widget.blogOwnerEmail,
+              },
+              initialDelay: durationUntilReminder,
+            );
+          }
           Timer(durationUntilReminder, () async {
             try {
               await sendVerificationEmail(widget.userName);
@@ -204,14 +232,17 @@ class _UserAppointmentPageState extends State<UserAppointmentPage> {
         _fetchAvailableSlots(); // Refresh the available slots
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.failedToBookAppointment)), // CHANGED
+          SnackBar(
+              content: Text(AppLocalizations.of(context)!
+                  .failedToBookAppointment)), // CHANGED
         );
       }
     } catch (error) {
       debugPrint("Error booking appointment: $error");
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-            content: Text(AppLocalizations.of(context)!.errorBookingAppointment)), // CHANGED
+            content: Text(AppLocalizations.of(context)!
+                .errorBookingAppointment)), // CHANGED
       );
     }
   }
@@ -286,9 +317,10 @@ class _UserAppointmentPageState extends State<UserAppointmentPage> {
                         ? Text(
                             "${AppLocalizations.of(context)!.bookedBy}: ${appointment['userName'] ?? 'N/A'}")
                         : isInPast(time)
-                        ? Text(AppLocalizations.of(context)!.expired) // CHANGED
+                            ? Text(AppLocalizations.of(context)!
+                                .expired) // CHANGED
                             : Text(AppLocalizations.of(context)!.availableSlot),
-                    trailing: (hasBooked || isBooked ||  isInPast(time))
+                    trailing: (hasBooked || isBooked || isInPast(time))
                         ? const Icon(Icons.lock, color: Colors.red)
                         : ValueListenableBuilder<Color>(
                             valueListenable: appColorNotifier,
