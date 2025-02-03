@@ -1,19 +1,24 @@
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../NetworkHandler.dart';
 import '../constants.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-
+import 'package:http/http.dart' as http;
 class UserAppointmentPage extends StatefulWidget {
   final NetworkHandler networkHandler;
   final String blogId;
   final String userName;
+  final String blogOwnerEmail; // Add this line
 
   const UserAppointmentPage({
     Key? key,
     required this.networkHandler,
     required this.blogId,
     required this.userName,
+    required this.blogOwnerEmail, // Add this line
   }) : super(key: key);
 
   @override
@@ -28,6 +33,38 @@ class _UserAppointmentPageState extends State<UserAppointmentPage> {
   void initState() {
     super.initState();
     _fetchAvailableSlots();
+  }
+
+  Future<void> sendVerificationEmail(String email) async {
+    try {
+      final serviceId =
+          'service_t7loxup'; // Replace with your EmailJS Service ID
+      final templateId =
+          'template_z4xwdhf'; // Replace with your EmailJS Template ID
+      final userId = 'VXQPgxLbtwC3wipZS'; // Replace with your EmailJS User ID
+
+      final url = Uri.parse('https://api.emailjs.com/api/v1.0/email/send');
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'origin': 'http://localhost'
+        },
+        body: json.encode({
+          'service_id': serviceId,
+          'template_id': templateId,
+          'user_id': userId,
+          'template_params': {
+            'from_name': "Hajzi Team",
+            'to_name': email,
+            'to_email': email,
+            'from_email':widget.blogOwnerEmail,
+          },
+        }),
+      );
+    } catch (e) {
+      throw Exception('Error while sending email: $e');
+    }
   }
 
   // Function to fetch available and booked appointments
@@ -128,6 +165,42 @@ class _UserAppointmentPageState extends State<UserAppointmentPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(AppLocalizations.of(context)!.appointmentBookedSuccessfully)), // CHANGED
         );
+
+        // Schedule the verification email
+        final now = DateTime.now();
+        final timeParts = formattedTime.split(':');
+        final appointmentHour = int.parse(timeParts[0]);
+        final appointmentMinute = int.parse(timeParts[1]);
+
+        // Create appointment DateTime for today
+        final appointmentTime = DateTime(
+          now.year,
+          now.month,
+          now.day,
+          appointmentHour,
+          appointmentMinute,
+        );
+
+        // Calculate time until appointment
+        final timeUntilAppointment = appointmentTime.difference(now);
+
+        if (timeUntilAppointment <= Duration(minutes: 15)) {
+          // Send email immediately if within 15 minutes
+          await sendVerificationEmail(widget.userName);
+        } else {
+          // Schedule email 15 minutes before appointment
+          final reminderTime = appointmentTime.subtract(Duration(minutes: 15));
+          final durationUntilReminder = reminderTime.difference(now);
+
+          Timer(durationUntilReminder, () async {
+            try {
+              await sendVerificationEmail(widget.userName);
+              debugPrint('Reminder email sent successfully');
+            } catch (e) {
+              debugPrint('Error sending reminder email: $e');
+            }
+          });
+        }
         _fetchAvailableSlots(); // Refresh the available slots
       } else {
         ScaffoldMessenger.of(context).showSnackBar(

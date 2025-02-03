@@ -187,6 +187,7 @@ class _BlogAfterClickState extends State<BlogAfterClick> {
             networkHandler: widget.networkHandler,
             blogId: widget.addBlogModel.id!,
             userName: userEmail!,
+            blogOwnerEmail: blogOwnerEmail, // Pass the shop owner's email
           ),
         ),
       );
